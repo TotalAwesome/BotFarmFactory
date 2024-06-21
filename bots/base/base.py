@@ -1,52 +1,10 @@
-import logging
-from requests import Session, get as requests_get
-from time import time, sleep
+
+from time import time
 from datetime import datetime
 from random import choice
-from .strings import URL_CHECK_IP, MSG_BAD_RESPONSE, MSG_PROXY_CHECK_ERROR, MSG_PROXY_CONNECTION_ERROR, \
-    MSG_PROXY_IP, MSG_SESSION_ERROR, USER_AGENTS, LOG_TEMPLATE
-
-
-logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
-
-
-def timestamp():
-    return int(time())
-
-
-def check_proxy(proxies):
-    try:
-        response = requests_get(URL_CHECK_IP, proxies=proxies)
-        if response.status_code == 200:
-            logging.info(MSG_PROXY_IP.format(ip=response.json()['origin']))
-            return response.text
-        else:
-            logging.error(MSG_PROXY_CHECK_ERROR.format(status_code=response.status_code))
-    except Exception as error:
-        logging.error(MSG_PROXY_CONNECTION_ERROR.format(error=error))
-
-
-def retry(func):
-    def wrapper(*args, **kwargs):
-        self = args[0]
-        while True:
-            try:
-                result = func(*args, **kwargs)
-                if result.status_code not in (200, 201, 202):
-                    if result.status_code == 429:
-                        self.log(MSG_BAD_RESPONSE.format(status=result.status_code, text=result.text))
-                        sleep(10)
-                        continue
-                    elif result.status_code in (401, 403):
-                        if result.status_code == 401 and self.refreshable_token:
-                            self.refresh_token()
-                        self.log(MSG_BAD_RESPONSE.format(status=result.status_code, text=result.text))
-                        raise Exception(f"code: {result.status_code} {result.text}")
-                return result
-            except Exception as error:
-                self.log(MSG_SESSION_ERROR.format(error=error))
-                sleep(3)
-    return wrapper
+from requests import Session
+from .utils import check_proxy, retry, logging
+from .strings import USER_AGENTS, LOG_TEMPLATE, MSG_PROXY_CONNECTION_ERROR
 
 
 class BaseFarmer(Session):
@@ -80,8 +38,9 @@ class BaseFarmer(Session):
         self.initiator = initiator
         self.get_account_name()
         if proxy:
-            proxies = dict(http=f"http://{proxy}", https=f"https://{proxy}")
-            if check_proxy(proxies):
+            proxies = dict(http=proxy, https=proxy)
+            if ip := check_proxy(proxies):
+                self.ip = ip
                 self.proxies = proxies
             elif only_proxy:
                 raise Exception(MSG_PROXY_CONNECTION_ERROR.format(str(kwargs)))

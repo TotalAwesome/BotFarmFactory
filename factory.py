@@ -29,12 +29,12 @@ def import_bots():
 
 def make_account_farmers(account):
     phone = account['phone']
-    proxies = account.get('proxies')
+    proxy = account.get('proxy')
     initiator = Initiator(phone)
     farmers = []
     bots = import_bots()
     for farmer_class in bots:
-        farmers.append(farmer_class(initiator=initiator, proxies=proxies))
+        farmers.append(farmer_class(initiator=initiator, proxy=proxy))
     initiator.disconnect()
     
     return farmers
