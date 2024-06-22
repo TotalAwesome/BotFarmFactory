@@ -3,8 +3,7 @@ from telethon.sync import TelegramClient, functions, types
 from urllib.parse import unquote
 from datetime import timedelta
 
-
-from config import ACCOUNTS_DIR, API_HASH, API_ID
+from config import ACCOUNTS_DIR, TELEGRAM_AUTH
 
 class Initiator(TelegramClient):
 
@@ -17,11 +16,7 @@ class Initiator(TelegramClient):
             if not os.path.exists(ACCOUNTS_DIR):
                 os.mkdir(ACCOUNTS_DIR)
             filename = os.path.join(ACCOUNTS_DIR, phone.strip('+'))
-            kwargs['session'] = filename
-            kwargs['api_id'] = API_ID
-            kwargs['api_hash'] = API_HASH
-            kwargs['device_model'] = "PseudoGram"
-            super().__init__(**kwargs)
+            super().__init__(session=filename, **TELEGRAM_AUTH)
             self.start(phone=self.phone)
         else:
             raise Exception('Provide a phone number ({})'.format(str(kwargs)))
