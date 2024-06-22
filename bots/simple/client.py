@@ -1,5 +1,6 @@
 from random import random, randrange
-from bots.base.base import BaseFarmer, time, sleep
+from bots.base.base import BaseFarmer
+from time import time, sleep
 from bots.simple.utils import get_sorted_upgrades
 from bots.simple.strings import HEADERS, URL_INIT, URL_PROFILE, URL_TAP, URL_GET_MINING_BLOCKS, URL_FRIENDS, \
     URL_GET_TASK_LIST, URL_CLAIM_FARMED, URL_START_FARM, URL_CHECK_TASK, URL_START_TASK, URL_CLAIM_FRIENDS, \
