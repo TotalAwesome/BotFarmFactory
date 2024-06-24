@@ -36,6 +36,7 @@ def make_account_farmers(account):
     for farmer_class in bots:
         farmers.append(farmer_class(initiator=initiator, proxy=proxy))
     initiator.disconnect()
+    sleep(random() * 10)
     
     return farmers
     
