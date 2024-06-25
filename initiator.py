@@ -30,7 +30,7 @@ class Initiator(TelegramClient):
         
         kwargs['platform'] = kwargs.get('platform', 'android')
         kwargs['from_bot_menu'] = kwargs.get('from_bot_menu', True)
-        if not kwargs.get('start_param'):
+        if kwargs.get('start_param') is None:
             web_app = self(functions.messages.RequestWebViewRequest(**kwargs))
         else:
             kwargs.pop('from_bot_menu')

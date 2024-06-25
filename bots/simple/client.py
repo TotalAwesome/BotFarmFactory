@@ -2,6 +2,7 @@ from random import random, randrange
 from bots.base.base import BaseFarmer
 from time import time, sleep
 from bots.simple.utils import get_sorted_upgrades
+from bots.simple.config import BUY_UPGRADES
 from bots.simple.strings import HEADERS, URL_INIT, URL_PROFILE, URL_TAP, URL_GET_MINING_BLOCKS, URL_FRIENDS, \
     URL_GET_TASK_LIST, URL_CLAIM_FARMED, URL_START_FARM, URL_CHECK_TASK, URL_START_TASK, URL_CLAIM_FRIENDS, \
     URL_BUY_UPGRADE, URL_CLAIM_SPIN, MSG_PROFILE_UPDATE, MSG_TAP, MSG_START_FARMING, MSG_BUY_UPGRADE, SPIN_TYPES, \
@@ -152,8 +153,9 @@ class BotFarmer(BaseFarmer):
         self.start_farm()
         self.claim_friends()
         self.claim_spin()
-        self.buy_upgrades()
-        self.buy_taplimit_upgrade()
+        if BUY_UPGRADES:
+            self.buy_upgrades()
+            self.buy_taplimit_upgrade()
         self.update_profile()
         self.log(MSG_STATE.format(balance=self.info['balance'],
                                   mine_per_hour=self.mine_per_hour,

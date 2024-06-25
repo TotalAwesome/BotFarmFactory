@@ -48,12 +48,17 @@ class BaseFarmer(Session):
             self.initiator.prepare_bot(self.name, self.name, self.extra_code)
         self.authenticate()
 
-    def log(self, message):
+    def log(self, message, error=False):
         ip = self.ip if self.ip else "no_proxy"
-        logging.info(LOG_TEMPLATE.format(farmer_name=self.name.lower(), 
-                                         user=self.account_name, 
-                                         message=message,
-                                         ip=ip))
+        log_method = logging.error if error else logging.info
+        msg = LOG_TEMPLATE.format(farmer_name=self.name.lower(), 
+                                  user=self.account_name, 
+                                  message=message,
+                                  ip=ip)
+        log_method(msg)
+
+    def error(self, message):
+        self.log(message=message, error=True)
 
     @retry
     def request(self, *args, **kwargs):
@@ -88,8 +93,12 @@ class BaseFarmer(Session):
     def proceed_farming(self):
         if self.is_ready_to_farm:
             print('=' * 150)
-            self.farm()
-            self.set_start_time()
+            try:
+                self.farm()
+                self.set_start_time()
+            except Exception as err:
+                self.error(err)
+                self.start_time = time() + 60 * 60
             self.log('Следующий заход в : {}'.format(
                 datetime.fromtimestamp(self.start_time).strftime('%d-%m-%Y %H:%M:%S')
             ))

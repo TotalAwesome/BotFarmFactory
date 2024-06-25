@@ -1,5 +1,5 @@
 __pycache__
 .env
 venv
-.*local.py
+*local.py
 .session*

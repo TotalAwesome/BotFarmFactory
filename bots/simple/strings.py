@@ -11,7 +11,8 @@ URL_FRIENDS = "https://api.simple.app/api/v1/public/telegram/friends/" # POST
 URL_SPIN = "https://api.simple.app/api/v1/public/telegram/claim-spin/"
 URL_PROFILE = "https://api.simple.app/api/v1/public/telegram/profile/" # POST
 URL_TAP = "https://api.simple.app/api/v1/public/telegram/tap/" # POST {userid, authdata, count}
-URL_INIT = "https://simpletap.app/version_02/"
+URL_INIT = "https://simpletap.app/version_05/"
+
 
 MSG_PROFILE_UPDATE = "Обновление профиля"
 MSG_TAP = "Натапал {taps} монет"
