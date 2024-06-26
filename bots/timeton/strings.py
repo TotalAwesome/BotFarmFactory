@@ -15,6 +15,7 @@ HEADERS = {
     'sec-ch-ua-mobile': '?1',
     'user-agent': 'Mozilla/5.0 (Linux; Android 11; Redmi 5 Plus Build/RQ3A.210805.001.A1; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/122.0.6261.64 Mobile Safari/537.36',
     'sec-ch-ua-platform': 'Android',
+    'content-type': 'application/json',
     'Accept': '*/*',
     'Origin': 'https://timeton.io',
     'X-Requested-With':	'org.telegram.messenger',

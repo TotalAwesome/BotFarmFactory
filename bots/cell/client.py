@@ -52,7 +52,7 @@ class BotFarmer(BaseFarmer):
         self.log(MSG_LEVELS_UPDATE)
 
     def set_start_time(self):
-        taps_recover_seconds = self.energy_max / self.info['energy_regen_rate']
+        taps_recover_seconds = self.energy_max
         self.start_time = time() + taps_recover_seconds
 
     def tap(self):
@@ -60,9 +60,8 @@ class BotFarmer(BaseFarmer):
         balance = self.info['balance']
         self.info = self.api_call(URL_TAP, json={"clicks_amount": 1})['cell']
         if energy := self.info.get("energy_amount"):
-            clicks_amount = energy // self.info["click_energy_cost"]
-            self.info = self.api_call(URL_TAP, json={"clicks_amount": clicks_amount})['cell']
-        self.log(MSG_TAP.format(taps=clicks_amount * self.info["click_energy_cost"]))
+            self.info = self.api_call(URL_TAP, json={"clicks_amount": energy})['cell']
+        self.log(MSG_TAP.format(taps=energy))
 
     def claim(self):
         self.update_profile()

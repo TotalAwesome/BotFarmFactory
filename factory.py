@@ -11,6 +11,7 @@ from os import path, listdir
 from initiator import Initiator
 from accounts import TELEGRAM_ACCOUNTS
 from bots.base.base import logging
+from bots.base.utils import check_proxy
 
 
 def import_bots():
@@ -28,8 +29,11 @@ def import_bots():
     
 
 def make_account_farmers(account):
+    
     phone = account['phone']
     proxy = account.get('proxy')
+    proxies = dict(http=proxy, https=proxy)
+    proxy = proxy if check_proxy(proxies=proxies) else None
     initiator = Initiator(phone)
     farmers = []
     bots = import_bots()

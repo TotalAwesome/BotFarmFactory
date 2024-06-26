@@ -1,3 +1,4 @@
 telethon
 requests
 brotli
+python-dateutil

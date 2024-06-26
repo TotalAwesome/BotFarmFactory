@@ -3,6 +3,7 @@ from .strings import URL_CHECK_IP, MSG_BAD_RESPONSE, MSG_PROXY_CHECK_ERROR, MSG_
     MSG_PROXY_IP, MSG_SESSION_ERROR
 from time import sleep
 from requests import get as requests_get
+from dateutil import tz, parser
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
@@ -42,3 +43,7 @@ def retry(func):
                 self.log(MSG_SESSION_ERROR.format(error=error))
                 sleep(3)
     return wrapper
+
+
+def to_localtz_timestamp(zulutime: str):
+    return parser.parse(zulutime).astimezone(tz.tzlocal()).timestamp()
