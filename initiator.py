@@ -22,6 +22,12 @@ class Initiator(TelegramClient):
             raise Exception('Provide a phone number ({})'.format(str(kwargs)))
     
     def prepare_bot(self, *args):
+        has_dialog = any(
+            map(lambda x: str(x.message.chat.username).lower() == args[0], 
+                self.get_dialogs())
+            )
+        if has_dialog:
+            return
         self.do_not_disturb(args[0])
         request = functions.messages.StartBotRequest(*args)
         self(request)
