@@ -2,7 +2,7 @@ from random import random, randrange
 from bots.base.base import BaseFarmer
 from time import time, sleep
 from bots.simple.utils import get_sorted_upgrades
-from bots.simple.config import BUY_UPGRADES
+from bots.simple.config import BUY_UPGRADES, PERCENT_TO_SPEND
 from bots.simple.strings import HEADERS, URL_INIT, URL_PROFILE, URL_TAP, URL_GET_MINING_BLOCKS, URL_FRIENDS, \
     URL_GET_TASK_LIST, URL_CLAIM_FARMED, URL_START_FARM, URL_CHECK_TASK, URL_START_TASK, URL_CLAIM_FRIENDS, \
     URL_BUY_UPGRADE, URL_CLAIM_SPIN, MSG_PROFILE_UPDATE, MSG_TAP, MSG_START_FARMING, MSG_BUY_UPGRADE, SPIN_TYPES, \
@@ -18,7 +18,11 @@ class BotFarmer(BaseFarmer):
     initiator = None
     upgrades = {}
     info = {}
+    freezed_balance = None
     extra_code = "1718085881160"
+
+    def freeze_balance(self):
+        self.freezed_balance = self.info['balance']
 
     def set_headers(self, *args, **kwargs):
         self.headers = HEADERS.copy()
@@ -72,6 +76,10 @@ class BotFarmer(BaseFarmer):
         payload.update(dict(id=task_id, type=task_type))
         self.api_call(URL_CHECK_TASK, payload=payload)
         
+    def is_it_not_expensive(self, price):
+        min_dst_balance = self.freezed_balance * (1 - PERCENT_TO_SPEND / 100)
+        self.log(f"{min_dst_balance=}")
+        return self.info["balance"] - price >= min_dst_balance
 
     def buy_upgrade(self, upgrade):
         level = upgrade['currentLevel'] + 1
@@ -79,7 +87,8 @@ class BotFarmer(BaseFarmer):
         payload = self.payload_base.copy()
         payload.update(dict(level=level, mineId=mine_id))
         self.update_profile()
-        if self.info['balance'] >= upgrade['nextPrice']:
+        if self.is_it_not_expensive(upgrade['nextPrice']):
+        # if self.info['balance'] >= upgrade['nextPrice']:
             self.api_call(URL_BUY_UPGRADE, payload=payload)
             self.log(MSG_BUY_UPGRADE.format(
                 name=upgrade['mineId'],
@@ -133,7 +142,8 @@ class BotFarmer(BaseFarmer):
         self.update_upgrades()
         if upgrades_to_buy := get_sorted_upgrades(self.upgrades, upgrade_type=1):
             upgrade = upgrades_to_buy[0]
-            self.buy_upgrade(upgrade)
+            if self.is_it_not_expensive(upgrade['nextPrice']):
+                self.buy_upgrade(upgrade)
 
     def buy_upgrades(self):
         while True:
@@ -154,6 +164,7 @@ class BotFarmer(BaseFarmer):
         self.claim_friends()
         self.claim_spin()
         if BUY_UPGRADES:
+            self.freeze_balance()
             self.buy_upgrades()
             self.buy_taplimit_upgrade()
         self.update_profile()
