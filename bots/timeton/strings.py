@@ -1,14 +1,16 @@
 URL_INIT = "https://timeton.io/main"
 URL_AUTH = "https://timeton.io/api/auth"
 URL_FRIENDS = "https://timeton.io/api/friends"
-URL_REF_CLAIM = "https://timeton.io/api/friends/claim"
-URL_STAKING_CLAIM = "https://timeton.io/api/staking/claim"
+URL_FRIENDS_CLAIM = "https://timeton.io/api/friends/claim"
 URL_BONUS_CLAIM = "https://timeton.io/api/bonus/claim"
 URL_FARM_CLAIM = "https://timeton.io/api/farm/claim"
+URL_STAKING_CLAIM = "https://timeton.io/api/staking/claim"
 URL_FARM_START = "https://timeton.io/api/farm/activate"
 
 MSG_BONUS = "Собрал бонус"
 MSG_CLAIM = "Собрал нафармленное"
+MSG_FRIENDS_CLAIM = "Собрал нафармленное рефералами"
+MSG_STAKING_CLAIM = "Собрал за стейкинг"
 MSG_FARM = "Начал фармить"
 MSG_STATE = "Баланс: {balance}"
 
