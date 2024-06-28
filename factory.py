@@ -13,20 +13,18 @@ from accounts import TELEGRAM_ACCOUNTS
 from bots.base.base import logging
 from bots.base.utils import check_proxy
 
+bots = []
 
-def import_bots():
-    farmer_classes = []
-    if path.isdir('bots'):
-        for directory in listdir('bots'):
-            try:
-                module = import_module(f"bots.{directory}.client")
-                farmer_classes.append(module.BotFarmer)
-            except ImportError:
-                pass
-    else:
-        raise Exception('No bots :(')
-    return farmer_classes
-    
+if path.isdir("bots"):
+    for directory in listdir("bots"):
+        try:
+            module = import_module(f"bots.{directory}.client")
+            bots.append(module.BotFarmer)
+        except ImportError:
+            pass
+else:
+    raise Exception("No bots :(")
+
 
 def make_account_farmers(account):
     
@@ -36,12 +34,10 @@ def make_account_farmers(account):
     proxy = proxy if check_proxy(proxies=proxies) else None
     initiator = Initiator(phone)
     farmers = []
-    bots = import_bots()
     for farmer_class in bots:
         farmers.append(farmer_class(initiator=initiator, proxy=proxy))
     initiator.disconnect()
     sleep(random() * 10)
-    
     return farmers
     
 
