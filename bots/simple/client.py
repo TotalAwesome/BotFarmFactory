@@ -78,7 +78,6 @@ class BotFarmer(BaseFarmer):
         
     def is_it_not_expensive(self, price):
         min_dst_balance = self.freezed_balance * (1 - PERCENT_TO_SPEND / 100)
-        self.log(f"{min_dst_balance=}")
         return self.info["balance"] - price >= min_dst_balance
 
     def buy_upgrade(self, upgrade):
