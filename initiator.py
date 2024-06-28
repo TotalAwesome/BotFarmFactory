@@ -23,7 +23,7 @@ class Initiator(TelegramClient):
     
     def prepare_bot(self, *args):
         has_dialog = any(
-            map(lambda x: str(x.message.chat.username).lower() == args[0], 
+            map(lambda x: str(getattr(x.message.chat, 'username', '_')).lower() == args[0], 
                 self.get_dialogs())
             )
         if has_dialog:
