@@ -87,7 +87,6 @@ class BotFarmer(BaseFarmer):
         payload.update(dict(level=level, mineId=mine_id))
         self.update_profile()
         if self.is_it_not_expensive(upgrade['nextPrice']):
-        # if self.info['balance'] >= upgrade['nextPrice']:
             self.api_call(URL_BUY_UPGRADE, payload=payload)
             self.log(MSG_BUY_UPGRADE.format(
                 name=upgrade['mineId'],
