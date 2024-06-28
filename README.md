@@ -16,6 +16,7 @@
 - [cellcoin_bot](https://t.me/cellcoin_bot?start=102796269)
 - [simple_tap_bot](https://t.me/Simple_Tap_Bot?start=1718085881160)
 - [blum](https://t.me/BlumCryptoBot/app?startapp=ref_ItXoLRFElL)
+- [iceberg](https://t.me/IcebergAppBot?start=referral_102796269)
 
 Боты начнут последовательно фармить на каждом аккаунте
 
