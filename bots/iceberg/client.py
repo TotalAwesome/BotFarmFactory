@@ -1,19 +1,10 @@
 from random import random
 from time import time
 from bots.base.base import BaseFarmer
-from bots.base.utils import to_localtz_timestamp
+from bots.base.utils import to_localtz_timestamp, api_response
 from bots.iceberg.strings import HEADERS, URL_BALANCE, URL_FARMING, URL_INIT, \
     MSG_CLAIM, MSG_FARM, MSG_PROFILE, MSG_STATE, URL_CLAIM_FARM
 
-def api_response(func):
-    def wrapper(*args, **kwargs):
-        response = func(*args, **kwargs)
-        if response.status_code == 200:
-            return response.json() if response.text else {"ok": True} # Костыль, если вернуло 200 и пустое тело
-        else:
-            return {}
-    return wrapper
-        
 
 class BotFarmer(BaseFarmer):
     name = "icebergappbot"

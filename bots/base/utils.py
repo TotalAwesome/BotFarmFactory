@@ -47,3 +47,14 @@ def retry(func):
 
 def to_localtz_timestamp(zulutime: str):
     return parser.parse(zulutime).astimezone(tz.tzlocal()).timestamp()
+
+
+def api_response(func):
+    def wrapper(*args, **kwargs):
+        response = func(*args, **kwargs)
+        if response.status_code == 200:
+            return response.json() if response.text else {"ok": True} # Костыль, если вернуло 200 и пустое тело
+        else:
+            return {}
+    return wrapper
+
