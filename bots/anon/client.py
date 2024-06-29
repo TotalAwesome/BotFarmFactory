@@ -11,7 +11,6 @@ class BotFarmer(BaseFarmer):
     name = 'anonearnbot'
     info = {}
     initialization_data = dict(peer=name, bot=name, url=URL_INIT)
-    bonus_claimed_date = None
     payload_base = {}
 
     def set_headers(self, *args, **kwargs):

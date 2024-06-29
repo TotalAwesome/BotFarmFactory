@@ -2,8 +2,12 @@ import os
 from telethon.sync import TelegramClient, functions, types
 from urllib.parse import unquote
 from datetime import timedelta
-
 from config import ACCOUNTS_DIR, TELEGRAM_AUTH
+
+
+def username(dialog):
+    return str(getattr(dialog.message.chat, 'username', '_')).lower()
+
 
 class Initiator(TelegramClient):
 
@@ -22,13 +26,8 @@ class Initiator(TelegramClient):
             raise Exception('Provide a phone number ({})'.format(str(kwargs)))
     
     def prepare_bot(self, *args):
-        has_dialog = any(
-            map(lambda x: str(getattr(x.message.chat, 'username', '_')).lower() == args[0], 
-                self.get_dialogs())
-            )
-        if has_dialog:
+        if any(map(lambda x: username(x) == args[0], self.get_dialogs())):
             return
-        self.do_not_disturb(args[0])
         request = functions.messages.StartBotRequest(*args)
         self(request)
 
@@ -36,7 +35,7 @@ class Initiator(TelegramClient):
         
         kwargs['platform'] = kwargs.get('platform', 'android')
         kwargs['from_bot_menu'] = kwargs.get('from_bot_menu', True)
-        if kwargs.get('start_param') is None:
+        if not 'app' in kwargs:
             web_app = self(functions.messages.RequestWebViewRequest(**kwargs))
         else:
             kwargs.pop('from_bot_menu')
@@ -45,10 +44,3 @@ class Initiator(TelegramClient):
         user = auth_data.split("user=")[1].split("&")[0]
         return {"userId": self._self_id, "authData": auth_data.replace(user, unquote(user))}
 
-    def do_not_disturb(self, peer):
-        self(functions.account.UpdateNotifySettingsRequest(
-            peer=peer,
-            settings=types.InputPeerNotifySettings(
-                mute_until=timedelta(minutes=5),
-                silent=True
-            )))
