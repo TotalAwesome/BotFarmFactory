@@ -7,7 +7,8 @@ from config import ACCOUNTS_DIR, TELEGRAM_AUTH
 
 
 def username(dialog):
-    return str(getattr(dialog.message.chat, 'username', '_')).lower()
+    username = str(getattr(dialog.message.chat, 'username', '_')).lower()
+    return username
 
 def parse_auth_data(url):
     return
@@ -25,7 +26,7 @@ def parse_auth_data(url):
 class Initiator(TelegramClient):
 
     phone = None
-    registered = None
+    registered = []
 
     def __init__(self, phone):
         kwargs = {}
@@ -40,10 +41,11 @@ class Initiator(TelegramClient):
             raise Exception('Provide a phone number ({})'.format(str(kwargs)))
     
     def is_bot_registered(self, botname=None):
-        if self.registered is None:
-            self.registered = any(map(lambda x: username(x) == botname, self.get_dialogs()))
-        else:
-            return self.registered
+        if botname not in self.registered:
+            is_registered = any(map(lambda x: username(x) == botname, self.get_dialogs()))
+            if is_registered:
+                self.registered.append(botname)
+        return botname in self.registered
 
     def prepare_bot(self, *args):
         if self.is_bot_registered(args[0]):

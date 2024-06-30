@@ -25,7 +25,12 @@ class BotFarmer(BaseFarmer):
         self.headers['Anon-Auth'] = auth_data
         if self.post(URL_VERIFY, json=payload):
             if response := self.post(URL_VERIFICATION, json=payload):
-                self.headers['Authorization'] = f'Bearer {response["data"]["accessToken"]}'
+                if token := response["data"]["accessToken"]:
+                    self.headers['Authorization'] = f'Bearer {token}'
+                else:
+                    self.error(f"{self.name} не зарегистрирован по рефке")
+                    self.is_alive = False
+                    return
 
     def set_start_time(self):
         self.start_time = time() + self.info.get('claimSecondsAvailable', 300)

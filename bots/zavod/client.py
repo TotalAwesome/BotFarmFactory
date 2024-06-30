@@ -8,7 +8,7 @@ class BotFarmer(BaseFarmer):
 
     name = 'Mdaowalletbot'
     extra_code = "102796269"
-    info = {}
+    info = dict(profile={}, farming={})
     initialization_data = dict(peer=name, bot=name, url=URL_INIT)
     payload_base = {}
 
@@ -45,7 +45,6 @@ class BotFarmer(BaseFarmer):
             if result := self.post(URL_CALIM):
                 self.info['profile'] = result
                 self.log(MSG_CLAIM)
-
 
     def farm(self):
         self.update_profile()

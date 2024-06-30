@@ -35,7 +35,10 @@ def make_account_farmers(account):
     initiator = Initiator(phone)
     farmers = []
     for farmer_class in bots:
-        farmers.append(farmer_class(initiator=initiator, proxy=proxy))
+        farmer = farmer_class(initiator=initiator, proxy=proxy)
+        if not farmer.is_alive:
+            continue
+        farmers.append(farmer)
     initiator.disconnect()
     sleep(random() * 10)
     return farmers

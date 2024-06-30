@@ -5,7 +5,17 @@ from time import sleep
 from requests import get as requests_get
 from dateutil import tz, parser
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+log_format = "%(asctime)s %(levelname)s %(message)s"
+logging.basicConfig(level=logging.INFO, format=log_format)
+
+file_handler = logging.FileHandler('debug.log')
+file_handler.setLevel(logging.DEBUG)
+formatter = logging.Formatter(log_format)
+debug_logger = logging.getLogger("debug_logger")
+for handler in debug_logger.handlers:
+    handler.setFormatter(formatter)
+debug_logger.setLevel(logging.DEBUG)
+debug_logger.addHandler(file_handler)
 
 
 def check_proxy(proxies):

@@ -1,6 +1,7 @@
 import json
 from random import randrange
 from time import sleep, time
+from telethon.types import InputBotAppShortName
 from bots.base.base import BaseFarmer
 from bots.blum.strings import HEADERS, URL_REFRESH_TOKEN, URL_BALANCE, URL_TASKS, \
     URL_WEBAPP_INIT, URL_AUTH, URL_FARMING_CLAIM, URL_FARMING_START, URL_PLAY_START, \
@@ -15,8 +16,8 @@ DEFAULT_EST_TIME = 60
 class BotFarmer(BaseFarmer):
 
     name = "BlumCryptoBot"
-    app_extra = "ref_ItXoLRFElL"
-    initialization_data = dict(peer=name, bot=name, url=URL_WEBAPP_INIT, start_param=app_extra)
+    # app_extra = "ref_ItXoLRFElL"
+    initialization_data = dict(peer=name, bot=name, url=URL_WEBAPP_INIT)
     balance = None
     balance_data = None
     play_passes = None
@@ -41,8 +42,14 @@ class BotFarmer(BaseFarmer):
             init_data = self.initiator.get_auth_data(**self.initialization_data)
             result = self.post(URL_AUTH, json={"query": init_data["authData"]})
             if result.status_code == 200:
-                self.auth_data = result.json()['token']
+                self.auth_data = result.json().get('token')
+                if not self.auth_data:
+                    self.error("Blum не зарегистрирован по реф. ссылке")
+                    self.is_alive = False
+                    return
                 self.headers['Authorization'] = f"Bearer {self.auth_data['access']}"
+            else:
+                pass
     
     def refresh_token(self):
         self.log(MSG_REFRESH)

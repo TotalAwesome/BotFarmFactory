@@ -9,3 +9,5 @@ TELEGRAM_AUTH = dict(
     lang_code="en",
     system_lang_code="en-US",
 )
+
+DEBUG = True

@@ -3,8 +3,9 @@ from time import time
 from datetime import datetime
 from random import choice
 from requests import Session
-from .utils import check_proxy, retry, logging
+from .utils import check_proxy, retry, logging, debug_logger
 from .strings import USER_AGENTS, LOG_TEMPLATE, MSG_PROXY_CONNECTION_ERROR
+from config import DEBUG
 
 
 class BaseFarmer(Session):
@@ -28,6 +29,7 @@ class BaseFarmer(Session):
     refreshable_token = False
     extra_code = None
     app_extra = None
+    is_alive = True
     ip = None
 
     def __init__(self, initiator, proxy=None, only_proxy=False, **kwargs) -> None:
@@ -48,9 +50,14 @@ class BaseFarmer(Session):
             self.initiator.prepare_bot(self.name, self.name, self.extra_code)
         self.authenticate()
 
-    def log(self, message, error=False):
+    def log(self, message, error=False, debug=False):
         ip = self.ip if self.ip else "no_proxy"
-        log_method = logging.error if error else logging.info
+        if not error and not debug:
+            log_method = logging.info
+        elif error:
+            log_method = logging.error
+        else:
+            log_method = debug_logger.debug
         msg = LOG_TEMPLATE.format(farmer_name=self.name.lower(), 
                                   user=self.account_name, 
                                   message=message,
@@ -60,9 +67,16 @@ class BaseFarmer(Session):
     def error(self, message):
         self.log(message=message, error=True)
 
+    def debug(self, message):
+        self.log(message=message, debug=True)
+
     @retry
     def request(self, *args, **kwargs):
-        return super().request(*args, **kwargs)
+        response = super().request(*args, **kwargs)
+        if DEBUG:
+            self.debug(f"request {args}, {kwargs}")
+            self.debug(f"response {response.status_code}, {response.text}")
+        return response
     
     def get_account_name(self):
         me = self.initiator.get_me()
@@ -91,7 +105,7 @@ class BaseFarmer(Session):
         raise NotImplementedError
 
     def proceed_farming(self):
-        if self.is_ready_to_farm:
+        if self.is_alive and self.is_ready_to_farm:
             print('=' * 150)
             try:
                 self.farm()
