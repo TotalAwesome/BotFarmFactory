@@ -1,3 +1,4 @@
+from random import random
 from telethon.types import InputBotAppShortName
 from bots.base.base import BaseFarmer, time
 
@@ -70,7 +71,7 @@ class BotFarmer(BaseFarmer):
             if response := self.api_call(URL_CLAIM):
                 self.info = response['cell']
                 diff = self.info['balance'] - balance
-                self.next_claim = time() + 60 * 12 * self.info['storage_level']
+                self.next_claim = time() + 60 * 12 * self.info['storage_level'] + random() * 10
                 self.log(MSG_CLAIM.format(amount=diff / 1_000_000))
 
 
