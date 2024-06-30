@@ -41,8 +41,10 @@ class Initiator(TelegramClient):
             raise Exception('Provide a phone number ({})'.format(str(kwargs)))
     
     def is_bot_registered(self, botname=None):
+        botname = botname.lower()
         if botname not in self.registered:
-            is_registered = any(map(lambda x: username(x) == botname, self.get_dialogs()))
+            dialogs = self.get_dialogs()
+            is_registered = any(map(lambda x: username(x) == botname, dialogs))
             if is_registered:
                 self.registered.append(botname)
         return botname in self.registered
