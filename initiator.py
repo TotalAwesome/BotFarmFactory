@@ -10,6 +10,7 @@ def username(dialog):
     username = str(getattr(dialog.message.chat, 'username', '_')).lower()
     return username
 
+
 def parse_auth_data(url):
     return
     parsed_url = urlparse(url)
@@ -22,6 +23,7 @@ def parse_auth_data(url):
     full['tgWebAppData']['hash'] = full['tgWebAppData']['hash'][0]
     full['tgWebAppData']['user'] = json.loads(full['tgWebAppData']['user'][0])
     return full
+
 
 class Initiator(TelegramClient):
 
