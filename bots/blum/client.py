@@ -23,6 +23,7 @@ class BotFarmer(BaseFarmer):
     play_passes = None
     tasks = None
     auth_data = None
+    codes_to_refresh = (401,)
     refreshable_token = True
 
     def set_headers(self, *args, **kwargs):
