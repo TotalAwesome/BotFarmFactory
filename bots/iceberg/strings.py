@@ -1,8 +1,8 @@
-URL_INIT = "https://0xiceberg.store/webapp/"
-URL_BALANCE = "https://0xiceberg.store/api/v1/web-app/balance/"
-URL_FARMING = "https://0xiceberg.store/api/v1/web-app/farming/" # GET / POST
-URL_TASKS = "https://0xiceberg.store/api/v1/web-app/tasks/"
-URL_CLAIM_FARM = "https://0xiceberg.store/api/v1/web-app/farming/collect/"  # DELETE
+URL_INIT = "https://0xiceberg.com/webapp/"
+URL_BALANCE = "https://0xiceberg.com/api/v1/web-app/balance/"
+URL_FARMING = "https://0xiceberg.com/api/v1/web-app/farming/" # GET / POST
+URL_TASKS = "https://0xiceberg.com/api/v1/web-app/tasks/"
+URL_CLAIM_FARM = "https://0xiceberg.com/api/v1/web-app/farming/collect/"  # DELETE
 
 MSG_PROFILE = "Обновил профиль"
 MSG_CLAIM = "Собрал нафармленное"
@@ -11,14 +11,14 @@ MSG_FARM = "Начал фармить"
 MSG_STATE = "Баланс: {balance}"
 
 HEADERS = {
-    'authority': '0xiceberg.store' ,
+    'authority': '0xiceberg.com' ,
     'accept': '*/*' ,
     'accept-language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7,cy;q=0.6' ,
     'cache-control': 'no-cache' ,
     'content-length': '0' ,
-    'origin': 'https://0xiceberg.store' ,
+    'origin': 'https://0xiceberg.com' ,
     'pragma': 'no-cache' ,
-    'referer': 'https://0xiceberg.store/webapp/' ,
+    'referer': 'https://0xiceberg.com/webapp/' ,
     'sec-ch-ua': '"Chromium";v="122", "Not(A:Brand";v="24", "Google Chrome";v="122"' ,
     'sec-ch-ua-mobile': '?0' ,
     'sec-ch-ua-platform': '"Linux"' ,
