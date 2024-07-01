@@ -1,7 +1,20 @@
 from random import random
-from bots.base.utils import to_localtz_timestamp, api_response
+from bots.base.utils import to_localtz_timestamp
 from bots.base.base import BaseFarmer, time
 from bots.zavod.strings import HEADERS, URL_INIT, URL_CALIM, URL_FARM, URL_PROFILE, MSG_CLAIM, MSG_PROFILE, MSG_STATE
+
+def api_response(func):
+    def wrapper(*args, **kwargs):
+        response = func(*args, **kwargs)
+        if response.status_code == 200:
+            return (
+                response.json() if response.text else {"ok": True}
+            )  # Костыль, если вернуло 200 и пустое тело
+        elif response.status_code == 400:
+            args[0].authenticate()
+        else:
+            return {}
+    return wrapper
 
 
 class BotFarmer(BaseFarmer):
