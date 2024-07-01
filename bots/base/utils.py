@@ -43,10 +43,10 @@ def retry(func):
                         self.log(MSG_BAD_RESPONSE.format(status=result.status_code, text=result.text))
                         sleep(10)
                         continue
+                    elif result.status_code in self.codes_to_refresh and self.refreshable_token:
+                        self.refresh_token()
+                        continue 
                     elif result.status_code in (401, 403):
-                        if result.status_code == 401 and self.refreshable_token:
-                            self.refresh_token()
-                            continue
                         self.log(MSG_BAD_RESPONSE.format(status=result.status_code, text=result.text))
                         raise Exception(f"code: {result.status_code} {result.text}")
                 return result

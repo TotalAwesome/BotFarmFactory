@@ -1,20 +1,7 @@
 from random import random
-from bots.base.utils import to_localtz_timestamp
+from bots.base.utils import to_localtz_timestamp, api_response
 from bots.base.base import BaseFarmer, time
 from bots.zavod.strings import HEADERS, URL_INIT, URL_CALIM, URL_FARM, URL_PROFILE, MSG_CLAIM, MSG_PROFILE, MSG_STATE
-
-def api_response(func):
-    def wrapper(*args, **kwargs):
-        response = func(*args, **kwargs)
-        if response.status_code == 200:
-            return (
-                response.json() if response.text else {"ok": True}
-            )  # Костыль, если вернуло 200 и пустое тело
-        elif response.status_code == 400:
-            args[0].authenticate()
-        else:
-            return {}
-    return wrapper
 
 
 class BotFarmer(BaseFarmer):
@@ -24,6 +11,7 @@ class BotFarmer(BaseFarmer):
     info = dict(profile={}, farming={})
     initialization_data = dict(peer=name, bot=name, url=URL_INIT)
     payload_base = {}
+    codes_to_refresh = (400,)
 
     def set_headers(self, *args, **kwargs):
         self.headers = HEADERS.copy()
@@ -34,6 +22,9 @@ class BotFarmer(BaseFarmer):
     def authenticate(self, *args, **kwargs):
         auth_data = self.initiator.get_auth_data(**self.initialization_data)['authData']
         self.headers['telegram-init-data'] = auth_data
+
+    def refresh_token(self):
+        self.authenticate()
 
     def set_start_time(self):
         self.start_time = self.claim_date + int(random() * 10)

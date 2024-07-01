@@ -26,6 +26,7 @@ class BaseFarmer(Session):
     initialization_data = {}
     account_name = None
     start_time = time()
+    codes_to_refresh = tuple()
     refreshable_token = False
     extra_code = None
     app_extra = None
