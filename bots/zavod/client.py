@@ -12,6 +12,7 @@ class BotFarmer(BaseFarmer):
     initialization_data = dict(peer=name, bot=name, url=URL_INIT)
     payload_base = {}
     codes_to_refresh = (400,)
+    refreshable_token = True
 
     def set_headers(self, *args, **kwargs):
         self.headers = HEADERS.copy()
