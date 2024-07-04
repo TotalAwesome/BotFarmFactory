@@ -25,7 +25,9 @@ class BotFarmer(BaseFarmer):
         self.headers['telegram-init-data'] = auth_data
 
     def refresh_token(self):
+        self.initiator.connect()
         self.authenticate()
+        self.initiator.disconnect()
 
     def set_start_time(self):
         self.start_time = self.claim_date + int(random() * 10)
