@@ -3,12 +3,14 @@ URL_PROFILE = "https://cellcoin.org/users/session" # POST
 URL_TAP = "https://cellcoin.org/cells/submit_clicks" # POST {userid, authdata, count}
 URL_CLAIM = "https://cellcoin.org/cells/claim_storage"
 URL_LEVELS = "https://cellcoin.org/cells/levels"
+URL_UPGRADE_LEVEL = "https://cellcoin.org/cells/levels/upgrade"  # POST {"level_type":"bonus"}
 
 MSG_PROFILE_UPDATE = "Обновление профиля"
 MSG_LEVELS_UPDATE = "Обновление уровней"
 MSG_TAP = "Натапал {taps} монет"
 MSG_CLAIM = "Собрал нафармленное: {amount}"
 MSG_STATE = "Баланс: {balance}"
+MSG_BONUS = "Получил бонус"
 
 HEADERS = {
     'sec-ch-ua': 'Chromium";v="122", "Not(A:Brand";v="24", "Android WebView";v="122',

@@ -1,9 +1,10 @@
 from random import random
 from telethon.types import InputBotAppShortName
 from bots.base.base import BaseFarmer, time
+from bots.base.utils import to_localtz_timestamp
 
 from bots.cell.strings import HEADERS, URL_PROFILE, URL_CLAIM, URL_TAP, MSG_CLAIM, MSG_PROFILE_UPDATE, \
-    MSG_STATE, MSG_TAP, URL_LEVELS, MSG_LEVELS_UPDATE
+    MSG_STATE, MSG_TAP, URL_LEVELS, MSG_LEVELS_UPDATE, URL_UPGRADE_LEVEL, MSG_BONUS
 
 
 class BotFarmer(BaseFarmer):
@@ -75,9 +76,16 @@ class BotFarmer(BaseFarmer):
                 self.log(MSG_CLAIM.format(amount=diff / 1_000_000))
 
 
+    def daily_reward(self):
+        if to_localtz_timestamp(self.info.get('bonus_claimed_at')) + 86401 < time():
+            self.api_call(URL_UPGRADE_LEVEL, json={"level_type":"bonus"}, post=True)
+            self.log(MSG_BONUS)
+
+
     def farm(self):
         self.update_levels()
         self.tap()
         self.claim()
+        self.daily_reward()
         self.log(MSG_STATE.format(balance=self.info['balance'] / 1_000_000))
         

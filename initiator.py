@@ -12,7 +12,6 @@ def username(dialog):
 
 
 def parse_auth_data(url):
-    return
     parsed_url = urlparse(url)
     full = parse_qs(parsed_url.fragment)
     full['tgWebAppVersion'] = full['tgWebAppVersion'][0]
@@ -58,7 +57,6 @@ class Initiator(TelegramClient):
         self(request)
 
     def get_auth_data(self, **kwargs):
-        
         kwargs['platform'] = kwargs.get('platform', 'android')
         kwargs['from_bot_menu'] = kwargs.get('from_bot_menu', True)
         if self.is_bot_registered and 'start_param' in kwargs:
@@ -68,7 +66,8 @@ class Initiator(TelegramClient):
         else:
             kwargs.pop('from_bot_menu')
             web_app = self(functions.messages.RequestAppWebViewRequest(**kwargs))
-        structured = parse_auth_data(web_app.url)
+        if kwargs.pop('dicted', None):
+            structured = parse_auth_data(web_app.url)
         auth_data = web_app.url.split('#tgWebAppData=')[1].replace("%3D","=").split('&tgWebAppVersion=')[0].replace("%26","&")
         user = auth_data.split("user=")[1].split("&")[0]
         return {"userId": self._self_id, "authData": auth_data.replace(user, unquote(user))}
