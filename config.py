@@ -11,3 +11,18 @@ TELEGRAM_AUTH = dict(
 )
 
 DEBUG = True
+
+ENABLED_BOTS = [
+    'cell',
+    'anon',
+    'blum',
+    'timeton',
+    'simple',
+    'iceberg',
+    'zavod'
+]
+
+try:
+    from config_local import *
+except ImportError:
+    pass

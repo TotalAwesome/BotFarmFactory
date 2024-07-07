@@ -12,16 +12,21 @@ from initiator import Initiator
 from accounts import TELEGRAM_ACCOUNTS
 from bots.base.base import logging
 from bots.base.utils import check_proxy
+from config import ENABLED_BOTS
 
 bots = []
 
 if path.isdir("bots"):
     for directory in listdir("bots"):
+        if ENABLED_BOTS and directory not in ENABLED_BOTS:
+            continue
         try:
             module = import_module(f"bots.{directory}.client")
             bots.append(module.BotFarmer)
         except ImportError:
             pass
+        except Exception as e:
+            logging.error(e)
 else:
     raise Exception("No bots :(")
 
