@@ -63,7 +63,7 @@ def to_localtz_timestamp(zulutime: str):
 def api_response(func):
     def wrapper(*args, **kwargs):
         response = func(*args, **kwargs)
-        if response.status_code == 200:
+        if response.status_code in (200, 201):
             return response.json() if response.text else {"ok": True} # Костыль, если вернуло 200 и пустое тело
         else:
             return {}

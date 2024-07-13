@@ -42,6 +42,8 @@ class Initiator(TelegramClient):
             raise Exception('Provide a phone number ({})'.format(str(kwargs)))
     
     def is_bot_registered(self, botname=None):
+        if not botname:
+            return
         botname = botname.lower()
         if botname not in self.registered:
             dialogs = self.get_dialogs()
@@ -57,16 +59,18 @@ class Initiator(TelegramClient):
         self(request)
 
     def get_auth_data(self, **kwargs):
+        self.prepare_bot(kwargs.get('peer'), kwargs.get('peer'))
         kwargs['platform'] = kwargs.get('platform', 'android')
-        kwargs['from_bot_menu'] = kwargs.get('from_bot_menu', True)
-        if self.is_bot_registered and 'start_param' in kwargs:
-            kwargs['start_param'] = ''
+        kwargs['from_bot_menu'] = kwargs.get('from_bot_menu', False)
+        dicted = kwargs.pop('dicted', None)
+        # if self.is_bot_registered and 'start_param' in kwargs:
+        #     kwargs['start_param'] = ''
         if not 'app' in kwargs:
             web_app = self(functions.messages.RequestWebViewRequest(**kwargs))
         else:
             kwargs.pop('from_bot_menu')
             web_app = self(functions.messages.RequestAppWebViewRequest(**kwargs))
-        if kwargs.pop('dicted', None):
+        if dicted:
             structured = parse_auth_data(web_app.url)
         auth_data = web_app.url.split('#tgWebAppData=')[1].replace("%3D","=").split('&tgWebAppVersion=')[0].replace("%26","&")
         user = auth_data.split("user=")[1].split("&")[0]

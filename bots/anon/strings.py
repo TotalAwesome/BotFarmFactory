@@ -6,6 +6,8 @@ URL_CLAIM = "https://space-backend.anon.tg/api/user-claim-history/create"
 URL_TASKS = "https://space-backend.anon.tg/api/tasks/all"  # GET
 URL_BEGIN_TASK = "https://space-backend.anon.tg/api/tasks-history/create"  # POST {"uuid": ""}
 URL_CLAIM_TASK = "https://space-backend.anon.tg/api/tasks-history/claimed"  # POST {"uuid": ""}
+URL_CLAIM_DAILY_REWARD = ""
+URL_START_GAME = ""
 
 MSG_CLAIM = "Собрал нафармленное и начал фармить"
 MSG_STATE = "Баланс: {balance}"

@@ -18,7 +18,7 @@ class BotFarmer(BaseFarmer):
     def authenticate(self, *args, **kwargs):
         auth_data = self.initiator.get_auth_data(**self.initialization_data)['authData']
         self.payload_base = {"telegramData": auth_data}
-        self.info = self.api_call(URL_AUTH, json=self.payload_base)['data']
+        self.info = self.api_call(URL_AUTH, json=self.payload_base)['data']['user']
 
     def api_call(self, url, post=True, json=None):
         if post:
@@ -52,7 +52,7 @@ class BotFarmer(BaseFarmer):
     def farm_claim(self):
         if self.info['claimActive'] and self.claim_time <= time():
             if response := self.api_call(URL_FARM_CLAIM, post=False):
-                self.info = response['data']
+                self.info = response['data']['user']
                 self.log(MSG_CLAIM)
     
     def ref_claim(self):
@@ -76,7 +76,7 @@ class BotFarmer(BaseFarmer):
     def start_farm(self):
         if not self.info['claimActive']:
             if response := self.api_call(URL_FARM_START, post=False):
-                self.info = response['data']
+                self.info = response['data']['user']
                 self.log(MSG_FARM)
 
 
