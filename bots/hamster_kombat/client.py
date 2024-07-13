@@ -83,11 +83,11 @@ class BotFarmer(BaseFarmer):
         self.log(MSG_TAP.format(taps_count=taps_count))
 
     def boost(self, boost_name=BOOST_ENERGY):
-        data = {"boostId": boost_name, "timestamp": timestamp()}
+        data = {"boostId": boost_name, "timestamp": int(time())}
         self.post(URL_BUY_BOOST, json=data)
 
     def upgrade(self, upgrade_name):
-        data = {"upgradeId": upgrade_name, "timestamp": timestamp()}
+        data = {"upgradeId": upgrade_name, "timestamp": int(time())}
         return self.post(URL_BUY_UPGRADE, json=data)
 
     def upgrdades_list(self):

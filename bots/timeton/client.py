@@ -52,7 +52,7 @@ class BotFarmer(BaseFarmer):
     def farm_claim(self):
         if self.info['claimActive'] and self.claim_time <= time():
             if response := self.api_call(URL_FARM_CLAIM, post=False):
-                self.info = response['data']['user']
+                self.info = response['data']
                 self.log(MSG_CLAIM)
     
     def ref_claim(self):
@@ -76,7 +76,7 @@ class BotFarmer(BaseFarmer):
     def start_farm(self):
         if not self.info['claimActive']:
             if response := self.api_call(URL_FARM_START, post=False):
-                self.info = response['data']['user']
+                self.info = response['data']
                 self.log(MSG_FARM)
 
 
