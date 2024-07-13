@@ -18,6 +18,7 @@
 - [iceberg](https://t.me/IcebergAppBot?start=referral_102796269)
 - [MDAO Wallet (ZAVOD)](https://t.me/Mdaowalletbot?start=102796269)
 - [anon](https://t.me/AnonEarnBot) (Нужно сперва зарегистрироваться в боте, рефералки можно искать в чате проекта)
+- [hamster kombat](https://t.me/Hamster_kombat_bot/start?startapp=kentId102796269)
 
 Боты начнут последовательно фармить на каждом аккаунте
 
