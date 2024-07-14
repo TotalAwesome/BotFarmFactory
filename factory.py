@@ -18,6 +18,8 @@ bots = []
 
 if path.isdir("bots"):
     for directory in listdir("bots"):
+        if directory == 'template':
+            continue
         if ENABLED_BOTS and directory not in ENABLED_BOTS:
             continue
         try:
