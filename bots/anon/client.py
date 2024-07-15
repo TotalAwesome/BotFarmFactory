@@ -1,5 +1,4 @@
-from random import random
-from datetime import datetime
+
 from bots.base.utils import to_localtz_timestamp, api_response
 from bots.base.base import BaseFarmer, time
 from bots.anon.strings import HEADERS, URL_VERIFY, URL_VERIFICATION, URL_CLAIMED, URL_CLAIM, \
@@ -12,12 +11,19 @@ class BotFarmer(BaseFarmer):
     info = {}
     initialization_data = dict(peer=name, bot=name, url=URL_INIT)
     payload_base = {}
+    codes_to_refresh = (403,)
+    refreshable_token = True
 
     def set_headers(self, *args, **kwargs):
         self.headers = HEADERS.copy()
         self.get = api_response(super().get)
         self.post = api_response(super().post)
         self.delete = api_response(super().delete)
+
+    def refresh_token(self, *args, **kwargs):
+        self.initiator.connect()
+        self.authenticate()
+        self.initiator.disconnect()
 
     def authenticate(self, *args, **kwargs):
         auth_data = self.initiator.get_auth_data(**self.initialization_data)['authData']
@@ -30,7 +36,6 @@ class BotFarmer(BaseFarmer):
                 else:
                     self.error(f"{self.name} не зарегистрирован по рефке")
                     self.is_alive = False
-                    return
 
     def set_start_time(self):
         self.start_time = time() + self.info.get('claimSecondsAvailable', 300)
