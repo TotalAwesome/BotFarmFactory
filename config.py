@@ -20,6 +20,7 @@ ENABLED_BOTS = [
     'timeton',
     'simple',
     'iceberg',
+    'hamster_kombat',
     'zavod'
 ]
 
