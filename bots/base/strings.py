@@ -4,6 +4,7 @@ MSG_PROXY_CHECK_ERROR = "Ошибка при проверке прокси. Ко
 MSG_PROXY_CONNECTION_ERROR = "Не удалось подключиться через прокси: {error}"
 MSG_BAD_RESPONSE = "Плохой ответ от сервера: {status} {text}"
 MSG_SESSION_ERROR = "Ошибка во время выполнения запроса: {error}"
+MSG_FAILED_REQUEST = "Не получидлсь выполнить запрос. Подождем..."
 BASE_NAME = 'BaseFarmer'
 
 

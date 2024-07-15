@@ -11,6 +11,7 @@ TELEGRAM_AUTH = dict(
 )
 
 DEBUG = True
+RETRY_ATTEMPTS = 3
 
 ENABLED_BOTS = [
     'cell',
