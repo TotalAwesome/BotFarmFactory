@@ -116,7 +116,7 @@ class BotFarmer(BaseFarmer):
                 self.update_balance()
     
     def daily_reward(self):
-        result = self.get(URL_DAILY_REWARD)
+        result = self.get(URL_DAILY_REWARD, return_results=(404,))
         if result.status_code == 200:
             self.post(URL_DAILY_REWARD)
             {"ordinal":31,"reward":{"passes":7,"points":"70"}}
