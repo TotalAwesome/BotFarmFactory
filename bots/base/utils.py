@@ -37,7 +37,7 @@ def retry(func):
     def wrapper(*args, **kwargs):
         self = args[0]
         attempts = 0
-        return_codes = kwargs.get('return_codes', tuple())
+        return_codes = kwargs.pop('return_codes', tuple())
         while attempts <= RETRY_ATTEMPTS:
             try:
                 result = func(*args, **kwargs)
