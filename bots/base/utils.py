@@ -37,9 +37,12 @@ def retry(func):
     def wrapper(*args, **kwargs):
         self = args[0]
         attempts = 0
+        return_codes = kwargs.get('return_codes', tuple())
         while attempts <= RETRY_ATTEMPTS:
             try:
                 result = func(*args, **kwargs)
+                if result.status_code in return_codes:
+                    return result
                 if result.status_code not in (200, 201, 202):
                     if result.status_code == 429:
                         self.log(MSG_BAD_RESPONSE.format(status=result.status_code, text=result.text))
