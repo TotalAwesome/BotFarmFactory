@@ -105,7 +105,7 @@ class BotFarmer(BaseFarmer):
             if res.status_code == 200:
                 data = res.json()
                 data['points'] = int(randrange(*GAME_RESULT_RANGE))
-                sleep(23)
+                sleep(30)
                 while True:
                     result = self.post(URL_PLAY_CLAIM, json=data)
                     if result.status_code == 200:
