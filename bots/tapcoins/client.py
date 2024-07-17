@@ -7,7 +7,7 @@ from bots.tapcoins.strings import HEADERS, URL_INIT, URL_LOGIN, URL_CARDS_CATEGO
     URL_CARDS_UPGRADE, URL_LUCKY_BOUNTY, MSG_NO_CARDS_TO_UPGRADE, \
     MSG_CARD_UPGRADED, MSG_NOT_ENOUGH_COINS, MSG_CARD_UPGRADED_COMBO, URL_DAILY, URL_DAILY_COMPLETE, \
     MSG_LOGIN_BONUS_COMPLETE, URL_USER_INFO, MSG_UPGRADING_CARDS, MSG_UPGRADE_COMPLETE, MSG_MAX_UPGRADES_REACHED, \
-    URL_REFRESH
+    URL_REFRESH, MSG_CURRENT_BALANCE, MSG_HOUR_EARNINGS
 
 DEFAULT_EST_TIME = 60 * 10
 
@@ -53,8 +53,8 @@ class BotFarmer(BaseFarmer):
 
                 cards = sorted(cards, key=lambda x: x['upgrade_earnings'] / x['upgrade_cost'], reverse=True)
 
-                self.get_balance()
-                self.get_hour_earnings()
+                self.get_balance(False)
+                self.get_hour_earnings(False)
 
                 earnings_per_second = round(self.hours_earnings / 3600)
 
@@ -88,7 +88,7 @@ class BotFarmer(BaseFarmer):
 
                 cards = sorted(cards, key=lambda x: x['upgrade_earnings'] / x['upgrade_cost'], reverse=True)
 
-                self.get_balance()
+                self.get_balance(False)
 
                 upgraded = False
 
@@ -97,7 +97,9 @@ class BotFarmer(BaseFarmer):
                         self.post(URL_CARDS_UPGRADE, {'taskId': card['id'], '_token': self.token})
                         upgraded = True
 
-                        self.log(MSG_CARD_UPGRADED.format(card['name']))
+                        level = card['current_level'] + 1
+
+                        self.log(MSG_CARD_UPGRADED.format(name=card['name'], level=level, cost=card['upgrade_cost']))
                         upgraded_cards += 1
 
                         break
@@ -162,7 +164,7 @@ class BotFarmer(BaseFarmer):
 
     def upgrade_cards_by_id(self, to_upgrade):
         for card in to_upgrade:
-            self.get_balance()
+            self.get_balance(False)
 
             if self.balance >= card['upgrade_cost']:
                 self.post(URL_CARDS_UPGRADE, {'taskId': card['id'], '_token': self.token})
@@ -183,19 +185,25 @@ class BotFarmer(BaseFarmer):
                 self.log(MSG_LOGIN_BONUS_COMPLETE.format(step=i))
                 break
 
-    def get_hour_earnings(self):
+    def get_hour_earnings(self, log=False):
         response = self.post(URL_USER_INFO, {'_token': self.token})
         data = response.json()['data']
         self.hours_earnings = data['hour_earnings']
 
-    def get_balance(self):
+        if log:
+            self.log(MSG_HOUR_EARNINGS.format(earnings=self.hours_earnings))
+
+    def get_balance(self, log=False):
         response = self.post(URL_USER_INFO, {'_token': self.token})
         data = response.json()['data']
         self.balance = data['balance']
 
+        if log:
+            self.log(MSG_CURRENT_BALANCE.format(balance=self.balance))
+
     def sync(self):
         return self.post(URL_REFRESH, {'_token': self.token})
-    
+
     def refresh_token(self):
         self.initiator.connect()
         self.authenticate()
@@ -203,7 +211,9 @@ class BotFarmer(BaseFarmer):
 
     def farm(self):
         self.sync()
-        self.get_balance()
+        self.get_balance(True)
+        self.get_hour_earnings(True)
         self.daily_bonus()
         self.get_bounty()
         self.upgrade_cards()
+        self.get_hour_earnings(True)
