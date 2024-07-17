@@ -17,13 +17,13 @@ HEADERS = {
     'Origin': 'https://game.tapcoins.app',
     'Priority': 'u=1, i',
     'Referer': 'https://game.tapcoins.app/',
-    'Sec-Ch-Ua': '"Not/A)Brand";v="8", "Chromium";v="126", "Microsoft Edge";v="126", "Microsoft Edge WebView2";v="126"',
-    'Sec-Ch-Ua-Mobile': '?0',
-    'Sec-Ch-Ua-Platform': '"Windows"',
+    'Sec-Ch-Ua': 'Chromium";v="122", "Not(A:Brand";v="24", "Android WebView";v="122',
+    'Sec-Ch-Ua-Mobile': '?1',
+    'Sec-Ch-Ua-Platform': '"Android"',
     'Sec-Fetch-Dest': 'empty',
     'Sec-Fetch-Mode': 'cors',
     'Sec-Fetch-Site': 'same-site',
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0'
+    'User-Agent': 'Mozilla/5.0 (Linux; Android 11; Redmi 5 Plus Build/RQ3A.210805.001.A1; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/122.0.6261.64 Mobile Safari/537.36'
 }
 
 MSG_CURRENT_BALANCE = 'Текущий баланс: {result}'
