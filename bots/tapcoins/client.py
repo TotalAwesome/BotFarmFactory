@@ -152,7 +152,7 @@ class BotFarmer(BaseFarmer):
         daily_login_json = response.json()
         for i, step in enumerate(daily_login_json['data']['steps']):
             if step['today'] and not step['claimed']:
-                self.post(URL_DAILY_COMPLETE, HEADERS, data)
+                self.post(URL_DAILY_COMPLETE, data)
 
                 self.log(MSG_LOGIN_BONUS_COMPLETE.format(step=i))
                 break
