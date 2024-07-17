@@ -59,6 +59,9 @@ print('')
 logging.info("Найдены фармеры: {farmer_names}".format(
     farmer_names=", ".join(set([farmer.name.lower() for farmer in farmers])))
     )
+    
+if not farmers:
+    exit()
 
 while True:
     shuffle(farmers)
