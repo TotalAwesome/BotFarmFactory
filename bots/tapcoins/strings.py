@@ -27,12 +27,10 @@ HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Linux; Android 11; Redmi 5 Plus Build/RQ3A.210805.001.A1; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/122.0.6261.64 Mobile Safari/537.36'
 }
 
-MSG_CURRENT_BALANCE = 'Текущий баланс: {result}'
 MSG_STARTING_UPDATING_CARDS = 'Начало прокачивания карточек'
-MSG_UPDATING_CARDS = 'Прокачивание карточек'
+MSG_UPGRADING_CARDS = 'Прокачивание карточек'
 MSG_UPGRADE_COMPLETE = 'Прокачка карточек завершена'
 MSG_NO_CARDS_TO_UPGRADE = "Не найдены карты для прокачки"
-MSG_SORTING_CARDS = "Сортирую карточки по уровню дохода"
 MSG_CARD_UPGRADED = "Прокачана карта {}"
 MSG_NOT_ENOUGH_COINS = "Не хватает монет для прокачки"
 MSG_CARD_UPGRADED_COMBO = "Прокачана карта для комбо {}"
