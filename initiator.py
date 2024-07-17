@@ -59,7 +59,7 @@ class Initiator(TelegramClient):
         self(request)
 
     def get_auth_data(self, **kwargs):
-        self.prepare_bot(kwargs.get('peer'), kwargs.get('peer'))
+        self.prepare_bot(kwargs.get('peer'), kwargs.get('peer'), kwargs.get('start_param', ''))
         kwargs['platform'] = kwargs.get('platform', 'android')
         kwargs['from_bot_menu'] = kwargs.get('from_bot_menu', False)
         dicted = kwargs.pop('dicted', None)
