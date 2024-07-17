@@ -196,7 +196,7 @@ class BotFarmer(BaseFarmer):
     def sync(self):
         return self.post(URL_REFRESH, {'_token': self.token})
     
-    def refresh(self):
+    def refresh_token(self):
         self.initiator.connect()
         self.authenticate()
         self.initiator.disconnect()
