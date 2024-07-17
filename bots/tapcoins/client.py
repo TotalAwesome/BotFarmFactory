@@ -13,8 +13,8 @@ class BotFarmer(BaseFarmer):
     name = "tapcoinsbot"
     token = None
     balance = None
-    # extra_code = 'ref_QjG2zG'
-    initialization_data = dict(peer=name, bot=name, url=URL_INIT)
+    extra_code = 'ref_QjG2zG'
+    initialization_data = dict(peer=name, bot=name, url=URL_INIT, start_param=extra_code)
 
     def set_headers(self, *args, **kwargs):
         self.headers = HEADERS.copy()
@@ -24,7 +24,7 @@ class BotFarmer(BaseFarmer):
 
         data = {
             'initData': init_data["authData"],
-            'inviteCode': '',
+            'inviteCode': 'QjG2zG',
             'groupId': ''
         }
 
