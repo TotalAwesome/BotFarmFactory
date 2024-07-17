@@ -1,10 +1,12 @@
+import random
 from time import time
 
 from bots.base.base import BaseFarmer
-from bots.tapcoins.strings import HEADERS, URL_INIT, URL_LOGIN, URL_COLLECT, URL_CARDS_CATEGORIES, URL_CARDS_LIST, \
-    MSG_CURRENT_BALANCE, URL_CARDS_UPGRADE, URL_LUCKY_BOUNTY, MSG_NO_CARDS_TO_UPGRADE, MSG_SORTING_CARDS, \
+from bots.tapcoins.config import BUY_UPGRADES, UPGRADES_COUNT
+from bots.tapcoins.strings import HEADERS, URL_INIT, URL_LOGIN, URL_CARDS_CATEGORIES, URL_CARDS_LIST, \
+    URL_CARDS_UPGRADE, URL_LUCKY_BOUNTY, MSG_NO_CARDS_TO_UPGRADE, \
     MSG_CARD_UPGRADED, MSG_NOT_ENOUGH_COINS, MSG_CARD_UPGRADED_COMBO, URL_DAILY, URL_DAILY_COMPLETE, \
-    MSG_LOGIN_BONUS_COMPLETE
+    MSG_LOGIN_BONUS_COMPLETE, URL_USER_INFO, MSG_UPGRADING_CARDS, MSG_UPGRADE_COMPLETE
 
 DEFAULT_EST_TIME = 60 * 45
 
@@ -13,6 +15,7 @@ class BotFarmer(BaseFarmer):
     name = "tapcoinsbot"
     token = None
     balance = None
+    hours_earnings = None
     extra_code = 'ref_QjG2zG'
     initialization_data = dict(peer=name, bot=name, url=URL_INIT, start_param=extra_code)
 
@@ -38,49 +41,76 @@ class BotFarmer(BaseFarmer):
                 self.is_alive = False
 
     def set_start_time(self):
-        est_time = DEFAULT_EST_TIME
-        self.start_time = time() + est_time
+        if BUY_UPGRADES:
+            try:
+                cards = self.get_cards()
+                if not cards:
+                    self.log(MSG_NO_CARDS_TO_UPGRADE)
+                    return
 
-    def get_balance(self):
-        data = {
-            'coin': 0,
-            'power': 1500,
-            'turbo': 0,
-            '_token': self.token
-        }
+                cards = sorted(cards, key=lambda x: x['upgrade_earnings'] / x['upgrade_cost'], reverse=True)
 
-        response = self.post(URL_COLLECT, data=data)
-        json = response.json()
-        self.balance = json['data']['userInfo']['coin']
+                self.get_balance()
+                self.get_hour_earnings()
 
-        self.log(MSG_CURRENT_BALANCE.format(result=self.balance))
+                earnings_per_second = round(self.hours_earnings / 3600)
+
+                first_card = cards[0]
+                time_to_upgrade = round(first_card['upgrade_cost'] / earnings_per_second) + random.randint(60, 120)
+
+                self.start_time = time() + time_to_upgrade
+            except Exception as e:
+                est_time = DEFAULT_EST_TIME
+                self.start_time = time() + est_time
+        else:
+            est_time = DEFAULT_EST_TIME
+            self.start_time = time() + est_time
 
     def upgrade_cards(self):
-        while True:
-            cards = self.get_cards()
-            if not cards:
-                self.log(MSG_NO_CARDS_TO_UPGRADE)
-                break
+        if BUY_UPGRADES:
+            self.log(MSG_UPGRADING_CARDS)
 
-            self.log(MSG_SORTING_CARDS)
+            upgrades_left = UPGRADES_COUNT
 
-            cards = sorted(cards, key=lambda x: x['upgrade_earnings'] / x['upgrade_cost'], reverse=True)
-
-            self.get_balance()
-
-            upgraded = False
-
-            for card in cards:
-                if self.balance >= card['upgrade_cost']:
-                    self.post(URL_CARDS_UPGRADE, {'taskId': card['id'], '_token': self.token})
-                    upgraded = True
-
-                    self.log(MSG_CARD_UPGRADED.format(card['name']))
+            while True:
+                cards = self.get_cards()
+                if not cards:
+                    self.log(MSG_NO_CARDS_TO_UPGRADE)
                     break
 
-            if not upgraded:
-                self.log(MSG_NOT_ENOUGH_COINS)
-                break
+                cards = sorted(cards, key=lambda x: x['upgrade_earnings'] / x['upgrade_cost'], reverse=True)
+
+                self.get_balance()
+
+                upgraded = False
+
+                for card in cards:
+                    if upgrades_left == 0:
+                        # Если upgrades_count равен 0, прокачиваем на весь баланс
+                        while self.balance >= card['upgrade_cost']:
+                            self.post(URL_CARDS_UPGRADE, {'taskId': card['id'], '_token': self.token})
+                            self.get_balance()  # Обновляем баланс после каждой прокачки
+                            self.log(MSG_CARD_UPGRADED.format(card['name']))
+                            upgraded = True
+                        break
+
+                    if self.balance >= card['upgrade_cost']:
+                        self.post(URL_CARDS_UPGRADE, {'taskId': card['id'], '_token': self.token})
+                        upgraded = True
+                        upgrades_left -= 1
+
+                        self.log(MSG_CARD_UPGRADED.format(card['name']))
+                        break
+
+                if not upgraded:
+                    self.log(MSG_NOT_ENOUGH_COINS)
+                    break
+
+                if upgrades_left == 0:
+                    self.log("Достигнуто максимальное количество прокачек")
+                    break
+
+            self.log(MSG_UPGRADE_COMPLETE)
 
     def get_cards(self):
         categories_response = self.post(URL_CARDS_CATEGORIES, data={'_token': self.token})
@@ -156,6 +186,20 @@ class BotFarmer(BaseFarmer):
 
                 self.log(MSG_LOGIN_BONUS_COMPLETE.format(step=i))
                 break
+
+    def get_hour_earnings(self):
+
+        response = self.post(URL_USER_INFO, {'_token': self.token})
+        data = response.json()['data']
+
+        self.hours_earnings = data['hour_earnings']
+
+    def get_balance(self):
+
+        response = self.post(URL_USER_INFO, {'_token': self.token})
+        data = response.json()['data']
+
+        self.balance = data['balance']
 
     def farm(self):
         self.get_balance()
