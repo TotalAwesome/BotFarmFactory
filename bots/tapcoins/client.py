@@ -6,9 +6,10 @@ from bots.tapcoins.config import BUY_UPGRADES, UPGRADES_COUNT
 from bots.tapcoins.strings import HEADERS, URL_INIT, URL_LOGIN, URL_CARDS_CATEGORIES, URL_CARDS_LIST, \
     URL_CARDS_UPGRADE, URL_LUCKY_BOUNTY, MSG_NO_CARDS_TO_UPGRADE, \
     MSG_CARD_UPGRADED, MSG_NOT_ENOUGH_COINS, MSG_CARD_UPGRADED_COMBO, URL_DAILY, URL_DAILY_COMPLETE, \
-    MSG_LOGIN_BONUS_COMPLETE, URL_USER_INFO, MSG_UPGRADING_CARDS, MSG_UPGRADE_COMPLETE, MSG_MAX_UPGRADES_REACHED
+    MSG_LOGIN_BONUS_COMPLETE, URL_USER_INFO, MSG_UPGRADING_CARDS, MSG_UPGRADE_COMPLETE, MSG_MAX_UPGRADES_REACHED, \
+    URL_REFRESH
 
-DEFAULT_EST_TIME = 60 * 45
+DEFAULT_EST_TIME = 60 * 10
 
 
 class BotFarmer(BaseFarmer):
@@ -183,6 +184,11 @@ class BotFarmer(BaseFarmer):
     def get_hour_earnings(self):
 
         response = self.post(URL_USER_INFO, {'_token': self.token})
+
+        if response.status_code == 401:
+            self.authenticate()
+            response = self.post(URL_USER_INFO, {'_token': self.token})
+
         data = response.json()['data']
 
         self.hours_earnings = data['hour_earnings']
@@ -190,11 +196,23 @@ class BotFarmer(BaseFarmer):
     def get_balance(self):
 
         response = self.post(URL_USER_INFO, {'_token': self.token})
+
+        if response.status_code == 401:
+            self.authenticate()
+            response = self.post(URL_USER_INFO, {'_token': self.token})
+
         data = response.json()['data']
 
         self.balance = data['balance']
 
+    def refresh(self):
+        response = self.post(URL_REFRESH, {'_token': self.token})
+
+        if response.status_code != 200:
+            self.authenticate()
+
     def farm(self):
+        self.refresh()
         self.get_balance()
         self.daily_bonus()
         self.get_bounty()
