@@ -16,8 +16,8 @@ DEFAULT_EST_TIME = 60
 class BotFarmer(BaseFarmer):
 
     name = "BlumCryptoBot"
-    # app_extra = "ref_ItXoLRFElL"
-    initialization_data = dict(peer=name, bot=name, url=URL_WEBAPP_INIT)
+    app_extra = "ref_ItXoLRFElL"
+    initialization_data = dict(peer=name, bot=name, url=URL_WEBAPP_INIT, start_param=app_extra)
     balance = None
     balance_data = None
     play_passes = None
