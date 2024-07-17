@@ -105,7 +105,7 @@ class BotFarmer(BaseFarmer):
             if res.status_code == 200:
                 data = res.json()
                 data['points'] = int(randrange(*GAME_RESULT_RANGE))
-                sleep(23)
+                sleep(30)
                 while True:
                     result = self.post(URL_PLAY_CLAIM, json=data)
                     if result.status_code == 200:
@@ -116,7 +116,7 @@ class BotFarmer(BaseFarmer):
                 self.update_balance()
     
     def daily_reward(self):
-        result = self.get(URL_DAILY_REWARD)
+        result = self.get(URL_DAILY_REWARD, return_codes=(404,))
         if result.status_code == 200:
             self.post(URL_DAILY_REWARD)
             {"ordinal":31,"reward":{"passes":7,"points":"70"}}

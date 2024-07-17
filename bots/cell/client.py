@@ -31,7 +31,7 @@ class BotFarmer(BaseFarmer):
 
     def api_call(self, url, post=True, json=None):
         method = self.post if post else self.get
-        kwargs = dict(url=url)
+        kwargs = dict(url=url, return_codes=(400,))
         if post:
             kwargs['json'] = json
         response = method(**kwargs)

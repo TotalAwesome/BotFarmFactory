@@ -21,7 +21,8 @@ ENABLED_BOTS = [
     'simple',
     'iceberg',
     'hamster_kombat',
-    'zavod'
+    'zavod',
+    'tapcoins',
 ]
 
 try:
