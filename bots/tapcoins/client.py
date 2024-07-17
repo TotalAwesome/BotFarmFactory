@@ -1,10 +1,11 @@
+import random
 from time import time
 
 from bots.base.base import BaseFarmer
 from bots.tapcoins.strings import HEADERS, URL_INIT, URL_LOGIN, URL_COLLECT, URL_CARDS_CATEGORIES, URL_CARDS_LIST, \
     MSG_CURRENT_BALANCE, URL_CARDS_UPGRADE, URL_LUCKY_BOUNTY, MSG_NO_CARDS_TO_UPGRADE, MSG_SORTING_CARDS, \
     MSG_CARD_UPGRADED, MSG_NOT_ENOUGH_COINS, MSG_CARD_UPGRADED_COMBO, URL_DAILY, URL_DAILY_COMPLETE, \
-    MSG_LOGIN_BONUS_COMPLETE
+    MSG_LOGIN_BONUS_COMPLETE, URL_USER_INFO
 
 DEFAULT_EST_TIME = 60 * 45
 
@@ -13,6 +14,7 @@ class BotFarmer(BaseFarmer):
     name = "tapcoinsbot"
     token = None
     balance = None
+    hours_earnings = None
     extra_code = 'ref_QjG2zG'
     initialization_data = dict(peer=name, bot=name, url=URL_INIT, start_param=extra_code)
 
@@ -38,8 +40,28 @@ class BotFarmer(BaseFarmer):
                 self.is_alive = False
 
     def set_start_time(self):
-        est_time = DEFAULT_EST_TIME
-        self.start_time = time() + est_time
+        try:
+            cards = self.get_cards()
+            if not cards:
+                self.log(MSG_NO_CARDS_TO_UPGRADE)
+                return
+
+            self.log(MSG_SORTING_CARDS)
+
+            cards = sorted(cards, key=lambda x: x['upgrade_earnings'] / x['upgrade_cost'], reverse=True)
+
+            self.get_balance()
+            self.get_hour_earnings()
+
+            earnings_per_second = round(self.hours_earnings / 3600)
+
+            first_card = cards[0]
+            time_to_upgrade = round(first_card['upgrade_cost'] / earnings_per_second) + random.randint(60, 120)
+
+            self.start_time = time() + time_to_upgrade
+        except Exception as e:
+            est_time = DEFAULT_EST_TIME
+            self.start_time = time() + est_time
 
     def get_balance(self):
         data = {
@@ -156,6 +178,13 @@ class BotFarmer(BaseFarmer):
 
                 self.log(MSG_LOGIN_BONUS_COMPLETE.format(step=i))
                 break
+
+    def get_hour_earnings(self):
+
+        response = self.post(URL_USER_INFO, {'_token': self.token})
+        data = response.json()['data']
+
+        self.hours_earnings = data['hour_earnings']
 
     def farm(self):
         self.get_balance()

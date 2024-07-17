@@ -7,6 +7,7 @@ URL_CARDS_LIST = 'https://api.tapcoins.app/mine/task/list'
 URL_CARDS_CATEGORIES = 'https://api.tapcoins.app/mine/category/list'
 URL_CARDS_UPGRADE = 'https://api.tapcoins.app/mine/upgrade'
 URL_LUCKY_BOUNTY = 'https://api.tapcoins.app/mine/lucky'
+URL_USER_INFO = 'https://api.tapcoins.app/mine/mine'
 
 HEADERS = {
     'Accept': 'application/json, text/plain, */*',
