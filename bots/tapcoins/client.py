@@ -6,7 +6,7 @@ from bots.tapcoins.config import BUY_UPGRADES, UPGRADES_COUNT
 from bots.tapcoins.strings import HEADERS, URL_INIT, URL_LOGIN, URL_CARDS_CATEGORIES, URL_CARDS_LIST, \
     URL_CARDS_UPGRADE, URL_LUCKY_BOUNTY, MSG_NO_CARDS_TO_UPGRADE, \
     MSG_CARD_UPGRADED, MSG_NOT_ENOUGH_COINS, MSG_CARD_UPGRADED_COMBO, URL_DAILY, URL_DAILY_COMPLETE, \
-    MSG_LOGIN_BONUS_COMPLETE, URL_USER_INFO, MSG_UPGRADING_CARDS, MSG_UPGRADE_COMPLETE
+    MSG_LOGIN_BONUS_COMPLETE, URL_USER_INFO, MSG_UPGRADING_CARDS, MSG_UPGRADE_COMPLETE, MSG_MAX_UPGRADES_REACHED
 
 DEFAULT_EST_TIME = 60 * 45
 
@@ -70,9 +70,14 @@ class BotFarmer(BaseFarmer):
         if BUY_UPGRADES:
             self.log(MSG_UPGRADING_CARDS)
 
-            upgrades_left = UPGRADES_COUNT
+            upgraded_cards = 0
+            upgrades_count = UPGRADES_COUNT if UPGRADES_COUNT != 0 else 99999
 
             while True:
+                if upgraded_cards >= upgrades_count:
+                    self.log(MSG_MAX_UPGRADES_REACHED.format(limit=upgrades_count))
+                    break
+
                 cards = self.get_cards()
                 if not cards:
                     self.log(MSG_NO_CARDS_TO_UPGRADE)
@@ -85,29 +90,17 @@ class BotFarmer(BaseFarmer):
                 upgraded = False
 
                 for card in cards:
-                    if upgrades_left == 0:
-                        # Если upgrades_count равен 0, прокачиваем на весь баланс
-                        while self.balance >= card['upgrade_cost']:
-                            self.post(URL_CARDS_UPGRADE, {'taskId': card['id'], '_token': self.token})
-                            self.get_balance()  # Обновляем баланс после каждой прокачки
-                            self.log(MSG_CARD_UPGRADED.format(card['name']))
-                            upgraded = True
-                        break
-
                     if self.balance >= card['upgrade_cost']:
                         self.post(URL_CARDS_UPGRADE, {'taskId': card['id'], '_token': self.token})
                         upgraded = True
-                        upgrades_left -= 1
 
                         self.log(MSG_CARD_UPGRADED.format(card['name']))
+                        upgraded_cards += 1
+
                         break
 
                 if not upgraded:
                     self.log(MSG_NOT_ENOUGH_COINS)
-                    break
-
-                if upgrades_left == 0:
-                    self.log("Достигнуто максимальное количество прокачек")
                     break
 
             self.log(MSG_UPGRADE_COMPLETE)
