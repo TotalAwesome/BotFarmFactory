@@ -18,6 +18,8 @@ class BotFarmer(BaseFarmer):
     balance = None
     hours_earnings = None
     extra_code = 'ref_QjG2zG'
+    refreshable_token = True
+    codes_to_refresh = (401,)
     initialization_data = dict(peer=name, bot=name, url=URL_INIT, start_param=extra_code)
 
     def set_headers(self, *args, **kwargs):
@@ -182,37 +184,25 @@ class BotFarmer(BaseFarmer):
                 break
 
     def get_hour_earnings(self):
-
         response = self.post(URL_USER_INFO, {'_token': self.token})
-
-        if response.status_code == 401:
-            self.authenticate()
-            response = self.post(URL_USER_INFO, {'_token': self.token})
-
         data = response.json()['data']
-
         self.hours_earnings = data['hour_earnings']
 
     def get_balance(self):
-
         response = self.post(URL_USER_INFO, {'_token': self.token})
-
-        if response.status_code == 401:
-            self.authenticate()
-            response = self.post(URL_USER_INFO, {'_token': self.token})
-
         data = response.json()['data']
-
         self.balance = data['balance']
 
+    def sync(self):
+        return self.post(URL_REFRESH, {'_token': self.token})
+    
     def refresh(self):
-        response = self.post(URL_REFRESH, {'_token': self.token})
-
-        if response.status_code != 200:
-            self.authenticate()
+        self.initiator.connect()
+        self.authenticate()
+        self.initiator.disconnect()
 
     def farm(self):
-        self.refresh()
+        self.sync()
         self.get_balance()
         self.daily_bonus()
         self.get_bounty()
