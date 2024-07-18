@@ -36,6 +36,12 @@ class BotFarmer(BaseFarmer):
         result = self.post(URL_LOGIN, json=data)
 
         if result.status_code == 200:
+            jsonData = result.json()
+
+            if jsonData['status'] == 'ERROR' and jsonData['error']['code'] == 'NOT_REGISTERED':
+                self.is_alive = False
+                return
+
             self.auth_data = result.json()['data']
 
             self.headers['Access-Token'] = self.auth_data['jwt_access_token']

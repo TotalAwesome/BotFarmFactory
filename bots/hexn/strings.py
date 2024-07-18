@@ -1,4 +1,4 @@
-URL_INIT = 'https://tgapp.hexn.cc'  # ?tgWebAppStartParam=63b093b0-fcb8-41b5-8f50-bc61983ef4e3
+URL_INIT = 'https://tgapp.hexn.cc?tgWebAppStartParam=63b093b0-fcb8-41b5-8f50-bc61983ef4e3'  # ?tgWebAppStartParam=63b093b0-fcb8-41b5-8f50-bc61983ef4e3
 URL_LOGIN = 'https://api.hexn.cc/v1/kyc/auth/telegram/sign-in-mini-app'
 URL_REFRESH_TOKEN = 'https://api.hexn.cc/v1/kyc/auth/telegram/sign-in-mini-app'
 URL_START_FARMING = 'https://api.hexn.cc/v1/kyc/marketing/farming/start'
