@@ -23,6 +23,7 @@ ENABLED_BOTS = [
     'hamster_kombat',
     'zavod',
     'tapcoins',
+    'hexn'
 ]
 
 try:
