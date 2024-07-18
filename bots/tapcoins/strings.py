@@ -9,6 +9,8 @@ URL_CARDS_UPGRADE = 'https://api.tapcoins.app/mine/upgrade'
 URL_LUCKY_BOUNTY = 'https://api.tapcoins.app/mine/lucky'
 URL_USER_INFO = 'https://api.tapcoins.app/mine/mine'
 URL_REFRESH = 'https://api.tapcoins.app/user/online/refresh'
+URL_GET_TASKS = 'https://api.tapcoins.app/task/list'
+URL_COMPLETE_TASK = 'https://api.tapcoins.app/task/complete'
 
 HEADERS = {
     'Accept': 'application/json, text/plain, */*',

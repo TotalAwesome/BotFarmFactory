@@ -6,3 +6,5 @@ venv
 .json
 *.json
 *.log
+.idea
+.sandbox.py
