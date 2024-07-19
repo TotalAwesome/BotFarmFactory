@@ -9,6 +9,8 @@ URL_CARDS_UPGRADE = 'https://api.tapcoins.app/mine/upgrade'
 URL_LUCKY_BOUNTY = 'https://api.tapcoins.app/mine/lucky'
 URL_USER_INFO = 'https://api.tapcoins.app/mine/mine'
 URL_REFRESH = 'https://api.tapcoins.app/user/online/refresh'
+URL_GET_TASKS = 'https://api.tapcoins.app/task/list'
+URL_COMPLETE_TASK = 'https://api.tapcoins.app/task/complete'
 
 HEADERS = {
     'Accept': 'application/json, text/plain, */*',
@@ -39,3 +41,4 @@ MSG_LOGIN_BONUS_COMPLETE = "Бонус за вход {step} получен"
 MSG_MAX_UPGRADES_REACHED = "Достигнут лимит прокачки {limit}"
 MSG_CURRENT_BALANCE = "Текущий баланс: {balance}"
 MSG_HOUR_EARNINGS = "Прибыль в час: {earnings}"
+MSG_TASK_COMPLETED = "Задание {name} выполнено"

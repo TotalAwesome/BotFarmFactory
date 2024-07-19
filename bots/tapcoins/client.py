@@ -1,5 +1,5 @@
 import random
-from time import time
+from time import time, sleep
 
 from bots.base.base import BaseFarmer
 from bots.tapcoins.config import BUY_UPGRADES, UPGRADES_COUNT
@@ -7,7 +7,7 @@ from bots.tapcoins.strings import HEADERS, URL_INIT, URL_LOGIN, URL_CARDS_CATEGO
     URL_CARDS_UPGRADE, URL_LUCKY_BOUNTY, MSG_NO_CARDS_TO_UPGRADE, \
     MSG_CARD_UPGRADED, MSG_NOT_ENOUGH_COINS, MSG_CARD_UPGRADED_COMBO, URL_DAILY, URL_DAILY_COMPLETE, \
     MSG_LOGIN_BONUS_COMPLETE, URL_USER_INFO, MSG_UPGRADING_CARDS, MSG_UPGRADE_COMPLETE, MSG_MAX_UPGRADES_REACHED, \
-    URL_REFRESH, MSG_CURRENT_BALANCE, MSG_HOUR_EARNINGS
+    URL_REFRESH, MSG_CURRENT_BALANCE, MSG_HOUR_EARNINGS, URL_GET_TASKS, URL_COMPLETE_TASK, MSG_TASK_COMPLETED
 
 DEFAULT_EST_TIME = 60 * 10
 
@@ -52,16 +52,19 @@ class BotFarmer(BaseFarmer):
                     return
 
                 cards = sorted(cards, key=lambda x: x['upgrade_earnings'] / x['upgrade_cost'], reverse=True)
+                first_card = cards[0]
 
                 self.get_balance(False)
                 self.get_hour_earnings(False)
 
-                earnings_per_second = round(self.hours_earnings / 3600)
+                if self.balance >= first_card['upgrade_cost']:
+                    self.start_time = time() + random.randint(300, 400)
+                else:
+                    earnings_per_second = round(self.hours_earnings / 3600)
 
-                first_card = cards[0]
-                time_to_upgrade = round(first_card['upgrade_cost'] / earnings_per_second) + random.randint(60, 120)
+                    time_to_upgrade = round(first_card['upgrade_cost'] / earnings_per_second) + random.randint(60, 120)
 
-                self.start_time = time() + time_to_upgrade
+                    self.start_time = time() + time_to_upgrade
             except Exception as e:
                 est_time = DEFAULT_EST_TIME
                 self.start_time = time() + est_time
@@ -209,11 +212,23 @@ class BotFarmer(BaseFarmer):
         self.authenticate()
         self.initiator.disconnect()
 
+    def complete_tasks(self):
+        response = self.post(URL_GET_TASKS, {'adv': 0, '_token': self.token})
+        tasks = response.json()['data']
+
+        for task in tasks:
+            if task['completed'] == 0 and task['verifiable'] == 0:
+                sleep(1)
+
+                self.post(URL_COMPLETE_TASK, {'adv': 0, 'taskId': task['id'], '_token': self.token})
+                self.log(MSG_TASK_COMPLETED.format(name=task['title']))
+
     def farm(self):
         self.sync()
         self.get_balance(True)
         self.get_hour_earnings(True)
         self.daily_bonus()
         self.get_bounty()
+        self.complete_tasks()
         self.upgrade_cards()
         self.get_hour_earnings(True)
