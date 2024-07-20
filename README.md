@@ -20,6 +20,7 @@
 - [anon](https://t.me/AnonEarnBot) (Нужно сперва зарегистрироваться в боте, рефералки можно искать в чате проекта)
 - [hamster kombat](https://t.me/Hamster_kombat_bot/start?startapp=kentId102796269)
 - [TapCoinsBot](https://t.me/tapcoinsbot/app?startapp=ref_QjG2zG)
+- [HEXN](https://t.me/hexn_bot/app?startapp=63b093b0-fcb8-41b5-8f50-bc61983ef4e3)
 
 Боты начнут последовательно фармить на каждом аккаунте
 
