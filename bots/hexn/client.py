@@ -4,7 +4,7 @@ from time import time
 
 from bots.base.base import BaseFarmer
 from bots.hexn.strings import HEADERS, URL_INIT, URL_LOGIN, URL_START_FARMING, MSG_REFRESH, URL_REFRESH_TOKEN, \
-    MSG_FARMING_STARTED, MSG_FARMING_ALREADY_STARTED, MSG_FARMING_ERROR, MSG_UNKNOWN_RESPONSE
+    MSG_FARMING_STARTED, MSG_FARMING_ALREADY_STARTED, MSG_FARMING_ERROR, MSG_UNKNOWN_RESPONSE, URL_CLAIM, MSG_CLAIMED
 
 DEFAULT_EST_TIME = 60 * 10
 
@@ -16,8 +16,9 @@ class BotFarmer(BaseFarmer):
     auth_data = None
     balance = None
     end_time = None
-
-    initialization_data = dict(peer=name, bot=name, url=URL_INIT)
+    farming_data = None
+    referral = 'tgWebAppStartParam=63b093b0-fcb8-41b5-8f50-bc61983ef4e3'
+    initialization_data = dict(peer=name, bot=name, url=URL_INIT, start_param=referral)
 
     def set_headers(self, *args, **kwargs):
         self.headers = HEADERS.copy()
@@ -36,9 +37,9 @@ class BotFarmer(BaseFarmer):
         result = self.post(URL_LOGIN, json=data)
 
         if result.status_code == 200:
-            jsonData = result.json()
+            json_data = result.json()
 
-            if jsonData['status'] == 'ERROR' and jsonData['error']['code'] == 'NOT_REGISTERED':
+            if json_data['status'] == 'ERROR' and json_data['error']['code'] == 'NOT_REGISTERED':
                 self.is_alive = False
                 return
 
@@ -54,24 +55,29 @@ class BotFarmer(BaseFarmer):
             est_time = DEFAULT_EST_TIME
             self.start_time = time() + est_time
 
-    def start_farming(self):
+    def check_farming_status(self):
         data = {
             'platform': 'WEB',
         }
         result = self.post(URL_START_FARMING, json=data)
-
         if result.status_code == 200:
             response_json = result.json()
 
             error = response_json.get('error')
-            data = response_json.get('data')
 
             if error:
                 error_code = error.get('code')
                 if error_code == 'PENDING_FARMING_EXISTS':
-                    self.log(MSG_FARMING_ALREADY_STARTED)
-                    farming_details = error.get('details', {}).get('farming', {})
-                    self.end_time = farming_details.get('end_at', 0) // 1000
+                    details = error.get('details', {})
+                    self.farming_data = details.get('farming', {})
+
+                    if self.farming_data.get('end_at', 0) // 1000 > time():
+                        self.log(MSG_FARMING_ALREADY_STARTED)
+                        self.start_time = self.farming_data.get('end_at', 0) // 1000
+
+                        return
+                    else:
+                        self.claim()
                 else:
                     self.log(MSG_FARMING_ERROR)
             elif data:
@@ -96,5 +102,20 @@ class BotFarmer(BaseFarmer):
 
         return hex_string
 
+    def claim(self):
+
+        data = {
+            'platform': 'WEB',
+            'farming_uuid': self.farming_data.get('uuid')
+        }
+
+        result = self.post(URL_CLAIM, json=data)
+        response_json = result.json()
+        if response_json.get('status') == 'OK':
+            self.log(MSG_CLAIMED)
+            self.check_farming_status()
+        else:
+            self.log(MSG_FARMING_ERROR)
+
     def farm(self):
-        self.start_farming()
+        self.check_farming_status()
