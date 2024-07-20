@@ -73,7 +73,7 @@ class BotFarmer(BaseFarmer):
 
                     if self.farming_data.get('end_at', 0) // 1000 > time():
                         self.log(MSG_FARMING_ALREADY_STARTED)
-                        self.start_time = self.farming_data.get('end_at', 0) // 1000
+                        self.end_time = self.farming_data.get('end_at', 0) // 1000
 
                         return
                     else:
