@@ -27,6 +27,6 @@
 Если все выполнено правильно, вы увидите примерно следующую картину:
 ![image](https://github.com/TotalAwesome/BotFarmFactory/assets/39047158/a0e77b95-5ae1-4f64-b68d-cb904c0866b7)
 
-Ответы почти на все вопросы уже есть в канаде или в чате и в закрепе: https://t.me/cryptoearnfactory
+Ответы почти на все вопросы уже есть в канале или в чате и в закрепе: https://t.me/cryptoearnfactory
 
 Для донатов: USDT TRC20: TTTMM1PXxNS7d3tAcruamT6GE8ye5BrZ4w
