@@ -80,7 +80,9 @@ class BotFarmer(BaseFarmer):
                         self.claim()
                 else:
                     self.log(MSG_FARMING_ERROR)
-            elif data:
+            elif response_json.get('data'):
+                data = response_json['data']
+                
                 self.log(MSG_FARMING_STARTED)
                 self.end_time = data.get('end_at', 0) // 1000
             else:
