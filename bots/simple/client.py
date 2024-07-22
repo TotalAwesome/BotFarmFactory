@@ -32,7 +32,7 @@ class BotFarmer(BaseFarmer):
 
     def api_call(self, url, payload=None):
         payload = payload or self.payload_base
-        result = self.post(url, json=payload)
+        result = self.post(url, json=payload, return_codes=(400,))
         if result.status_code == 200:
             return result.json()
         else:
