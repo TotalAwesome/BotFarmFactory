@@ -4,10 +4,11 @@ from bots.base.base import BaseFarmer
 from base64 import b64decode
 from time import time, sleep
 from random import randrange, choice
+from telethon.types import InputBotAppShortName
 from bots.hamster_kombat.strings import URL_BOOSTS_FOR_BUY, URL_BUY_BOOST, URL_BUY_UPGRADE, \
     URL_SYNC, URL_TAP, URL_UPGRADES_FOR_BUY, HEADERS, BOOST_ENERGY, URL_CHECK_TASK, \
     URL_CLAIM_DAILY_COMBO, MSG_BUY_UPGRADE, MSG_COMBO_EARNED, MSG_TAP, MSG_CLAIMED_COMBO_CARDS, \
-    MSG_SYNC, URL_CONFIG, URL_CLAIM_DAILY_CIPHER, MSG_CIPHER, URL_INIT, URL_AUTH
+    MSG_SYNC, URL_CONFIG, URL_CLAIM_DAILY_CIPHER, MSG_CIPHER, URL_INIT, URL_AUTH, URL_SELECT_EXCHANGE
 from bots.hamster_kombat.config import FEATURES
 from bots.hamster_kombat.utils import sorted_by_payback, sorted_by_price, sorted_by_profit, sorted_by_profitness
     
@@ -15,12 +16,22 @@ from bots.hamster_kombat.utils import sorted_by_payback, sorted_by_price, sorted
 class BotFarmer(BaseFarmer):
 
     name = 'hamster_kombat_bot'
-    extra_code = 'kentId102796269'
-    initialization_data = dict(peer=name, bot=name, url=URL_INIT, start_param=extra_code)
+    app_extra = 'kentId102796269'
+    # initialization_data = dict(peer=name, bot=name, url=URL_INIT, start_param=extra_code)
     state = None
     boosts = None
     upgrades = None
     task_checked_at = None
+
+    @property
+    def exchage_id(self):
+        return self.state.get('exchangeId')
+
+    @property
+    def initialization_data(self):
+        return dict(peer=self.name, 
+                    app=InputBotAppShortName(self.initiator.get_input_entity(self.name), "start"),
+                    start_param=self.app_extra)
 
     def set_headers(self):
         self.headers = HEADERS.copy()
@@ -31,9 +42,17 @@ class BotFarmer(BaseFarmer):
         if result.status_code == 200:
             if token := result.json().get('authToken'):
                 self.headers['Authorization'] = f"Bearer {token}"
+                self.set_exchange()
                 return
         self.is_alive = False
         raise KeyError
+
+    def set_exchange(self):
+        self.sync()
+        if not self.exchage_id:
+            eid = choice(('binance', 'okx', 'bybit', 'gate_io', 'bingx'))
+            self.post(URL_SELECT_EXCHANGE, json={'exchangeId': eid})
+
 
     def set_start_time(self):
         sleep_seconds = int(self.state['maxTaps'] / self.state['tapsRecoverPerSec'])

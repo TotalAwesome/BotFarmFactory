@@ -1,6 +1,7 @@
 URL_CLAIM_DAILY_CIPHER = "https://api.hamsterkombatgame.io/clicker/claim-daily-cipher"
 URL_CLAIM_DAILY_COMBO = "https://api.hamsterkombatgame.io/clicker/claim-daily-combo"
 URL_UPGRADES_FOR_BUY = "https://api.hamsterkombatgame.io/clicker/upgrades-for-buy"
+URL_SELECT_EXCHANGE ="https://api.hamsterkombatgame.io/clicker/select-exchange"
 URL_BOOSTS_FOR_BUY = "https://api.hamsterkombatgame.io/clicker/boosts-for-buy"
 URL_AUTH = "https://api.hamsterkombatgame.io/auth/auth-by-telegram-webapp"
 URL_BUY_UPGRADE = "https://api.hamsterkombatgame.io/clicker/buy-upgrade"
