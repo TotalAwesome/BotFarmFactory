@@ -1,4 +1,4 @@
-
+from telethon.types import InputBotAppShortName
 from bots.base.utils import to_localtz_timestamp, api_response
 from bots.base.base import BaseFarmer, time
 from bots.anon.strings import HEADERS, URL_VERIFY, URL_VERIFICATION, URL_CLAIMED, URL_CLAIM, \
@@ -9,10 +9,16 @@ class BotFarmer(BaseFarmer):
 
     name = 'anonearnbot'
     info = {}
-    initialization_data = dict(peer=name, bot=name, url=URL_INIT)
+    app_extra = 'iDb64mAALgfaXGj8gTCDZ1'
     payload_base = {}
     codes_to_refresh = (403,)
     refreshable_token = True
+
+    @property
+    def initialization_data(self):
+        return dict(peer=self.name, 
+                    app=InputBotAppShortName(self.initiator.get_input_entity(self.name), "app"),
+                    start_param=self.app_extra)
 
     def set_headers(self, *args, **kwargs):
         self.headers = HEADERS.copy()
