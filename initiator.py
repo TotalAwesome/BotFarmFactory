@@ -1,15 +1,15 @@
 import os
 import json
 from telethon.sync import TelegramClient, functions, types
+from telethon.tl.functions.channels import JoinChannelRequest, InviteToChannelRequest
+from telethon.errors import FloodWaitError
 from urllib.parse import unquote, parse_qs, urlparse
 from datetime import timedelta
 from config import ACCOUNTS_DIR, TELEGRAM_AUTH
 
-
 def username(dialog):
     username = str(getattr(dialog.message.chat, 'username', '_')).lower()
     return username
-
 
 def parse_auth_data(url):
     parsed_url = urlparse(url)
@@ -18,11 +18,10 @@ def parse_auth_data(url):
     full['tgWebAppPlatform'] = full['tgWebAppPlatform'][0]
     full['tgWebAppData'] = parse_qs(full['tgWebAppData'][0])
     full['tgWebAppData']['query_id'] = full['tgWebAppData']['query_id'][0]
-    full['tgWebAppData']['query_id'] = full['tgWebAppData']['auth_date'][0]
+    full['tgWebAppData']['auth_date'] = full['tgWebAppData']['auth_date'][0]
     full['tgWebAppData']['hash'] = full['tgWebAppData']['hash'][0]
     full['tgWebAppData']['user'] = json.loads(full['tgWebAppData']['user'][0])
     return full
-
 
 class Initiator(TelegramClient):
 
@@ -40,7 +39,7 @@ class Initiator(TelegramClient):
             self.start(phone=self.phone)
         else:
             raise Exception('Provide a phone number ({})'.format(str(kwargs)))
-    
+
     def is_bot_registered(self, botname=None):
         if not botname:
             return
@@ -63,8 +62,6 @@ class Initiator(TelegramClient):
         kwargs['platform'] = kwargs.get('platform', 'android')
         kwargs['from_bot_menu'] = kwargs.get('from_bot_menu', False)
         dicted = kwargs.pop('dicted', None)
-        # if self.is_bot_registered and 'start_param' in kwargs:
-        #     kwargs['start_param'] = ''
         if not 'app' in kwargs:
             web_app = self(functions.messages.RequestWebViewRequest(**kwargs))
         else:
@@ -76,3 +73,14 @@ class Initiator(TelegramClient):
         user = auth_data.split("user=")[1].split("&")[0]
         return {"userId": self._self_id, "authData": auth_data.replace(user, unquote(user))}
 
+    def join_group(self, group_link):
+        try:
+            self(JoinChannelRequest(group_link))
+        except FloodWaitError as e:
+            print(f"Flood wait error. Must wait {e.seconds} seconds.")
+
+    def subscribe_channel(self, channel_link):
+        try:
+            self(JoinChannelRequest(channel_link))
+        except FloodWaitError as e:
+            print(f"Flood wait error. Must wait {e.seconds} seconds.")
