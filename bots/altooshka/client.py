@@ -79,10 +79,19 @@ class BotFarmer(BaseFarmer):
             actions = girl_data.get('actions', {})
             action_ids = list(actions.keys())
 
-            for action_id in action_ids[:3]:
-                action_end_time = actions[action_id]
-                if action_end_time < time():
-                    self.process_action(girl_id, action_id, action_end_time)
+            skip_first_three = False
+
+            if len(action_ids) >= 7:
+                action_id_7 = action_ids[6]
+                action_end_time_7 = actions[action_id_7]
+                if action_end_time_7 > time():
+                    skip_first_three = True
+
+            if not skip_first_three:
+                for action_id in action_ids[:3]:
+                    action_end_time = actions[action_id]
+                    if action_end_time < time():
+                        self.process_action(girl_id, action_id, action_end_time)
 
             if len(action_ids) >= 7:
                 action_id = action_ids[6]
