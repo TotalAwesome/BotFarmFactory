@@ -14,10 +14,10 @@
 
 - [cellcoin_bot](https://t.me/cellcoin_bot?start=102796269)
 - [simple_tap_bot](https://t.me/Simple_Tap_Bot?start=1718085881160)
-- [blum](https://t.me/BlumCryptoBot/app?startapp=ref_ItXoLRFElL) (Нужно сперва зарегистрироваться в боте)
+- [blum](https://t.me/BlumCryptoBot/app?startapp=ref_ItXoLRFElL)
 - [iceberg](https://t.me/IcebergAppBot?start=referral_102796269)
 - [MDAO Wallet (ZAVOD)](https://t.me/Mdaowalletbot?start=102796269)
-- [anon](https://t.me/AnonEarnBot) (Нужно сперва зарегистрироваться в боте, рефералки можно искать в чате проекта)
+- [anon](https://t.me/AnonEarnBot) (Если не регается, ищем рефки в интернете)
 - [hamster kombat](https://t.me/Hamster_kombat_bot/start?startapp=kentId102796269)
 - [TapCoinsBot](https://t.me/tapcoinsbot/app?startapp=ref_QjG2zG)
 - [HEXN](https://t.me/hexn_bot/app?startapp=63b093b0-fcb8-41b5-8f50-bc61983ef4e3)
