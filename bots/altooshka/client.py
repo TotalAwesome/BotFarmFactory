@@ -24,8 +24,6 @@ class BotFarmer(BaseFarmer):
 
         self.auth_data = init_data['authData']
 
-        self.get(URL_INIT)
-
         login_url = URL_LOGIN + '?' + self.auth_data + '&ref_code=z6HfRqEhax4'
 
         result = self.get(login_url, return_codes=(404,))
