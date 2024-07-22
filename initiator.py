@@ -59,17 +59,14 @@ class Initiator(TelegramClient):
         self(request)
 
     def get_auth_data(self, **kwargs):
-        self.prepare_bot(kwargs.get('peer'), kwargs.get('peer'), kwargs.get('start_param', 'hello'))
         kwargs['platform'] = kwargs.get('platform', 'android')
         kwargs['from_bot_menu'] = kwargs.get('from_bot_menu', False)
         dicted = kwargs.pop('dicted', None)
-        # if self.is_bot_registered and 'start_param' in kwargs:
-        #     kwargs['start_param'] = ''
         if not 'app' in kwargs:
             web_app = self(functions.messages.RequestWebViewRequest(**kwargs))
         else:
             kwargs.pop('from_bot_menu')
-            web_app = self(functions.messages.RequestAppWebViewRequest(**kwargs))
+            web_app = self(functions.messages.RequestAppWebViewRequest(**kwargs, write_allowed=True))
         if dicted:
             structured = parse_auth_data(web_app.url)
         auth_data = web_app.url.split('#tgWebAppData=')[1].replace("%3D","=").split('&tgWebAppVersion=')[0].replace("%26","&")

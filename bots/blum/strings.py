@@ -13,6 +13,7 @@ URL_PLAY_CLAIM = "https://game-domain.blum.codes/api/v1/game/claim"
 URL_DAILY_REWARD = "https://game-domain.blum.codes/api/v1/daily-reward?offset=-180"
 URL_FRIENDS_BALANCE = "https://gateway.blum.codes/v1/friends/balance"
 URL_FRIENDS_CLAIM = "https://gateway.blum.codes/v1/friends/claim"
+URL_CHECK_NAME = "https://gateway.blum.codes/v1/user/username/check"
 
 MSG_AUTH = "Получение токена"
 MSG_REFRESH = "Обновление токена"
@@ -24,6 +25,7 @@ MSG_BEGIN_GAME = "Начинаем тапать звездочки. Количе
 MSG_PLAYED_GAME = "Натапал: {result}"
 MSG_DAILY_REWARD = "Ежедневная награда. День: {days} игры: {passes} монеты: {points}"
 MSG_FRIENDS_CLAIM = "Друзья нафармили: {points}"
+MSG_INPUT_USERNAME = "Введи имя для Blum: "
 
 HEADERS = {
     "Accept": 'application/json',

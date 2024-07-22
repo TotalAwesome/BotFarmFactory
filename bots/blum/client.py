@@ -1,5 +1,5 @@
 import json
-from random import randrange
+from random import randrange, choice
 from time import sleep, time
 from telethon.types import InputBotAppShortName
 from bots.base.base import BaseFarmer
@@ -7,7 +7,8 @@ from bots.blum.strings import HEADERS, URL_REFRESH_TOKEN, URL_BALANCE, URL_TASKS
     URL_WEBAPP_INIT, URL_AUTH, URL_FARMING_CLAIM, URL_FARMING_START, URL_PLAY_START, \
     URL_PLAY_CLAIM,  URL_DAILY_REWARD, URL_FRIENDS_BALANCE, URL_FRIENDS_CLAIM, MSG_AUTH, \
     MSG_REFRESH, MSG_BALANCE, MSG_START_FARMING, MSG_CLAIM_FARM, MSG_BEGIN_GAME, \
-    MSG_PLAYED_GAME, MSG_DAILY_REWARD, MSG_FRIENDS_CLAIM
+    MSG_PLAYED_GAME, MSG_DAILY_REWARD, MSG_FRIENDS_CLAIM, URL_CHECK_NAME, MSG_INPUT_USERNAME
+from bots.blum.config import MANUAL_USERNAME
 
 GAME_RESULT_RANGE = (190, 280)
 DEFAULT_EST_TIME = 60
@@ -17,7 +18,6 @@ class BotFarmer(BaseFarmer):
 
     name = "BlumCryptoBot"
     app_extra = "ref_ItXoLRFElL"
-    initialization_data = dict(peer=name, bot=name, url=URL_WEBAPP_INIT, start_param=app_extra)
     balance = None
     balance_data = None
     play_passes = None
@@ -25,6 +25,16 @@ class BotFarmer(BaseFarmer):
     auth_data = None
     codes_to_refresh = (401,)
     refreshable_token = True
+
+    @property
+    def initialization_data(self):
+        return dict(peer=self.name, 
+                    app=InputBotAppShortName(self.initiator.get_input_entity(self.name), "app"),
+                    start_param=self.app_extra)
+
+    def check_name(self, username):
+        response = self.post(URL_CHECK_NAME, json={'username': username}, return_codes=(400, 409))
+        return response.status_code == 200
 
     def set_headers(self, *args, **kwargs):
         self.headers = HEADERS.copy()
@@ -45,13 +55,36 @@ class BotFarmer(BaseFarmer):
             if result.status_code == 200:
                 self.auth_data = result.json().get('token')
                 if not self.auth_data:
+                    if not self.create_account_and_get_token(init_data=init_data["authData"]):
+                        return
+                self.headers['Authorization'] = f"Bearer {self.auth_data['access']}"
+    
+    def create_account_and_get_token(self, init_data):
+        if not MANUAL_USERNAME:
+            import string
+            charmap = string.ascii_letters + '_'
+        while True:
+            if not MANUAL_USERNAME:
+                username = ''.join(str(choice(charmap)) for _ in range(randrange(6, 12)))
+            else:
+                username = input(MSG_INPUT_USERNAME)
+            if self.check_name(username=username):
+                payload = dict(query=init_data,
+                               referralToken=self.app_extra.split('_')[-1],
+                               username=username)
+                result = self.post(URL_AUTH, json=payload)
+            else:
+                continue
+            if result.status_code == 200:
+                self.auth_data = result.json().get('token')
+                if not self.auth_data:
                     self.error("Blum не зарегистрирован по реф. ссылке")
                     self.is_alive = False
                     return
-                self.headers['Authorization'] = f"Bearer {self.auth_data['access']}"
-            else:
-                pass
-    
+                return True
+            sleep(5)
+
+
     def refresh_token(self):
         self.log(MSG_REFRESH)
         self.headers.pop('Authorization')
