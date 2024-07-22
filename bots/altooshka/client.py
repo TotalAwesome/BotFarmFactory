@@ -1,7 +1,8 @@
 from time import sleep, time
 
 from bots.altooshka.strings import HEADERS, URL_INIT, URL_LOGIN, URL_GIRLS_ACTION, MSG_ACTION_COMPLETE, \
-    MSG_ACTION_IS_NOT_AVAILABLE, MSG_ACTION_UNDRESS_COMPLETE, URL_FOLLOW, URL_X_CHALLENGE, MSG_CURRENT_BALANCE
+    MSG_ACTION_IS_NOT_AVAILABLE, MSG_ACTION_UNDRESS_COMPLETE, URL_FOLLOW, URL_X_CHALLENGE, MSG_CURRENT_BALANCE, \
+    URL_TG_CHAT, URL_TG_GROUP
 from bots.base.base import BaseFarmer
 
 DEFAULT_EST_TIME = 60 * 10
@@ -40,8 +41,8 @@ class BotFarmer(BaseFarmer):
 
                 self.is_alive = True
         else:
-            self.initiator.join_group('https://t.me/AltOOshka_EN')
-            self.initiator.subscribe_channel('https://t.me/altooshka_ton')
+            self.initiator.join_group(URL_TG_CHAT)
+            self.initiator.subscribe_channel(URL_TG_GROUP)
             result = self.get(URL_FOLLOW + '?' + self.auth_data)
 
             json = result.json()

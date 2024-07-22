@@ -3,6 +3,10 @@ URL_LOGIN = 'https://api.altooshka.io/user/'
 URL_FOLLOW = 'https://api.altooshka.io/user/follow/'
 URL_GIRLS_ACTION = 'https://api.altooshka.io/girls/action/'
 URL_X_CHALLENGE = 'https://api.altooshka.io/action/challenge'
+
+URL_TG_CHAT = 'https://t.me/AltOOshka_EN'
+URL_TG_GROUP = 'https://t.me/altooshka_ton'
+
 HEADERS = {
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
     'Accept-Encoding': 'gzip, deflate, br, zstd',
