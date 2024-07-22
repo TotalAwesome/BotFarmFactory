@@ -74,9 +74,9 @@ class BotFarmer(BaseFarmer):
             self.end_time = action_end_time
 
     def process_girls(self):
-        updated_data = self.update_girls_actions(self.girls)
+        self.update_girls_actions(self.girls)
 
-        for girl_id, girl_data in updated_data.items():
+        for girl_id, girl_data in self.girls.items():
             actions = girl_data.get('actions', {})
             action_ids = list(actions.keys())
 
@@ -135,8 +135,8 @@ class BotFarmer(BaseFarmer):
         self.show_balance()
         self.process_girls()
 
-    @staticmethod
-    def update_girls_actions(data):
+    def update_girls_actions(self, data):
+        min_timestamp = 0
 
         for key, girl in data.items():
             existing_actions = girl.get("actions", {})
@@ -149,7 +149,13 @@ class BotFarmer(BaseFarmer):
 
             girl["actions"] = existing_actions
 
-        return data
+            for action_id, timestamp in existing_actions.items():
+                if timestamp != 0 and timestamp > time():
+                    if min_timestamp == 0 or timestamp < min_timestamp:
+                        min_timestamp = timestamp
+
+        self.end_time = min_timestamp
+
 
     def do_x_challenge(self):
         payload = {"actionName": "x_com_channel_subscribe"}
