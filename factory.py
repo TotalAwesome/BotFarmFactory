@@ -39,10 +39,18 @@ def make_account_farmers(account):
     proxy = account.get('proxy')
     proxies = dict(http=proxy, https=proxy)
     proxy = proxy if check_proxy(proxies=proxies) else None
-    initiator = Initiator(phone)
+    try:
+        initiator = Initiator(phone)
+    except Exception as e:
+        logging.error(f'{phone} Error: {e}')
+        return []
     farmers = []
     for farmer_class in bots:
-        farmer = farmer_class(initiator=initiator, proxy=proxy)
+        try:
+            farmer = farmer_class(initiator=initiator, proxy=proxy)
+        except Exception as e:
+            logging.error(f'{farmer_class.name} init error: {e}')
+            continue
         if not farmer.is_alive:
             continue
         farmers.append(farmer)
