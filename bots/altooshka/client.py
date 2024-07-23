@@ -1,4 +1,5 @@
 from time import sleep, time
+
 from bots.altooshka.strings import HEADERS, URL_INIT, URL_LOGIN, URL_GIRLS_ACTION, MSG_ACTION_COMPLETE, \
     MSG_ACTION_IS_NOT_AVAILABLE, MSG_ACTION_UNDRESS_COMPLETE, URL_FOLLOW, URL_X_CHALLENGE, MSG_CURRENT_BALANCE, \
     URL_TG_CHAT, URL_TG_GROUP
@@ -74,12 +75,12 @@ class BotFarmer(BaseFarmer):
             self.process_remaining_actions(girl_id, actions, action_ids)
 
     def process_first_actions(self, girl_id, actions, action_ids):
-        if len(action_ids) < ACTION_COUNT or actions[action_ids[FOLLOW_ACTION_INDEX]] <= time():
+        if len(action_ids) < ACTION_COUNT or actions[action_ids[FOLLOW_ACTION_INDEX]] == 0:
             for action_id in action_ids[:EARLY_ACTIONS]:
                 self.try_process_action(girl_id, action_id, actions[action_id])
 
     def process_follow_action(self, girl_id, actions, action_ids):
-        if len(action_ids) >= ACTION_COUNT:
+        if len(action_ids) >= ACTION_COUNT and actions[action_ids[FOLLOW_ACTION_INDEX]] == 0:
             self.try_process_action(girl_id, action_ids[FOLLOW_ACTION_INDEX], actions[action_ids[FOLLOW_ACTION_INDEX]])
 
     def process_remaining_actions(self, girl_id, actions, action_ids):
@@ -140,6 +141,7 @@ class BotFarmer(BaseFarmer):
                     min_timestamp = timestamp
 
         self.end_time = min_timestamp if min_timestamp != float('inf') else None
+        self.girls = data
 
     def do_x_challenge(self):
         payload = {"actionName": "x_com_channel_subscribe"}
