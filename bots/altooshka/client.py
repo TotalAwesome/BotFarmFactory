@@ -134,7 +134,7 @@ class BotFarmer(BaseFarmer):
                 if action_id not in existing_actions:
                     existing_actions[action_id] = 0
 
-            girl["actions"] = existing_actions
+            girl["actions"] = dict(sorted(existing_actions.items(), key=lambda item: int(item[0])))
 
             for action_id, timestamp in existing_actions.items():
                 if time() < timestamp < min_timestamp:
