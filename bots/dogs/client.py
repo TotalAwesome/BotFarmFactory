@@ -1,10 +1,11 @@
 from time import time
-
+from random import randrange
 from bots.base.base import BaseFarmer
 from bots.dogs.strings import HEADERS, URL_INIT, URL_LOGIN, MSG_CURRENT_BALANCE, \
     MSG_CURRENT_FRIENDS, URL_FRIENDS, MSG_LOGIN_ERROR
 
-DEFAULT_EST_TIME = 60 * 1400
+DEFAULT_EST_TIME = 60 * 10
+LOGIN_RANGE = (100, 1300)
 
 
 class BotFarmer(BaseFarmer):
@@ -42,7 +43,7 @@ class BotFarmer(BaseFarmer):
         self.is_alive = True
 
     def set_start_time(self):
-        self.start_time = time() + DEFAULT_EST_TIME
+        self.start_time = time() + DEFAULT_EST_TIME + int(randrange(*LOGIN_RANGE))
 
     def farm(self):
         self.show_balance()
