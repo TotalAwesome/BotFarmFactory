@@ -1,3 +1,8 @@
+"""
+Author: Eyn
+Date: 22-07-2024
+
+"""
 from time import sleep, time
 
 from bots.altooshka.strings import HEADERS, URL_INIT, URL_LOGIN, URL_GIRLS_ACTION, MSG_ACTION_COMPLETE, \

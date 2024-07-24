@@ -22,6 +22,7 @@
 - [TapCoinsBot](https://t.me/tapcoinsbot/app?startapp=ref_QjG2zG)
 - [HEXN](https://t.me/hexn_bot/app?startapp=63b093b0-fcb8-41b5-8f50-bc61983ef4e3)
 - [AltOOshka](https://t.me/altooshka_bot?start=z6HfRqEhax4)
+- [DOGS](https://t.me/dogshouse_bot/join?startapp=07wokQJZTrS5FSrah8SigQ)
 
 Боты начнут последовательно фармить на каждом аккаунте
 
