@@ -1,3 +1,8 @@
+"""
+Author: Eyn
+Date: 17-07-2024
+
+"""
 import random
 from time import time, sleep
 

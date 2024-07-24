@@ -1,3 +1,8 @@
+"""
+Author: Eyn
+Date: 18-07-2024
+
+"""
 import hashlib
 import random
 from time import time
@@ -82,7 +87,7 @@ class BotFarmer(BaseFarmer):
                     self.log(MSG_FARMING_ERROR)
             elif response_json.get('data'):
                 data = response_json['data']
-                
+
                 self.log(MSG_FARMING_STARTED)
                 self.end_time = data.get('end_at', 0) // 1000
             else:

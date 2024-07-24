@@ -1,5 +1,11 @@
-from time import time
+"""
+Author: Eyn
+Date: 24-07-2024
+
+"""
 from random import randrange
+from time import time
+
 from bots.base.base import BaseFarmer
 from bots.dogs.strings import HEADERS, URL_INIT, URL_LOGIN, MSG_CURRENT_BALANCE, \
     MSG_CURRENT_FRIENDS, URL_FRIENDS, MSG_LOGIN_ERROR
@@ -43,7 +49,9 @@ class BotFarmer(BaseFarmer):
         self.is_alive = True
 
     def set_start_time(self):
-        self.start_time = time() + DEFAULT_EST_TIME + int(randrange(*LOGIN_RANGE))
+        max_time = 23 * 3600
+        random_time = randrange(DEFAULT_EST_TIME, max_time)
+        self.start_time = time() + random_time
 
     def farm(self):
         self.show_balance()
