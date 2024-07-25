@@ -3,13 +3,13 @@ Author: Eyn
 Date: 18-07-2024
 
 """
-import hashlib
-import random
-from time import time
+from time import sleep, time
 
 from bots.base.base import BaseFarmer
-from bots.hexn.strings import HEADERS, URL_INIT, URL_LOGIN, URL_START_FARMING, MSG_REFRESH, URL_REFRESH_TOKEN, \
-    MSG_FARMING_STARTED, MSG_FARMING_ALREADY_STARTED, MSG_FARMING_ERROR, MSG_UNKNOWN_RESPONSE, URL_CLAIM, MSG_CLAIMED
+from bots.hexn.strings import HEADERS, URL_INIT, URL_LOGIN, MSG_FARMING_ALREADY_STARTED, MSG_FARMING_ERROR, URL_CLAIM, \
+    MSG_CLAIMED, \
+    MSG_CURRENT_BALANCE, URL_START_FARMING, MSG_FARMING_STARTED, MSG_QUEST_COMPLETED, MSG_QUEST_ERROR, \
+    MSG_QUEST_STARTING_ERROR, URL_QUEST_START, URL_QUEST_CLAIM
 
 DEFAULT_EST_TIME = 60 * 10
 
@@ -18,6 +18,7 @@ class BotFarmer(BaseFarmer):
     name = "hexn_bot"
     codes_to_refresh = (401,)
     refreshable_token = True
+    user_data = None
     auth_data = None
     balance = None
     end_time = None
@@ -31,27 +32,22 @@ class BotFarmer(BaseFarmer):
     def authenticate(self, *args, **kwargs):
         init_data = self.initiator.get_auth_data(**self.initialization_data)
 
+        self.auth_data = init_data['authData']
         data = {
-            'initial_data': init_data['authData'],
-            'telegram_user_id': init_data['userId'],
-            'fingerprint': self.generate_fingerprint(),
-            'platform': 'WEB',
-            'locale': 'en'
+            'init_data': init_data['authData']
         }
+        try:
+            result = self.post(URL_LOGIN, json=data)
 
-        result = self.post(URL_LOGIN, json=data)
-
-        if result.status_code == 200:
-            json_data = result.json()
-
-            if json_data['status'] == 'ERROR' and json_data['error']['code'] == 'NOT_REGISTERED':
-                self.is_alive = False
-                return
-
-            self.auth_data = result.json()['data']
-
-            self.headers['Access-Token'] = self.auth_data['jwt_access_token']
-            self.is_alive = True
+            if result.status_code == 200:
+                json_data = result.json()
+                if json_data['status'] == 'OK':
+                    self.user_data = user_data = json_data['data']
+                    self.balance = user_data.get('balance')
+                    self.is_alive = True
+        except Exception as e:
+            self.is_alive = False
+            self.log(str(e), error=True)
 
     def set_start_time(self):
         if self.end_time:
@@ -61,68 +57,103 @@ class BotFarmer(BaseFarmer):
             self.start_time = time() + est_time
 
     def check_farming_status(self):
+
+        farming_status = self.user_data.get('farming', {})
+
+        if not farming_status:
+            self.start_farming()
+
+        if farming_status.get('end_at', 0) // 1000 > time():
+            self.log(MSG_FARMING_ALREADY_STARTED)
+            self.end_time = farming_status.get('end_at', 0) // 1000
+
+            return
+        else:
+            self.claim()
+
+    def start_farming(self):
+
         data = {
-            'platform': 'WEB',
+            'init_data': self.auth_data,
         }
+
         result = self.post(URL_START_FARMING, json=data)
-        if result.status_code == 200:
-            response_json = result.json()
+        response_json = result.json()
 
-            error = response_json.get('error')
+        if response_json.get('status') == 'OK':
+            self.log(MSG_FARMING_STARTED)
 
-            if error:
-                error_code = error.get('code')
-                if error_code == 'PENDING_FARMING_EXISTS':
-                    details = error.get('details', {})
-                    self.farming_data = details.get('farming', {})
+        self.get_state()
 
-                    if self.farming_data.get('end_at', 0) // 1000 > time():
-                        self.log(MSG_FARMING_ALREADY_STARTED)
-                        self.end_time = self.farming_data.get('end_at', 0) // 1000
-
-                        return
-                    else:
-                        self.claim()
-                else:
-                    self.log(MSG_FARMING_ERROR)
-            elif response_json.get('data'):
-                data = response_json['data']
-
-                self.log(MSG_FARMING_STARTED)
-                self.end_time = data.get('end_at', 0) // 1000
-            else:
-                self.log(MSG_UNKNOWN_RESPONSE)
-
-    def refresh_token(self):
-        self.log(MSG_REFRESH)
-        self.headers.pop('Access-Token')
-        result = self.post(URL_REFRESH_TOKEN, json={"refresh": self.auth_data['jwt_refresh_token']})
-        if result.status_code == 200:
-            self.auth_data = result.json()
-            self.headers['Access-Token'] = self.auth_data['jwt_access_token']
-
-    @staticmethod
-    def generate_fingerprint():
-        random_bytes = random.getrandbits(128).to_bytes(16, byteorder='big')
-        hash_object = hashlib.md5(random_bytes)
-        hex_string = hash_object.hexdigest()
-
-        return hex_string
+        farming_status = self.user_data.get('farming', {})
+        self.end_time = farming_status.get('end_at', 0) // 1000
 
     def claim(self):
-
         data = {
-            'platform': 'WEB',
-            'farming_uuid': self.farming_data.get('uuid')
+            'init_data': self.auth_data,
         }
 
         result = self.post(URL_CLAIM, json=data)
         response_json = result.json()
+
         if response_json.get('status') == 'OK':
             self.log(MSG_CLAIMED)
-            self.check_farming_status()
+
+            self.start_farming()
         else:
             self.log(MSG_FARMING_ERROR)
 
     def farm(self):
+        self.show_balance()
         self.check_farming_status()
+        self.quests()
+        self.show_balance()
+
+    def get_state(self):
+        data = {
+            'init_data': self.auth_data
+        }
+        try:
+            result = self.post(URL_LOGIN, json=data)
+
+            if result.status_code == 200:
+                json_data = result.json()
+                if json_data['status'] == 'OK':
+                    self.user_data = user_data = json_data['data']
+                    self.balance = user_data.get('balance')
+        except Exception as e:
+            self.log(str(e), error=True)
+
+    def show_balance(self):
+        self.get_state()
+        self.log(MSG_CURRENT_BALANCE.format(balance=self.balance))
+
+    def quests(self):
+        executed_quests = self.user_data.get('executed_quests', {})
+
+        for quest_id, quest in self.user_data['config']['quests'].items():
+            if str(quest_id) not in executed_quests:
+                quest_name = quest.get('description', 'Unnamed Quest')
+                quest_points = quest.get('points_amount', 'Unknown amount')
+
+                data = {
+                    'init_data': self.auth_data,
+                    'quest_id': int(quest_id)
+                }
+                try:
+                    self.post(URL_QUEST_START, json=data)
+                except Exception as e:
+                    self.log(MSG_QUEST_STARTING_ERROR.format(quest_name=quest_name))
+
+                    continue
+
+                sleep(5)
+
+                result = self.post(URL_QUEST_CLAIM, json=data)
+                response_json = result.json()
+
+                if response_json.get('status') == 'OK':
+
+                    self.log(MSG_QUEST_COMPLETED.format(quest_name=quest_name, quest_points=quest_points))
+                else:
+                    self.log(MSG_QUEST_ERROR.format(quest_name=quest_name))
