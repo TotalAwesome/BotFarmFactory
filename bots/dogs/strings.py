@@ -1,6 +1,8 @@
 URL_INIT = 'https://onetime.dog/'
 URL_LOGIN = 'https://api.onetime.dog/join'
 URL_FRIENDS = 'https://api.onetime.dog/frens'
+URL_GET_TASKS = 'https://api.onetime.dog/tasks?user_id={user_id}&reference={reference}'
+URL_VERIFY_TASK = 'https://api.onetime.dog/tasks/verify?task={slug}&user_id={user_id}&reference={reference}'
 
 HEADERS = {
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
@@ -21,3 +23,5 @@ HEADERS = {
 MSG_CURRENT_BALANCE = "Текущий баланс: {balance}"
 MSG_CURRENT_FRIENDS = "Рефералов: {total}"
 MSG_LOGIN_ERROR = "Ошибка при логине: {e}"
+MSG_TASK_COMPLETE = "Задание {slug}. +{reward} монет"
+MSG_TASK_ERROR = "Ошибка задания {slug}"
