@@ -4,11 +4,12 @@ Date: 24-07-2024
 
 """
 from random import randrange
-from time import time
+from time import time, sleep
 
 from bots.base.base import BaseFarmer
 from bots.dogs.strings import HEADERS, URL_INIT, URL_LOGIN, MSG_CURRENT_BALANCE, \
-    MSG_CURRENT_FRIENDS, URL_FRIENDS, MSG_LOGIN_ERROR
+    MSG_CURRENT_FRIENDS, URL_FRIENDS, MSG_LOGIN_ERROR, URL_GET_TASKS, URL_VERIFY_TASK, MSG_TASK_COMPLETE, \
+    MSG_TASK_ERROR
 
 DEFAULT_EST_TIME = 60 * 10
 LOGIN_RANGE = (100, 1300)
@@ -56,6 +57,7 @@ class BotFarmer(BaseFarmer):
     def farm(self):
         self.show_balance()
         self.show_friends()
+        self.process_tasks()
 
     def show_balance(self):
         self.log(MSG_CURRENT_BALANCE.format(balance=self.balance))
@@ -65,3 +67,22 @@ class BotFarmer(BaseFarmer):
         response = self.get(url)
         response_json = response.json()
         self.log(MSG_CURRENT_FRIENDS.format(total=response_json['count']))
+
+    def process_tasks(self):
+        response = self.get(URL_GET_TASKS.format(user_id=self.user_id, reference=self.ref_code)).json()
+
+        for task in response:
+            if not task['complete']:
+                sleep(randrange(4, 7))
+                self.process_task(task)
+
+    def process_task(self, task):
+        try:
+            response = self.post(
+                URL_VERIFY_TASK.format(slug=task['slug'], user_id=self.user_id, reference=self.ref_code)).json()
+            if response['success']:
+                self.log(MSG_TASK_COMPLETE.format(slug=task['slug'], reward=task['reward']))
+            else:
+                self.log(MSG_TASK_ERROR.format(slug=task['slug']))
+        except Exception as e:
+            self.log(MSG_TASK_ERROR.format(slug=task['slug']))
