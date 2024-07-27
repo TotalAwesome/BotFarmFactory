@@ -1,27 +1,30 @@
 import os
 import json
+from time import sleep
 from telethon.sync import TelegramClient, functions, types
 from telethon.tl.functions.channels import JoinChannelRequest, InviteToChannelRequest
 from telethon.errors import FloodWaitError
 from urllib.parse import unquote, parse_qs, urlparse
 from datetime import timedelta
 from config import ACCOUNTS_DIR, TELEGRAM_AUTH
+from bots.base.base import logging
+
 
 def username(dialog):
     username = str(getattr(dialog.message.chat, 'username', '_')).lower()
     return username
 
-def parse_auth_data(url):
-    parsed_url = urlparse(url)
-    full = parse_qs(parsed_url.fragment)
-    full['tgWebAppVersion'] = full['tgWebAppVersion'][0]
-    full['tgWebAppPlatform'] = full['tgWebAppPlatform'][0]
-    full['tgWebAppData'] = parse_qs(full['tgWebAppData'][0])
-    full['tgWebAppData']['query_id'] = full['tgWebAppData']['query_id'][0]
-    full['tgWebAppData']['auth_date'] = full['tgWebAppData']['auth_date'][0]
-    full['tgWebAppData']['hash'] = full['tgWebAppData']['hash'][0]
-    full['tgWebAppData']['user'] = json.loads(full['tgWebAppData']['user'][0])
-    return full
+
+def catch_flood_error(func):
+    def wrapper(*args, **kwargs):
+        while True:
+            try:
+                return func(*args, **kwargs)
+            except FloodWaitError as e:
+                logging.INFO(f'Флудим, подождем {e.seconds} секунд')
+                sleep(e.seconds)
+    return wrapper
+
 
 class Initiator(TelegramClient):
 
@@ -40,6 +43,7 @@ class Initiator(TelegramClient):
         else:
             raise Exception('Provide a phone number ({})'.format(str(kwargs)))
 
+    @catch_flood_error
     def is_bot_registered(self, botname=None):
         if not botname:
             return
@@ -51,12 +55,14 @@ class Initiator(TelegramClient):
                 self.registered.append(botname)
         return botname in self.registered
 
+    @catch_flood_error
     def prepare_bot(self, *args):
         if self.is_bot_registered(args[0]):
             return
         request = functions.messages.StartBotRequest(*args)
         self(request)
 
+    @catch_flood_error
     def get_auth_data(self, **kwargs):
         kwargs['platform'] = kwargs.get('platform', 'android')
         kwargs['from_bot_menu'] = kwargs.get('from_bot_menu', False)
@@ -66,20 +72,14 @@ class Initiator(TelegramClient):
         else:
             kwargs.pop('from_bot_menu')
             web_app = self(functions.messages.RequestAppWebViewRequest(**kwargs, write_allowed=True))
-        if dicted:
-            structured = parse_auth_data(web_app.url)
         auth_data = web_app.url.split('#tgWebAppData=')[1].replace("%3D","=").split('&tgWebAppVersion=')[0].replace("%26","&")
         user = auth_data.split("user=")[1].split("&")[0]
-        return {"userId": self._self_id, "authData": auth_data.replace(user, unquote(user))}
+        return {"userId": self._self_id, "authData": auth_data.replace(user, unquote(user)), 'url': web_app.url}
 
+    @catch_flood_error
     def join_group(self, group_link):
-        try:
-            self(JoinChannelRequest(group_link))
-        except FloodWaitError as e:
-            print(f"Flood wait error. Must wait {e.seconds} seconds.")
+        self(JoinChannelRequest(group_link))
 
+    @catch_flood_error
     def subscribe_channel(self, channel_link):
-        try:
-            self(JoinChannelRequest(channel_link))
-        except FloodWaitError as e:
-            print(f"Flood wait error. Must wait {e.seconds} seconds.")
+        self(JoinChannelRequest(channel_link))
