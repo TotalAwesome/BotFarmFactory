@@ -19,6 +19,11 @@
 - [MDAO Wallet (ZAVOD)](https://t.me/Mdaowalletbot?start=102796269)
 - [anon](https://t.me/AnonEarnBot) (Если не регается, ищем рефки в интернете)
 - [hamster kombat](https://t.me/Hamster_kombat_bot/start?startapp=kentId102796269)
+- [timeton](https://t.me/TimeTONbot?start=TotalAwesome)
+- [Solstone](https://t.me/solstonebot?start=102796269)
+
+### Комьюнити модули:
+
 - [TapCoinsBot](https://t.me/tapcoinsbot/app?startapp=ref_QjG2zG)
 - [HEXN](https://t.me/hexn_bot/app?startapp=63b093b0-fcb8-41b5-8f50-bc61983ef4e3)
 - [AltOOshka](https://t.me/altooshka_bot?start=z6HfRqEhax4)
