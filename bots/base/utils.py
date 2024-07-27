@@ -10,7 +10,7 @@ log_format = "%(asctime)s %(levelname)s %(message)s"
 logging.basicConfig(level=logging.INFO, format=log_format)
 formatter = logging.Formatter(log_format)
 
-file_handler = logging.FileHandler('debug.log')
+file_handler = logging.FileHandler('debug.log', encoding='utf-8')
 file_handler.setLevel(logging.DEBUG)
 file_handler.setFormatter(formatter)
 

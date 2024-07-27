@@ -50,6 +50,7 @@ class BaseFarmer(Session):
         if self.extra_code:
             self.initiator.prepare_bot(self.name, self.name, self.extra_code)
         self.authenticate()
+        self.initiator.prepare_bot(self.name, self.name, self.extra_code or self.app_extra)
 
     def log(self, message, error=False, debug=False):
         ip = self.ip if self.ip else "no_proxy"
