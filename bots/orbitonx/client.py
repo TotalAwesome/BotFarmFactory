@@ -8,7 +8,7 @@ from urllib.parse import unquote
 
 from bots.orbitonx.strings import URL_AUTH, URL_INIT, HEADERS, MSG_AUTH_ERROR, URL_INFO, URL_BALANCE, URL_QUESTS, \
     URL_STAKING_CLAIM, URL_TAP, MSG_STAKING_CLAIMED, MSG_STAKING_STARTED, MSG_STAKING_TAP, URL_TASKS, \
-    MSG_TASK_CLAIMED, URL_TASK_CLAIM, URL_WATCH_AD, MSG_WATCHED_AD, URL_STOCKS
+    MSG_TASK_CLAIMED, URL_TASK_CLAIM, URL_WATCH_AD, MSG_WATCHED_AD, URL_STOCKS, MSG_BALANCE
 
 
 class BotFarmer(BaseFarmer):
@@ -130,6 +130,9 @@ class BotFarmer(BaseFarmer):
             self.patch(URL_STOCKS, json={'stockId': 9})
             self.sync()
 
+    @property
+    def balance(self):
+        return self.info['balance']
 
     def farm(self):
         self.sync()
@@ -137,3 +140,6 @@ class BotFarmer(BaseFarmer):
         self.claim_or_farm()
         self.check_tasks()
         self.watch_ad()
+        self.sync()
+        self.log(MSG_BALANCE.format(balance=self.balance))
+
