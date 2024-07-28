@@ -1,5 +1,5 @@
 import json
-from random import randrange, choice
+from random import randrange, choice, random
 from time import sleep, time
 from telethon.types import InputBotAppShortName
 from bots.base.base import BaseFarmer
@@ -7,7 +7,8 @@ from bots.blum.strings import HEADERS, URL_REFRESH_TOKEN, URL_BALANCE, URL_TASKS
     URL_WEBAPP_INIT, URL_AUTH, URL_FARMING_CLAIM, URL_FARMING_START, URL_PLAY_START, \
     URL_PLAY_CLAIM,  URL_DAILY_REWARD, URL_FRIENDS_BALANCE, URL_FRIENDS_CLAIM, MSG_AUTH, \
     MSG_REFRESH, MSG_BALANCE, MSG_START_FARMING, MSG_CLAIM_FARM, MSG_BEGIN_GAME, \
-    MSG_PLAYED_GAME, MSG_DAILY_REWARD, MSG_FRIENDS_CLAIM, URL_CHECK_NAME, MSG_INPUT_USERNAME
+    MSG_PLAYED_GAME, MSG_DAILY_REWARD, MSG_FRIENDS_CLAIM, URL_CHECK_NAME, MSG_INPUT_USERNAME, \
+    URL_TASK_CLAIM, URL_TASK_START, MSG_TASK_CLAIMED, MSG_TASK_STARTED
 from bots.blum.config import MANUAL_USERNAME
 
 GAME_RESULT_RANGE = (190, 280)
@@ -95,7 +96,7 @@ class BotFarmer(BaseFarmer):
 
     
     def update_tasks(self):
-        response = self.post(URL_TASKS)
+        response = self.get(URL_TASKS)
         if response.status_code == 200:
             self.tasks = response.json()
     
@@ -115,11 +116,21 @@ class BotFarmer(BaseFarmer):
             self.balance = self.balance_data['availableBalance']
             self.play_passes = self.balance_data['playPasses']
     
-    def check_task(self):
+    def check_tasks(self):
         self.update_tasks()
         for task in self.tasks:
-            if task['title'] == "Farm points" and task['status'] == "NOT_STARTED":
-                self.start_farm()
+            if task['type'] == 'SOCIAL_SUBSCRIPTION' and task['status'] == "NOT_STARTED":
+                response = self.post(URL_TASK_START.format(**task))
+                if response.status_code == 200:
+                    self.log(MSG_TASK_STARTED.format(**task))
+                    task.update(response.json())
+                    sleep(random() * 5)
+            if task['status'] == "READY_FOR_CLAIM":
+                response = self.post(URL_TASK_CLAIM.format(**task))
+                if response.status_code == 200:
+                    self.log(MSG_TASK_CLAIMED.format(**task))
+                    task.update(response.json())
+                    sleep(random() * 5)
     
     def start_farming(self):
         if 'farming' not in self.balance_data:
@@ -172,3 +183,4 @@ class BotFarmer(BaseFarmer):
         self.update_balance()
         self.play_game()
         self.start_farming()
+        self.check_tasks()
