@@ -25,7 +25,8 @@ ENABLED_BOTS = [
     'tapcoins',
     'hexn',
     'altooshka',
-    'dogs'
+    'dogs',
+    'solstone',
 ]
 
 try:
