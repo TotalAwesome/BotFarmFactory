@@ -14,19 +14,8 @@ DEBUG = True
 RETRY_ATTEMPTS = 3
 
 ENABLED_BOTS = [
-    'cell',
-    'anon',
-    'blum',
-    'timeton',
-    'simple',
-    'iceberg',
-    'hamster_kombat',
-    'zavod',
-    'tapcoins',
-    'hexn',
-    'altooshka',
-    'dogs',
-    'solstone',
+    # Пустой список = все боты включены
+    # иначе будут работать только те, что в этом списке
 ]
 
 try:
