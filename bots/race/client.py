@@ -12,6 +12,7 @@ class BotFarmer(BaseFarmer):
     extra_code = "r_102796269"
     init_data = None
     riding_thread = None
+    debug = False
     initialization_data = dict(peer=name, bot=name, url=URL_INIT)
 
     def set_headers(self, *args, **kwargs):

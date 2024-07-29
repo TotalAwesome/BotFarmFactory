@@ -32,6 +32,7 @@ class BaseFarmer(Session):
     app_extra = None
     is_alive = True
     ip = None
+    debug = True
 
     def __init__(self, initiator, proxy=None, only_proxy=False, **kwargs) -> None:
         super().__init__()
@@ -75,7 +76,7 @@ class BaseFarmer(Session):
     @retry
     def request(self, *args, **kwargs):
         response = super().request(*args, **kwargs)
-        if DEBUG:
+        if DEBUG and self.debug:
             self.debug(f"request {args}, {kwargs}")
             self.debug(f"response {response.status_code}, {response.text}")
         return response
