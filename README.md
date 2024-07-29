@@ -21,6 +21,7 @@
 - [hamster kombat](https://t.me/Hamster_kombat_bot/start?startapp=kentId102796269)
 - [timeton](https://t.me/TimeTONbot?start=TotalAwesome)
 - [Solstone](https://t.me/solstonebot?start=102796269)
+- [Race meme](https://t.me/Racememe_bot?start=_102796269)
 
 ### Комьюнити модули:
 

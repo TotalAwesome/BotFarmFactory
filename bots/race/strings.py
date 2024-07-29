@@ -4,6 +4,7 @@ URL_DRIVE = "https://racing-tg-p12o.onrender.com/race/addDistance?tgInitData={in
 
 MSG_PROFILE = "Обновил профиль"
 MSG_CLAIM = "Собрал нафармленное"
+MSG_BALANCE = "Пройдено {meters} метров"
 
 HEADERS = {
   'accept': '*/*',
