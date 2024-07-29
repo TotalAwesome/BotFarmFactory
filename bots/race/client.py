@@ -42,7 +42,7 @@ class BotFarmer(BaseFarmer):
     def restore_fuel(self):
         fuel = self.info['user']['fuel']
         if fuel['numberOfRestores'] != fuel['maxNumberOfRestores']:
-            return bool(self.get(URL_RESTORE_FUEL))
+            return bool(self.get(URL_RESTORE_FUEL.format(init_data=self.init_data)))
 
     def set_start_time(self):
         self.start_time = time() + 3600
