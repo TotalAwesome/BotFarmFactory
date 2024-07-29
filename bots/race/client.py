@@ -4,7 +4,7 @@ from time import time, sleep
 from threading import Thread
 from bots.base.base import BaseFarmer
 from bots.base.utils import to_localtz_timestamp, api_response
-from .strings import HEADERS, URL_DRIVE, URL_INFO, URL_INIT, MSG_BALANCE
+from .strings import HEADERS, URL_DRIVE, URL_INFO, URL_INIT, MSG_BALANCE, URL_RESTORE_FUEL
 
 
 class BotFarmer(BaseFarmer):
@@ -39,6 +39,11 @@ class BotFarmer(BaseFarmer):
     def fuel(self):
         return self.info['user']['fuel']['lastFuelAmount']
 
+    def restore_fuel(self):
+        fuel = self.info['user']['fuel']
+        if fuel['numberOfRestores'] != fuel['maxNumberOfRestores']:
+            return bool(self.get(URL_RESTORE_FUEL))
+
     def set_start_time(self):
         self.start_time = time() + 3600
 
@@ -47,10 +52,10 @@ class BotFarmer(BaseFarmer):
         if not self.ready_to_ride:
             return
         liters = round(randrange(0, 3) + random(), 1)
-        if liters <= self.fuel:
+        if liters <= self.fuel or self.restore_fuel():
             meters = liters * 100 - randrange(0, 6)
             payload = {"numberOfMeters": meters, "numberOfLiters": liters}
-            response = self.post(URL_DRIVE.format(init_data=self.init_data), json=payload)
+            response = self.post(URL_DRIVE.format(init_data=self.init_data), json=payload, return_codes=(520, ))
 
     def ride_in_thread(self):
         for _ in range(1000):
@@ -63,7 +68,7 @@ class BotFarmer(BaseFarmer):
             self.riding_thread.start()
 
     def sync(self):
-        response = self.get(URL_INFO.format(init_data=self.init_data))
+        response = self.get(URL_INFO.format(init_data=self.init_data), return_codes=(520, ))
         if response:
             self.info = response
 

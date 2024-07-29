@@ -1,6 +1,7 @@
 URL_INIT = "https://racing-tg.web.app/"
 URL_INFO = "https://racing-tg-p12o.onrender.com/user?tgInitData={init_data}"
 URL_DRIVE = "https://racing-tg-p12o.onrender.com/race/addDistance?tgInitData={init_data}"
+URL_RESTORE_FUEL = "https://racing-tg-p12o.onrender.com/booster/restoreFullTank?tgInitData={init_data}"
 
 MSG_PROFILE = "Обновил профиль"
 MSG_CLAIM = "Собрал нафармленное"
