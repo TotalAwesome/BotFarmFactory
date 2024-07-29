@@ -22,9 +22,6 @@ MSG_CRYPTED_CIPHER = "Шифрованный шифр: {cipher}"
 MSG_TAP = "Тапнул на {taps_count} монеток"
 MSG_CIPHER = "Новый шифр: {cipher}"
 MSG_SYNC = "Обновление данных"
-MSG_PROXY_IP = "Прокси работает. Ваш IP через прокси: {ip}"
-MSG_PROXY_CHECK_ERROR = "Ошибка при проверке прокси. Код ответа: {status_code}"
-MSG_PROXY_CONNECTION_ERROR = "Не удалось подключиться через прокси: {error}"
 
 BOOST_ENERGY = "BoostFullAvailableTaps"
 
