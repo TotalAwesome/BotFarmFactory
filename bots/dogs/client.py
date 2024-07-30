@@ -10,6 +10,7 @@ from bots.base.base import BaseFarmer
 from bots.dogs.strings import HEADERS, URL_INIT, URL_LOGIN, MSG_CURRENT_BALANCE, \
     MSG_CURRENT_FRIENDS, URL_FRIENDS, MSG_LOGIN_ERROR, URL_GET_TASKS, URL_VERIFY_TASK, MSG_TASK_COMPLETE, \
     MSG_TASK_ERROR
+from bots.dogs.config import TASK_EXCLUDE
 
 DEFAULT_EST_TIME = 60 * 10
 LOGIN_RANGE = (100, 1300)
@@ -54,11 +55,6 @@ class BotFarmer(BaseFarmer):
         random_time = randrange(DEFAULT_EST_TIME, max_time)
         self.start_time = time() + random_time
 
-    def farm(self):
-        self.show_balance()
-        self.show_friends()
-        self.process_tasks()
-
     def show_balance(self):
         self.log(MSG_CURRENT_BALANCE.format(balance=self.balance))
 
@@ -72,7 +68,7 @@ class BotFarmer(BaseFarmer):
         response = self.get(URL_GET_TASKS.format(user_id=self.user_id, reference=self.ref_code)).json()
 
         for task in response:
-            if not task['complete']:
+            if (not task['complete']) and (task["slug"] not in TASK_EXCLUDE):
                 sleep(randrange(4, 7))
                 self.process_task(task)
 
@@ -86,3 +82,9 @@ class BotFarmer(BaseFarmer):
                 self.log(MSG_TASK_ERROR.format(slug=task['slug']))
         except Exception as e:
             self.log(MSG_TASK_ERROR.format(slug=task['slug']))
+
+    def farm(self):
+        self.show_balance()
+        self.show_friends()
+        self.process_tasks()
+
