@@ -98,7 +98,8 @@ class BotFarmer(BaseFarmer):
     def update_tasks(self):
         response = self.get(URL_TASKS)
         if response.status_code == 200:
-            self.tasks = response.json()
+            result = response.json()
+            self.tasks = result[0]["tasks"]
     
     @property
     def estimate_time(self):
