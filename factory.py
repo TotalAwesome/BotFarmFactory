@@ -36,9 +36,9 @@ else:
 def make_account_farmers(account):
     
     phone = account['phone']
-    proxy = account.get('proxy')
-    proxies = dict(http=proxy, https=proxy)
-    proxy = proxy if check_proxy(proxies=proxies) else None
+    if proxy := account.get('proxy'):
+        proxies = dict(http=proxy, https=proxy)
+        proxy = proxy if check_proxy(proxies=proxies) else None
     try:
         initiator = Initiator(phone)
     except Exception as e:
