@@ -23,6 +23,7 @@ class BotFarmer(BaseFarmer):
     app_extra = "friendId102796269"
     tokens = {}
     refreshable_token = True
+    codes_to_refresh = (401,)
 
     @property
     def initialization_data(self):
@@ -70,6 +71,12 @@ class BotFarmer(BaseFarmer):
         else:
             self.is_alive = False
             raise Exception(MSG_AUTH_ERROR)
+
+    def refresh_token(self):
+        self.initiator.connect()
+        self.authenticate()
+        self.initiator.disconnect()
+
 
     def sync(self):
         if response := self.get(URL_INFO):
