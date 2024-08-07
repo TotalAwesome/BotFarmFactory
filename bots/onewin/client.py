@@ -4,10 +4,10 @@ from time import time as current_time, sleep
 from random import choice, uniform
 from bots.base.base import BaseFarmer
 from bots.onewin.strings import (
-    HEADERS,
+    HEADERS, BUILDING_INFO, RUS_NAMES,
     URL_INIT,URL_ACCOUNT_BALANCE,URL_DAILY_REWARD_INFO,URL_MINING,
     MSG_CURRENT_BALANCE,MSG_DAILY_REWARD,MSG_DAILY_REWARD_IS_COLLECTED,
-    MSG_BUY_UPGRADE
+    MSG_BUY_UPGRADE,MSG_BUY_BUILDING
 )
 from bots.onewin.config import (
     FEATURES,UPGRADE_MAX_LEVEL,
@@ -55,12 +55,13 @@ class BotFarmer(BaseFarmer):
         except Exception as e:
             self.log(f"Ошибка при разборе URL для аутентификации: {e}")
 
-    def get_info(self):
+    def get_info(self, show=False):
         response = self.get(url=URL_ACCOUNT_BALANCE, headers=self.headers)
         if response.status_code == 200:
             result = response.json()
             self.balance = result.get("coinsBalance", 0)
-            self.log(MSG_CURRENT_BALANCE.format(coins=self.balance))
+            if show:
+                self.log(MSG_CURRENT_BALANCE.format(coins=self.balance))
         else:
             result = "POST ERROR {status_code}{text}".format(status_code=response.status_code,text=response.text)
         return result
@@ -91,6 +92,7 @@ class BotFarmer(BaseFarmer):
         response = self.get(URL_MINING, headers=self.headers)
         if response.status_code == 200:
             self.upgrades = response.json()
+            # print(json.dumps(self.upgrades, indent=4))
 
     def get_sorted_upgrades(self, sort_method):
         """
@@ -105,11 +107,11 @@ class BotFarmer(BaseFarmer):
         for upgrade in self.upgrades:
             if (
                 upgrade["profit"] > 0
-                and upgrade["level"] < UPGRADE_MAX_LEVEL - 1
+                and upgrade["level"] <= UPGRADE_MAX_LEVEL - 1
                 and upgrade["cost"] <= FEATURES["max_upgrade_cost"]
                 and upgrade["cost"] / upgrade["profit"] <=  FEATURES["max_upgrade_payback"]
             ):
-                upgrade["payback"] = round(upgrade["cost"] / upgrade["profit"],1)
+                upgrade["payback"] = round(upgrade["cost"] / upgrade["profit"],2)
                 item = upgrade.copy()
                 prepared.append(item)
         if prepared:
@@ -123,46 +125,66 @@ class BotFarmer(BaseFarmer):
             counter = 0
             num_purchases_per_cycle = FEATURES["num_purchases_per_cycle"]
             while True:
-                self.upgrades_list()
                 if sorted_upgrades := self.get_sorted_upgrades(FEATURES["buy_decision_method"]):
                     upgrade = sorted_upgrades[0]
                     if upgrade["cost"]*2 <= self.balance \
                     and self.balance > FEATURES["min_cash_value_in_balance"] \
                     and num_purchases_per_cycle and counter < num_purchases_per_cycle:
-                        result = self.upgrade(upgrade['id'])
-                        if result.status_code == 200:
-                            pass
-                        self.log(MSG_BUY_UPGRADE.format(**upgrade))
-                        self.get_info()
-                        counter += 1
-                        sleep(choice(range(1, 7)))
+                        self.upgrade(upgrade['id'])
                     else:
                         break
                 else:
                     break
-        else:
-            self.upgrades_list()
 
-    def upgrade(self, upgrade_id):
+    def upgrade(self, upgrade_id, new_building=False):
         data = {"id": upgrade_id}
-        match = re.search(r'\d+', data['id'])
-        if match:
-            number = int(match.group())
-            new_id = data['id'].replace(str(number), str(number + 1))
-            data['id'] = new_id
-        return self.post(URL_MINING, json=data)
+        if new_building == False:
+            match = re.search(r'\d+', data['id'])
+            if match:
+                current_level = int(match.group())
+                upgrade_level = current_level + 1
+                new_id = data['id'].replace(str(current_level), str(upgrade_level))
+                data['id'] = new_id
+                response = self.post(URL_MINING, json=data)
+                if response.status_code == 200:
+                    self.log(MSG_BUY_UPGRADE.format(name=upgrade_id, level=upgrade_level))
+                    self.get_info()
+                self.get_info()
+        else:
+            response = self.post(URL_MINING, json=data)
+            if response.status_code == 200:
+                self.log(MSG_BUY_BUILDING)
+                self.get_info()
 
+    def buy_new_buildings(self):
+        my_buildings = {}
+        for upgrade in self.upgrades:
+            try:
+                building_name = re.sub(r'\d+', '', upgrade["id"]).lower()
+                building_level = upgrade["level"]
+                my_buildings[building_name] = building_level
+            except Exception as e:
+                pass
+        new_buildings = list(BUILDING_INFO.keys())
+        self.get_info()
+        for item in new_buildings:
+            if my_buildings.get(item) == None:
+                requirements = BUILDING_INFO[item]["requirements"]
+                if (requirements == None) or (requirements["level"]<=my_buildings[requirements["name"]]):
+                    if BUILDING_INFO[item]["min_balance"] <= self.balance:
+                        self.upgrade(BUILDING_INFO[item]["purchase_id"], new_building=True)
 
     def set_start_time(self):
         self.start_time = current_time() + uniform(FEATURES["minimum_delay"],FEATURES["maximum_delay"])
 
-
     def farm(self):
         self.authenticate()
         self.get_token()
-        self.get_info()
+        self.get_info(show=True)
         if FEATURES['get_daily_reward']:
             self.get_daily_reward()
         self.upgrades_list()
+        if FEATURES['blind_upgrade']:
+            self.buy_new_buildings()
         self.buy_upgrades()
 
