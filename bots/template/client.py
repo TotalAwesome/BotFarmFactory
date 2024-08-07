@@ -1,5 +1,4 @@
 from bots.base.base import BaseFarmer
-from bots.base.utils import to_localtz_timestamp
 from bots.iceberg.strings import HEADERS
 
 
