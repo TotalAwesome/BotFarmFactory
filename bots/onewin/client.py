@@ -4,13 +4,13 @@ from time import time as current_time, sleep
 from random import choice, uniform
 from bots.base.base import BaseFarmer
 from bots.onewin.strings import (
-    HEADERS, BUILDING_INFO, RUS_NAMES,
+    HEADERS, BUILDING_INFO,
     URL_INIT,URL_ACCOUNT_BALANCE,URL_DAILY_REWARD_INFO,URL_MINING,
     MSG_CURRENT_BALANCE,MSG_DAILY_REWARD,MSG_DAILY_REWARD_IS_COLLECTED,
     MSG_BUY_UPGRADE,MSG_BUY_BUILDING
 )
 from bots.onewin.config import (
-    FEATURES,UPGRADE_MAX_LEVEL,
+    FEATURES,UPGRADE_MAX_LEVEL
 )
 
 
@@ -138,6 +138,8 @@ class BotFarmer(BaseFarmer):
 
     def upgrade(self, upgrade_id, new_building=False):
         data = {"id": upgrade_id}
+        english_name = re.sub(r'\d+', '', upgrade_id).lower()
+        russian_name = BUILDING_INFO.get(english_name)["rus_name"]
         if new_building == False:
             match = re.search(r'\d+', data['id'])
             if match:
@@ -147,14 +149,12 @@ class BotFarmer(BaseFarmer):
                 data['id'] = new_id
                 response = self.post(URL_MINING, json=data)
                 if response.status_code == 200:
-                    self.log(MSG_BUY_UPGRADE.format(name=upgrade_id, level=upgrade_level))
-                    self.get_info()
-                self.get_info()
+                    self.log(MSG_BUY_UPGRADE.format(name=russian_name, level=upgrade_level))
         else:
             response = self.post(URL_MINING, json=data)
             if response.status_code == 200:
-                self.log(MSG_BUY_BUILDING)
-                self.get_info()
+                self.log(MSG_BUY_BUILDING.format(name=russian_name))
+        self.get_info()
 
     def buy_new_buildings(self):
         my_buildings = {}
@@ -170,7 +170,7 @@ class BotFarmer(BaseFarmer):
         for item in new_buildings:
             if my_buildings.get(item) == None:
                 requirements = BUILDING_INFO[item]["requirements"]
-                if (requirements == None) or (requirements["level"]<=my_buildings[requirements["name"]]):
+                if (requirements == None) or (requirements["level"]<=my_buildings.get(requirements["name"],0)):
                     if BUILDING_INFO[item]["min_balance"] <= self.balance:
                         self.upgrade(BUILDING_INFO[item]["purchase_id"], new_building=True)
 

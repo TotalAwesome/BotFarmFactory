@@ -13,35 +13,56 @@ MSG_CURRENT_BALANCE = "Текущий баланс - {coins} монет"
 MSG_BUY_UPGRADE = "Прокачал: {name} : ур.{level}"
 MSG_DAILY_REWARD = "Забрал ежедневную награду - {coins} монет"
 MSG_DAILY_REWARD_IS_COLLECTED = "Ежедневная награда уже получена"
-MSG_BUY_BUILDING = "Здание куплено"
+MSG_BUY_BUILDING = "Здание {name} куплено"
 
 BUILDING_INFO = {
-    "coinflip": {"purchase_id": "coinflip1", "requirements": None, "min_balance": 2_000},
-    "mines": {"purchase_id": "Mines1", "requirements": None, "min_balance": 2_000},
-    "bombucks": {"purchase_id":"Bombucks1", "requirements": None, "min_balance": 2_000},
-    "tower": {"purchase_id":"Tower1", "requirements": None, "min_balance": 2_000},
-    "double":{"purchase_id":"Double1", "requirements": {"name":"mines", "level":8}, "min_balance": 10_000},
-    "royalmines":{"purchase_id":"RoyalMines1", "requirements": {"name":"coinflip", "level":5}, "min_balance": 10_000},
-    "luckyloot":{"purchase_id":"LuckyLoot1", "requirements": {"name":"coinflip", "level":11}, "min_balance": 10_000},
-    "brawlpirates":{"purchase_id":"BrawlPirates1", "requirements": {"name":"bombucks", "level":3}, "min_balance": 10_000}
+    "coinflip": {"purchase_id": "coinflip1", "rus_name": "Такси",
+                 "requirements": None,
+                 "min_balance": 2_000},
+    "mines": {"purchase_id": "Mines1", "rus_name": "Продуктовый магазин",
+              "requirements": None,
+              "min_balance": 2_000},
+    "bombucks": {"purchase_id":"Bombucks1", "rus_name": "Стриминг",
+                 "requirements": None,
+                 "min_balance": 2_000},
+    "tower": {"purchase_id":"Tower1", "rus_name": "Майнинг ферма",
+              "requirements": None,
+              "min_balance": 2_000},
+    "double":{"purchase_id":"Double1", "rus_name": "Барбершоп",
+              "requirements": {"name":"mines", "level":8},
+              "min_balance": 10_000},
+    "royalmines":{"purchase_id":"RoyalMines1", "rus_name": "Автосалон",
+                  "requirements": {"name":"coinflip", "level":5},
+                  "min_balance": 10_000},
+    "luckyloot":{"purchase_id":"LuckyLoot1", "rus_name": "Рекламное агентство",
+                 "requirements": {"name":"coinflip", "level":11},
+                 "min_balance": 10_000},
+    "brawlpirates":{"purchase_id":"BrawlPirates1", "rus_name": "Компьютерный клуб",
+                    "requirements": {"name":"bombucks", "level":3},
+                    "min_balance": 10_000},
+    "anubisplinko":{"purchase_id":"AnubisPlinko1", "rus_name": "Фитнес клуб",
+                    "requirements": {"name":"tower", "level":7},
+                    "min_balance": 20_000},
+    "rocketx":{"purchase_id":"RocketX1", "rus_name": "Кинотеатр",
+               "requirements": {"name":"anubisplinko", "level":10},
+               "min_balance": 20_000},
+    "speedncash":{"purchase_id":"SpeednCash1", "rus_name": "Торговый центр",
+                  "requirements": {"name":"rocketx", "level":9},
+                  "min_balance": 20_000},
+    "rocketqueen":{"purchase_id":"RocketQueen1", "rus_name": "Отель",
+                   "requirements": {"name":"speedncash", "level":12},
+                   "min_balance": 20_000},
+    "luckyjet":{"purchase_id":"LuckyJet1", "rus_name": "Маркетплейс",
+                   "requirements": {"name":"brawlpirates", "level":7},
+                   "min_balance": 20_000},
+    "airjet":{"purchase_id":"AirJet1", "rus_name": "Каршеринг",
+                   "requirements": {"name":"anubisplinko", "level":7},
+                   "min_balance": 20_000},
+    "fortunecrash":{"purchase_id":"FortuneCrash1", "rus_name": "Онлайн школа",
+                   "requirements": {"name":"luckyloot", "level":3},
+                   "min_balance": 20_000}
 }
 
-RUS_NAMES = {
-    "coinflip": "Такси",
-    "mines": "Продуктовый магазин",
-    "bombucks": "Стриминг",
-    "tower": "Майнинг ферма",
-    "double": "Барбершоп",
-    "royalmines": "Автосалон",
-    "luckyloot": "Рекламное агентство",
-    "brawlpirates": "Компьютерный клуб",
-    "anubisplinko": "Фитнес-клуб",
-    "rocketx": "Кинотеатр",
-    "speedncash": "Торговый центр",
-    "luckyjet": "Маркетплейс",
-    "airjet": "Каршеринг",
-    "fortunecrash": "Онлайн школа",
-}
 
 HEADERS = {
     'Content-Type': 'application/json',
