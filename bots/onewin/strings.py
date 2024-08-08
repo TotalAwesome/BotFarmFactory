@@ -1,18 +1,24 @@
 URL_INIT = "https://crypto-clicker-backend-go-prod.100hp.app/game/start"
-
 URL_ACCOUNT_BALANCE = "https://crypto-clicker-backend-go-prod.100hp.app/user/balance" #GET
 URL_DAILY_REWARD_INFO = "https://crypto-clicker-backend-go-prod.100hp.app/tasks/everydayreward" #GET
 URL_TAP = "https://crypto-clicker-backend-go-prod.100hp.app/tap" #POST
 URL_MINING = "https://crypto-clicker-backend-go-prod.100hp.app/minings" #GET
+URL_MINING_UPGRADE = "https://crypto-clicker-backend-go-prod.100hp.app/minings" #POST Пример id: "coinflip15"
+URL_FRIENDS_INFO = "https://crypto-clicker-backend-go-prod.100hp.app/friends?offset=0&limit=5"
+URL_FRIEND_CLAIM = "https://crypto-clicker-backend-go-prod.100hp.app/friends/collect" #POST
 
-# Прокинуть ID id "coinflip15"
-URL_MINING_UPGRADE = "https://crypto-clicker-backend-go-prod.100hp.app/minings" #POST
-
-
+MSG_INITIALIZATION_ERROR = "Ошибка инициализации"
+MSG_ACCESS_TOKEN_ERROR = "Не удалось получить access token"
+MSG_AUTHENTICATION_ERROR = "Ошибка аутентификации. Код состояния: {status_code}, Ответ: {text}"
+MSG_URL_ERROR = "Ошибка при разборе URL для аутентификации: {error}"
+MSG_ACCOUNT_INFO_ERROR = "Не получена информация об аккаунте. Код состояния: {status_code}, Ответ: {text}"
 MSG_CURRENT_BALANCE = "Текущий баланс - {coins} монет"
 MSG_BUY_UPGRADE = "Прокачал: {name} : ур.{level}"
 MSG_DAILY_REWARD = "Забрал ежедневную награду - {coins} монет"
+MSG_DAILY_REWARD_ERROR = "Не получена ежедневная награда. Код состояния: {status_code}, Ответ: {text}"
 MSG_DAILY_REWARD_IS_COLLECTED = "Ежедневная награда уже получена"
+MSG_FRIENDS_REWARD = "Забрал награду от рефералов - {coins} монет"
+MSG_FRIENDS_REWARD_ERROR = "Не получена награда от рефералов. Код состояния: {status_code}, Ответ: {text}"
 MSG_BUY_BUILDING = "Здание {name} куплено"
 
 BUILDING_INFO = {

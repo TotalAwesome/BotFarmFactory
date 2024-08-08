@@ -5,9 +5,12 @@ from random import choice, uniform
 from bots.base.base import BaseFarmer
 from bots.onewin.strings import (
     HEADERS, BUILDING_INFO,
-    URL_INIT,URL_ACCOUNT_BALANCE,URL_DAILY_REWARD_INFO,URL_MINING,
-    MSG_CURRENT_BALANCE,MSG_DAILY_REWARD,MSG_DAILY_REWARD_IS_COLLECTED,
-    MSG_BUY_UPGRADE,MSG_BUY_BUILDING
+    URL_INIT, URL_ACCOUNT_BALANCE, URL_DAILY_REWARD_INFO, URL_MINING,
+    URL_FRIENDS_INFO, URL_FRIEND_CLAIM,
+    MSG_CURRENT_BALANCE, MSG_DAILY_REWARD, MSG_DAILY_REWARD_IS_COLLECTED,
+    MSG_BUY_UPGRADE, MSG_BUY_BUILDING, MSG_ACCESS_TOKEN_ERROR, MSG_URL_ERROR,
+    MSG_AUTHENTICATION_ERROR, MSG_ACCOUNT_INFO_ERROR, MSG_DAILY_REWARD_ERROR,
+    MSG_INITIALIZATION_ERROR,MSG_FRIENDS_REWARD,MSG_FRIENDS_REWARD_ERROR
 )
 from bots.onewin.config import (
     FEATURES,UPGRADE_MAX_LEVEL
@@ -24,36 +27,33 @@ class BotFarmer(BaseFarmer):
     token = None
     extra_code = "refId6370423806"
     initialization_data = dict(peer=name, bot=name, url=URL_INIT)
+    friends_coins = 0
+    friends = 0
 
     def authenticate(self):
         if not self.auth_data:
-            init_data = self.initiator.get_auth_data(**self.initialization_data)
-            self.auth_data = {
-                "initData": init_data["authData"]
-            }
+            try:
+                init_data = self.initiator.get_auth_data(**self.initialization_data)
+                self.auth_data = init_data["authData"]
+            except Exception as e:
+                self.log(MSG_INITIALIZATION_ERROR.format(error=e))
+        try:
+            response = self.post(URL_INIT, headers=self.headers,params=self.auth_data)
+            if response.status_code == 200:
+                result = response.json()
+                if token := result.get("token"):
+                    self.token = token
+                    self.set_headers()
+                    self.headers["Authorization"] = f"Bearer {self.token}"
+                else:
+                    self.error(MSG_ACCESS_TOKEN_ERROR)
+            else:
+                self.error(MSG_AUTHENTICATION_ERROR.format(status_code=response.status_code,text=response.text))
+        except Exception as e:
+            self.log(MSG_URL_ERROR.format(error=e))            
 
     def set_headers(self):
         self.headers = HEADERS.copy()
-        if self.token:
-            self.headers["Authorization"] = f"Bearer {self.token}"
-        self.headers["x-extra-code"] = self.extra_code
-
-    def get_token(self):
-        self.set_headers()
-        auth_data = self.auth_data["initData"]
-        try:
-            result = self.post(URL_INIT, headers=self.headers,params=auth_data)
-            if result.status_code == 200:
-                token_data = result.json()
-                if token := token_data.get("token"):
-                    self.token = token
-                    self.set_headers()
-                else:
-                    self.error("Не удалось получить access token")
-            else:
-                self.error(f"Ошибка аутентификации. Код состояния: {result.status_code}, Ответ: {result.text}")
-        except Exception as e:
-            self.log(f"Ошибка при разборе URL для аутентификации: {e}")
 
     def get_info(self, show=False):
         response = self.get(url=URL_ACCOUNT_BALANCE, headers=self.headers)
@@ -63,8 +63,7 @@ class BotFarmer(BaseFarmer):
             if show:
                 self.log(MSG_CURRENT_BALANCE.format(coins=self.balance))
         else:
-            result = "POST ERROR {status_code}{text}".format(status_code=response.status_code,text=response.text)
-        return result
+            self.error(MSG_ACCOUNT_INFO_ERROR.format(status_code=response.status_code,text=response.text))
 
     def daily_reward_info(self):
         response = self.get(URL_DAILY_REWARD_INFO, headers=self.headers)
@@ -83,16 +82,32 @@ class BotFarmer(BaseFarmer):
                 self.daily_reward = result["days"][0]["money"]
                 self.log(MSG_DAILY_REWARD.format(coins=self.daily_reward))
             else:
-                result = "POST ERROR {status_code}{text}".format(status_code=response.status_code,text=response.text)
-            return result
+                self.error(MSG_DAILY_REWARD_ERROR.format(status_code=response.status_code,text=response.text))
         else:
             self.log(MSG_DAILY_REWARD_IS_COLLECTED)
+
+    def friends_info(self):
+        response = self.get(URL_FRIENDS_INFO, headers=self.headers)
+        if response.status_code == 200:
+            result = response.json()
+            self.friends = result.get("total_friends", 0)
+            self.friends_coins = result.get("total_coins", 0)
+
+    def friends_claim(self):
+        self.friends_info()
+        if self.friends_coins > 0:
+            response = self.post(url=URL_FRIEND_CLAIM, headers=self.headers)
+            if response.status_code == 200:
+                result = response.json()
+                coins_collected = result.get("coinsCollected", 0)
+                self.log(MSG_FRIENDS_REWARD.format(coins=self.coins_collected))
+            else:
+                self.error(MSG_FRIENDS_REWARD_ERROR.format(status_code=response.status_code,text=response.text))
 
     def upgrades_list(self):
         response = self.get(URL_MINING, headers=self.headers)
         if response.status_code == 200:
             self.upgrades = response.json()
-            # print(json.dumps(self.upgrades, indent=4))
 
     def get_sorted_upgrades(self, sort_method):
         """
@@ -168,7 +183,7 @@ class BotFarmer(BaseFarmer):
         new_buildings = list(BUILDING_INFO.keys())
         self.get_info()
         for item in new_buildings:
-            if my_buildings.get(item) == None:
+            if not my_buildings.get(item):
                 requirements = BUILDING_INFO[item]["requirements"]
                 if (requirements == None) or (requirements["level"]<=my_buildings.get(requirements["name"],0)):
                     if BUILDING_INFO[item]["min_balance"] <= self.balance:
@@ -179,10 +194,11 @@ class BotFarmer(BaseFarmer):
 
     def farm(self):
         self.authenticate()
-        self.get_token()
         self.get_info(show=True)
         if FEATURES['get_daily_reward']:
             self.get_daily_reward()
+        if FEATURES['friends_claim']:
+            self.friends_claim()
         self.upgrades_list()
         if FEATURES['blind_upgrade']:
             self.buy_new_buildings()
