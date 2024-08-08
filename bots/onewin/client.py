@@ -100,7 +100,7 @@ class BotFarmer(BaseFarmer):
             if response.status_code == 200:
                 result = response.json()
                 coins_collected = result.get("coinsCollected", 0)
-                self.log(MSG_FRIENDS_REWARD.format(coins=self.coins_collected))
+                self.log(MSG_FRIENDS_REWARD.format(coins=coins_collected))
             else:
                 self.error(MSG_FRIENDS_REWARD_ERROR.format(status_code=response.status_code,text=response.text))
 
