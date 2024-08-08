@@ -8,3 +8,4 @@ venv
 *.log
 .idea
 .sandbox.py
+.github
