@@ -53,6 +53,8 @@ class BotFarmer(BaseFarmer):
             response = self.post(URL_CLAIM_FARMED, json=self.base_payload, return_codes=(400,))
             if response:
                 self.log(MSG_CLAIM_FARMED)
+                ids = list(map(int, response["completed_quest_ids"].strip(',').split(','))) 
+                response["completed_quest_ids"] = ids
                 self.info.update(response)
         if not farming_started:
             payload = self.base_payload.copy()
