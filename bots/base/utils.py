@@ -7,7 +7,7 @@ from requests import get as requests_get
 from dateutil import tz, parser
 
 log_format = "%(asctime)s %(levelname)s %(message)s"
-logging.basicConfig(level=logging.INFO, format=log_format)
+logging.basicConfig(level=logging.INFO, format=log_format, datefmt='%Y-%m-%d %H:%M:%S')
 formatter = logging.Formatter(log_format)
 
 file_handler = logging.FileHandler('debug.log', encoding='utf-8')
