@@ -1,7 +1,7 @@
 import json
 import re
 from time import time as current_time, sleep
-from random import choice, uniform
+from random import choice, uniform, random
 from bots.base.base import BaseFarmer
 from bots.onewin.strings import (
     HEADERS, BUILDING_INFO,
