@@ -225,7 +225,8 @@ class BotFarmer(BaseFarmer):
     def farm(self):
         self.sync()
         self.claim_daily_cipher()
-        self.tap()
+        if FEATURES.get('taps', True):
+            self.tap()
         if FEATURES.get('buy_upgrades', True):
             self.buy_upgrades(FEATURES.get('buy_decision_method', 'payback'))
         self.check_task()
