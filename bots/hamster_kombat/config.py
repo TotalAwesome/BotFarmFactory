@@ -10,6 +10,7 @@
         3. delay_between_attempts -> Задержка между заходами в секундах
         4. percent_to_spend -> Процент от депозита который можно потратить за 1 подход
         5. taps -> включение/отключение тапов
+        6. max_upgrade_payback - максимальная окупаемость апргейда в часах
     
     TOKENS:
         name -> Название аккаунта. Так он будет виден в логе
@@ -23,7 +24,8 @@ FEATURES = {
     "buy_decision_method": "payback",
     "delay_between_attempts": 60 * 10,
     "percent_to_spend": 10,
-    "taps": True
+    "taps": True,
+    "max_upgrade_payback": 24*100,
 }
 
 

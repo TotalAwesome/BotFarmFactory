@@ -170,6 +170,7 @@ class BotFarmer(BaseFarmer):
                 and not upgrade["isExpired"]
                 and upgrade["profitPerHourDelta"] > 0
                 and not upgrade.get("cooldownSeconds")
+                and upgrade["price"] / upgrade["profitPerHourDelta"] <=  self.features['max_upgrade_payback']
             ):
                 item = upgrade.copy()
                 if 'condition' in item :
@@ -244,8 +245,8 @@ class BotFarmer(BaseFarmer):
         return {
             "уровень" : self.level,
             "энергия" : self.available_taps,
-            'баланс' : self.balance,
-            "доход в час" : self.state['earnPassivePerHour']
+            'баланс' : round(self.balance, 0),
+            "доход в час" : round(self.state['earnPassivePerHour'], 0)
         }
     
     @property
