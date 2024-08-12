@@ -30,6 +30,7 @@ class Initiator(TelegramClient):
 
     phone = None
     registered = []
+    dialogs = None
 
     def __init__(self, phone):
         kwargs = {}
@@ -49,8 +50,8 @@ class Initiator(TelegramClient):
             return
         botname = botname.lower()
         if botname not in self.registered:
-            dialogs = self.get_dialogs()
-            is_registered = any(map(lambda x: username(x) == botname, dialogs))
+            self.dialogs = self.dialogs or self.get_dialogs()
+            is_registered = any(map(lambda x: username(x) == botname, self.dialogs))
             if is_registered:
                 self.registered.append(botname)
         return botname in self.registered
