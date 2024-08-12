@@ -191,7 +191,7 @@ class BotFarmer(BaseFarmer):
                     if result.status_code == 200:
                         self.state = result.json()["clickerUser"]
                     self.log(MSG_BUY_UPGRADE.format(**upgrade))
-                    sleep(random() + choice(range(3, 6)))
+                    sleep(random() + choice(range(5, 10)))
                 else:
                     break
             else:
@@ -227,7 +227,7 @@ class BotFarmer(BaseFarmer):
                 continue
 
             if reward > 0:
-                sleep(random() + choice(range(3, 6)))
+                sleep(random() + choice(range(5, 10)))
                 data = {'taskId': task_id}
                 response = self.post(URL_CHECK_TASK, json=data)
                 if response.status_code == 200:
