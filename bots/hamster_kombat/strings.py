@@ -22,6 +22,8 @@ MSG_CRYPTED_CIPHER = "Шифрованный шифр: {cipher}"
 MSG_TAP = "Тапнул на {taps_count} монеток"
 MSG_CIPHER = "Новый шифр: {cipher}"
 MSG_SYNC = "Обновление данных"
+MSG_TASK_COMPLETED = "Задание выполнено. Награда: {reward}"
+MSG_TASK_NOT_COMPLETED = "Задание не выполнено"
 
 BOOST_ENERGY = "BoostFullAvailableTaps"
 

@@ -8,7 +8,8 @@ from telethon.types import InputBotAppShortName
 from bots.hamster_kombat.strings import URL_BOOSTS_FOR_BUY, URL_BUY_BOOST, URL_BUY_UPGRADE, \
     URL_SYNC, URL_TAP, URL_UPGRADES_FOR_BUY, HEADERS, BOOST_ENERGY, URL_CHECK_TASK, \
     URL_CLAIM_DAILY_COMBO, MSG_BUY_UPGRADE, MSG_COMBO_EARNED, MSG_TAP, MSG_CLAIMED_COMBO_CARDS, \
-    MSG_SYNC, URL_CONFIG, URL_CLAIM_DAILY_CIPHER, MSG_CIPHER, URL_INIT, URL_AUTH, URL_SELECT_EXCHANGE
+    MSG_SYNC, URL_CONFIG, URL_CLAIM_DAILY_CIPHER, MSG_CIPHER, URL_INIT, URL_AUTH, URL_SELECT_EXCHANGE, \
+    URL_LIST_TASKS, MSG_TASK_COMPLETED, MSG_TASK_NOT_COMPLETED
 from bots.hamster_kombat.config import FEATURES
 from bots.hamster_kombat.utils import sorted_by_payback, sorted_by_price, sorted_by_profit, sorted_by_profitness
     
@@ -86,7 +87,7 @@ class BotFarmer(BaseFarmer):
         except Exception as e:
             pass
 
-    def check_task(self):
+    def daily_reward(self):
         """ Получение ежедневной награды """
         data = {"taskId":"streak_days"}
         if not self.task_checked_at or time() - self.task_checked_at >= 60 * 60:
@@ -209,6 +210,35 @@ class BotFarmer(BaseFarmer):
                     self.state = result.json()["clickerUser"]
                     self.log(MSG_COMBO_EARNED.format(coins=combo['bonusCoins']))
 
+    def update_tasks(self):
+        response = self.post(URL_LIST_TASKS)
+        if response.status_code == 200:
+            result = response.json()
+            self.tasks = list(filter(lambda d: d['isCompleted'] != True, result["tasks"]))   
+
+    def make_tasks(self):
+        self.update_tasks()
+        for task in self.tasks:
+            task_id = task['id']
+            reward = task['rewardCoins']
+            is_completed = task['isCompleted']
+
+            if not task_id.startswith('hamster_youtube'):
+                continue
+
+            if reward > 0:
+                sleep(choice(range(3, 6)))
+                data = {'taskId': task_id}
+                response = self.post(URL_CHECK_TASK, json=data)
+                if response.status_code == 200:
+                    result = response.json()
+                    result = result["task"]
+                    is_completed = result.get('isCompleted')
+                    if is_completed:
+                        self.log(MSG_TASK_COMPLETED.format(reward=reward))
+                    else:
+                        self.log(MSG_TASK_NOT_COMPLETED)
+
     @property
     def stats(self):
         return {
@@ -227,9 +257,10 @@ class BotFarmer(BaseFarmer):
         self.claim_daily_cipher()
         if FEATURES.get('taps', True):
             self.tap()
+        self.daily_reward()
+        self.make_tasks()
         if FEATURES.get('buy_upgrades', True):
             self.buy_upgrades(FEATURES.get('buy_decision_method', 'payback'))
-        self.check_task()
         self.claim_combo_reward()
         if self.is_taps_boost_available:
             self.boost(BOOST_ENERGY)
