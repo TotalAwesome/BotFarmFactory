@@ -28,6 +28,6 @@ FEATURES = {
 
 
 try:
-    from config_local import *
+    from bots.hamster_kombat.config_local import *
 except ImportError:
     pass
