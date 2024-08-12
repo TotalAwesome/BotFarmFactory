@@ -27,7 +27,6 @@ MSG_BALANCE = "Текущий баланс: {balance}"
 HEADERS = {
   'accept': 'application/json, text/plain, */*',
   'accept-language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7,cy;q=0.6',
-#   'authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTEzNTU2MCwicm9sZUlkIjoxLCJpYXQiOjE3MjAwMzc1MTksImV4cCI6MTcyMDEyMzkxOX0._f3IudNWw4TUaZGpR7tCZxu2RUfWIRBM11v857wFya0',
   'cache-control': 'no-cache',
   'content-type': 'application/json',
   'origin': 'https://game.orbitonx.com',
@@ -41,26 +40,5 @@ HEADERS = {
   'sec-fetch-mode': 'cors',
   'sec-fetch-site': 'same-site',
   'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
-#   'x-local-time': '2024-07-03T20:37:58.317Z',
-#   'x-request-id': 'tzhh2g',
   'x-timezone': 'Europe/Moscow',
 }
-#   {
-#     "tgChatId":102796269,
-#     "webAppInitData": {"user":{ "id":102796269,
-#                                 "first_name":"Тотально Классная Змея Алабамы",
-#                                 "last_name":"",
-#                                 "username":"TotalAwesome",
-#                                 "language_code":"ru",
-#                                 "allows_write_to_pm":true},
-#                         "chat_instance":"-8420253757687619867",
-#                         "chat_type":"sender",
-#                         "auth_date":"1720039071",
-#                         "hash":"ddb6a39a1de22115e960bb479db01fe88b3cd7e0056656b9bd064569a2031378"},
-#     "user":{"id":102796269,
-#             "first_name":"Тотально Классная Змея Алабамы",
-#             "last_name":"",
-#             "username":"TotalAwesome",
-#             "language_code":"ru",
-#             "allows_write_to_pm":true}
-# }

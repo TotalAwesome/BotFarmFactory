@@ -1,7 +1,7 @@
 import json
 import re
 from time import time as current_time, sleep
-from random import choice, uniform
+from random import choice, uniform, random
 from bots.base.base import BaseFarmer
 from bots.onewin.strings import (
     HEADERS, BUILDING_INFO,
@@ -146,6 +146,7 @@ class BotFarmer(BaseFarmer):
                     and self.balance > FEATURES["min_cash_value_in_balance"] \
                     and num_purchases_per_cycle and counter < num_purchases_per_cycle:
                         self.upgrade(upgrade['id'])
+                        sleep(2 + random() * 3)
                     else:
                         break
                 else:
