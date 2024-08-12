@@ -3,7 +3,7 @@ import re
 from bots.base.base import BaseFarmer
 from base64 import b64decode
 from time import time, sleep
-from random import randrange, choice
+from random import randrange, choice, random
 from telethon.types import InputBotAppShortName
 from bots.hamster_kombat.strings import URL_BOOSTS_FOR_BUY, URL_BUY_BOOST, URL_BUY_UPGRADE, \
     URL_SYNC, URL_TAP, URL_UPGRADES_FOR_BUY, HEADERS, BOOST_ENERGY, URL_CHECK_TASK, \
@@ -191,7 +191,7 @@ class BotFarmer(BaseFarmer):
                     if result.status_code == 200:
                         self.state = result.json()["clickerUser"]
                     self.log(MSG_BUY_UPGRADE.format(**upgrade))
-                    sleep(1)
+                    sleep(random() + choice(range(3, 6)))
                 else:
                     break
             else:
@@ -227,7 +227,7 @@ class BotFarmer(BaseFarmer):
                 continue
 
             if reward > 0:
-                sleep(choice(range(3, 6)))
+                sleep(random() + choice(range(3, 6)))
                 data = {'taskId': task_id}
                 response = self.post(URL_CHECK_TASK, json=data)
                 if response.status_code == 200:
