@@ -1,4 +1,4 @@
-from random import random, randrange
+from random import random, randrange, shuffle
 from bots.base.base import BaseFarmer
 from time import time, sleep
 from bots.simple.utils import get_sorted_upgrades
@@ -6,7 +6,8 @@ from bots.simple.config import BUY_UPGRADES, PERCENT_TO_SPEND
 from bots.simple.strings import HEADERS, URL_INIT, URL_PROFILE, URL_TAP, URL_GET_MINING_BLOCKS, URL_FRIENDS, \
     URL_GET_TASK_LIST, URL_CLAIM_FARMED, URL_START_FARM, URL_CHECK_TASK, URL_START_TASK, URL_CLAIM_FRIENDS, \
     URL_BUY_UPGRADE, URL_CLAIM_SPIN, MSG_PROFILE_UPDATE, MSG_TAP, MSG_START_FARMING, MSG_BUY_UPGRADE, SPIN_TYPES, \
-    MSG_SPIN, MSG_START_TASK, MSG_CLAIM_FARM, MSG_CLAIM_REFS, MSG_STATE
+    MSG_SPIN, MSG_START_TASK, MSG_CLAIM_FARM, MSG_CLAIM_REFS, MSG_STATE, URL_COLLECTIONS, URL_GET_COLLECTION, \
+    URL_CLAIM_CARD, MSG_CLAIMED_CARD
 
 
 class BotFarmer(BaseFarmer):
@@ -31,8 +32,9 @@ class BotFarmer(BaseFarmer):
         self.payload_base = self.initiator.get_auth_data(**self.initialization_data)
 
     def api_call(self, url, payload=None):
-        payload = payload or self.payload_base
-        result = self.post(url, json=payload, return_codes=(400,))
+        _payload = self.payload_base.copy()
+        _payload.update(payload or {})
+        result = self.post(url, json=_payload, return_codes=(400,))
         if result.status_code == 200:
             return result.json()
         else:
@@ -154,13 +156,29 @@ class BotFarmer(BaseFarmer):
             else:
                 break
 
+
+    def claim_cards(self):
+        collections = self.api_call(URL_COLLECTIONS, payload={'lang': 'ru'})
+        for collection in collections.get("data", []):
+            if collection['status'] == 1:
+                payload = {'collectionId': collection['id'], 'lang': 'ru'}
+                collection_cards = self.api_call(URL_GET_COLLECTION, payload=payload)
+                for card in collection_cards.get('data', []):
+                    if card['status'] == 1:
+                        payload = {'cardId': card['id'], 'collectionId': collection['id'], 'lang': 'ru'}
+                        result = self.api_call(URL_CLAIM_CARD, payload=payload)
+                        if result['result'] == 'OK':
+                            self.log(MSG_CLAIMED_CARD.format(**card))
+                        sleep(random() * random() * 10)
+
     def farm(self):
         self.update_profile()
-        self.tap()
-        self.claim_farmed()
+        actions = [self.claim_cards, self.tap, self.claim_farmed, self.claim_friends, self.claim_spin]
+        shuffle(actions)
+        for action in actions:
+            action()
+            sleep(random() * random() * 10)
         self.start_farm()
-        self.claim_friends()
-        self.claim_spin()
         if BUY_UPGRADES:
             self.freeze_balance()
             self.buy_upgrades()

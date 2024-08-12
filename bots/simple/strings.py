@@ -12,6 +12,9 @@ URL_SPIN = "https://api.simple.app/api/v1/public/telegram/claim-spin/"
 URL_PROFILE = "https://api.simple.app/api/v1/public/telegram/profile/" # POST
 URL_TAP = "https://api.simple.app/api/v1/public/telegram/tap/" # POST {userid, authdata, count}
 URL_INIT = "https://simpletap.app/version_05/"
+URL_COLLECTIONS = "https://api.simple.app/api/v1/public/telegram-collection/get-collections/"  # POST {userid, authdata, lang}
+URL_GET_COLLECTION = "https://api.simple.app/api/v1/public/telegram-collection/get-collection-cards/"  # POST +collectionId
+URL_CLAIM_CARD = "https://api.simple.app/api/v1/public/telegram-collection/card-claim/"  # POST  cardId: 78 collectionId : "introduction_to_blockchain"
 
 
 MSG_PROFILE_UPDATE = "Обновление профиля"
@@ -23,6 +26,7 @@ MSG_SPIN = "Крутанул рулетку, получил: {type} кол-во:
 MSG_CLAIM_FARM = "Собрал нафармленное: {amount}"
 MSG_CLAIM_REFS = "Собрал нафармленное рефами: {amount}"
 MSG_STATE = "Баланс: {balance} | Прибыль в час: {mine_per_hour} | тапов в час: {taps_per_hour}"
+MSG_CLAIMED_CARD = "Склеймил карту (профит {amount}): {title}"
 
 class UpgradeTypes:
     TAPS_LIMIT = 1
