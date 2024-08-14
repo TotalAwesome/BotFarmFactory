@@ -57,11 +57,20 @@ class BotFarmer(BaseFarmer):
 
 
     def set_start_time(self):
-        tap_sleep_seconds = int(self.state['maxTaps'] / self.state['tapsRecoverPerSec'])
-        minimum_farm_sleep = FEATURES.get("minimum_farm_sleep",2*60*60)
-        maximum_farm_sleep = FEATURES.get("maximum_farm_sleep",3*60*60)
+        """
+        Если тапы включены, то рассчитываем время следующего захода как минимальное из:
+        - периода накопления энергии
+        - рандомного значения между минимальным и максимальным периодом до следующего захода
+        Если тапы отключены, берем рандомное значение между минимальным и максимальным периодом до следующего захода
+        """
+        minimum_farm_sleep = FEATURES.get("minimum_farm_sleep", 2 * 60 * 60)
+        maximum_farm_sleep = FEATURES.get("maximum_farm_sleep", 3 * 60 * 60)
         bot_farm_sleep = uniform(minimum_farm_sleep, maximum_farm_sleep) + random()
-        sleep_seconds = max(tap_sleep_seconds, bot_farm_sleep)
+        if FEATURES.get('taps', True):
+            tap_sleep_seconds = int(self.state['maxTaps'] / self.state['tapsRecoverPerSec'])            
+            sleep_seconds = min(tap_sleep_seconds, bot_farm_sleep)
+        else:
+            sleep_seconds = bot_farm_sleep
         self.start_time = time() + sleep_seconds
 
     def get_cipher_data(self):
