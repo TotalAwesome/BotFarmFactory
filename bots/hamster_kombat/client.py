@@ -112,9 +112,11 @@ class BotFarmer(BaseFarmer):
         if not skins_info:
             return
         available_skins = skins_info.get("available")
+        my_skins_info = self.state['skin']
+        my_skin_ids = [item['skinId'] for item in my_skins_info['available']]
         for available_skin in available_skins:
             skin_id = available_skin.get("id")
-            if skin_id in DICT_SKINS:
+            if (skin_id in DICT_SKINS) and (skin_id not in my_skin_ids):
                 skin_cost = DICT_SKINS[skin_id]
                 if self.balance > skin_cost:
                     response = self.buy_skin(skin_id)
