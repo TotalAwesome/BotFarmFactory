@@ -10,7 +10,7 @@ from bots.hamster_kombat.strings import URL_BOOSTS_FOR_BUY, URL_BUY_BOOST, URL_B
     URL_CLAIM_DAILY_COMBO, MSG_BUY_UPGRADE, MSG_COMBO_EARNED, MSG_TAP, MSG_CLAIMED_COMBO_CARDS, \
     MSG_SYNC, URL_CONFIG, URL_CLAIM_DAILY_CIPHER, MSG_CIPHER, URL_INIT, URL_AUTH, URL_SELECT_EXCHANGE, \
     URL_LIST_TASKS, MSG_TASK_COMPLETED, MSG_TASK_NOT_COMPLETED, URL_GET_SKINS, URL_BUY_SKIN, \
-    DICT_SKINS, MSG_BUY_SKIN, MSG_SKIN_NOT_ENOUGH_MONEY, MSG_SKIN_ALREADY_PURCHASED
+    DICT_SKINS, MSG_BUY_SKIN
 from bots.hamster_kombat.config import FEATURES
 from bots.hamster_kombat.utils import sorted_by_payback, sorted_by_price, sorted_by_profit, sorted_by_profitness
     
@@ -124,14 +124,7 @@ class BotFarmer(BaseFarmer):
                     if response.status_code == 200:
                         self.log(MSG_BUY_SKIN.format(skin_name=skin_id))
                         self.sync()
-                        sleep(random()*5)
-                    elif response.status_code == 400 and result.get("error_code") == "INSUFFICIENT_FUNDS":
-                        self.log(MSG_SKIN_NOT_ENOUGH_MONEY)
-                        break
-                    elif response.status_code == 400 and result.get("error_code") == "SKIN_ALREADY_AVAILABLE":
-                        self.log(MSG_SKIN_ALREADY_PURCHASED)
                         sleep(2 + random()*5)
-                        continue
                     else:
                         break
 
