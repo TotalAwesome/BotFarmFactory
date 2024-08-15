@@ -23,7 +23,7 @@ FEATURES = {
     "percent_to_spend": 10,
     "taps": True,
     "max_upgrade_payback": 24*100,
-    "buy_skins": False, # метод ещё тестируется
+    "buy_skins": False,
     "minimum_farm_sleep": 2 * 60 * 60, # (2 часа) минимальная задержка до следующего захода 
     "maximum_farm_sleep": 3 * 60 * 60, # (6 часов) максимальная задержка до следующего захода
     "minimum_upgrade_delay": 5, # (5 секунд) минимальная задержка между апгрейдами

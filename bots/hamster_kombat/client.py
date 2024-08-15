@@ -133,6 +133,9 @@ class BotFarmer(BaseFarmer):
                     else:
                         break
 
+    def buy_skin(self, skin_name):
+        data = {"skinId": skin_name, "timestamp": int(time())}
+        return self.post(URL_BUY_SKIN, json=data)
 
     def sync(self):
         self.log(MSG_SYNC)
