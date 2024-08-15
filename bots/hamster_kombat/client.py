@@ -3,13 +3,14 @@ import re
 from bots.base.base import BaseFarmer
 from base64 import b64decode
 from time import time, sleep
-from random import randrange, choice, random
+from random import randrange, choice, random, uniform
 from telethon.types import InputBotAppShortName
 from bots.hamster_kombat.strings import URL_BOOSTS_FOR_BUY, URL_BUY_BOOST, URL_BUY_UPGRADE, \
     URL_SYNC, URL_TAP, URL_UPGRADES_FOR_BUY, HEADERS, BOOST_ENERGY, URL_CHECK_TASK, \
     URL_CLAIM_DAILY_COMBO, MSG_BUY_UPGRADE, MSG_COMBO_EARNED, MSG_TAP, MSG_CLAIMED_COMBO_CARDS, \
     MSG_SYNC, URL_CONFIG, URL_CLAIM_DAILY_CIPHER, MSG_CIPHER, URL_INIT, URL_AUTH, URL_SELECT_EXCHANGE, \
-    URL_LIST_TASKS, MSG_TASK_COMPLETED, MSG_TASK_NOT_COMPLETED
+    URL_LIST_TASKS, MSG_TASK_COMPLETED, MSG_TASK_NOT_COMPLETED, URL_GET_SKINS, URL_BUY_SKIN, \
+    DICT_SKINS, MSG_BUY_SKIN, MSG_SKIN_NOT_ENOUGH_MONEY, MSG_SKIN_ALREADY_PURCHASED
 from bots.hamster_kombat.config import FEATURES
 from bots.hamster_kombat.utils import sorted_by_payback, sorted_by_price, sorted_by_profit, sorted_by_profitness
     
@@ -56,7 +57,20 @@ class BotFarmer(BaseFarmer):
 
 
     def set_start_time(self):
-        sleep_seconds = int(self.state['maxTaps'] / self.state['tapsRecoverPerSec'])
+        """
+        Если тапы включены, то рассчитываем время следующего захода как минимальное из:
+        - периода накопления энергии
+        - рандомного значения между минимальным и максимальным периодом до следующего захода
+        Если тапы отключены, берем рандомное значение между минимальным и максимальным периодом до следующего захода
+        """
+        minimum_farm_sleep = FEATURES.get("minimum_farm_sleep", 2 * 60 * 60)
+        maximum_farm_sleep = FEATURES.get("maximum_farm_sleep", 3 * 60 * 60)
+        bot_farm_sleep = uniform(minimum_farm_sleep, maximum_farm_sleep) + random()
+        if FEATURES.get('taps', True):
+            tap_sleep_seconds = int(self.state['maxTaps'] / self.state['tapsRecoverPerSec'])            
+            sleep_seconds = min(tap_sleep_seconds, bot_farm_sleep)
+        else:
+            sleep_seconds = bot_farm_sleep
         self.start_time = time() + sleep_seconds
 
     def get_cipher_data(self):
@@ -78,6 +92,47 @@ class BotFarmer(BaseFarmer):
                 cipher = b64decode(raw_cipher).decode()
                 self.log(MSG_CIPHER.format(cipher=cipher))
                 self.post(URL_CLAIM_DAILY_CIPHER, json={"cipher": cipher})
+
+    def get_skins(self):
+        response = self.post(URL_GET_SKINS)
+        if response.status_code == 200:
+            result = response.json()
+            if result := result.get("skins"):
+                skins_info = {}
+                skins_info["featured"] = list(filter(lambda x: x['isFeatured'], result))
+                skins_info["available"] = list(filter(lambda x: x['isAvailable'], result))
+                return skins_info
+            else:
+                return None
+        else:
+            return None
+
+    def buy_skins(self):
+        skins_info = self.get_skins()
+        if not skins_info:
+            return
+        available_skins = skins_info.get("available")
+        for available_skin in available_skins:
+            skin_id = available_skin.get("id")
+            if skin_id in DICT_SKINS:
+                skin_cost = DICT_SKINS[skin_id]
+                if self.balance > skin_cost:
+                    response = self.buy_skin(skin_id)
+                    result = response.json()
+                    if response.status_code == 200:
+                        self.log(MSG_BUY_SKIN.format(skin_name=skin_id))
+                        self.sync()
+                        sleep(random()*5)
+                    elif response.status_code == 400 and result.get("error_code") == "INSUFFICIENT_FUNDS":
+                        self.log(MSG_SKIN_NOT_ENOUGH_MONEY)
+                        break
+                    elif response.status_code == 400 and result.get("error_code") == "SKIN_ALREADY_AVAILABLE":
+                        self.log(MSG_SKIN_ALREADY_PURCHASED)
+                        sleep(2 + random()*5)
+                        continue
+                    else:
+                        break
+
 
     def sync(self):
         self.log(MSG_SYNC)
@@ -170,7 +225,7 @@ class BotFarmer(BaseFarmer):
                 and not upgrade["isExpired"]
                 and upgrade["profitPerHourDelta"] > 0
                 and not upgrade.get("cooldownSeconds")
-                and upgrade["price"] / upgrade["profitPerHourDelta"] <=  FEATURES['max_upgrade_payback']
+                and upgrade["price"] / upgrade["profitPerHourDelta"] <= FEATURES['max_upgrade_payback']
             ):
                 item = upgrade.copy()
                 if 'condition' in item :
@@ -192,7 +247,9 @@ class BotFarmer(BaseFarmer):
                     if result.status_code == 200:
                         self.state = result.json()["clickerUser"]
                     self.log(MSG_BUY_UPGRADE.format(**upgrade))
-                    sleep(random() + choice(range(5, 10)))
+                    minimum_upgrade_delay = FEATURES.get("minimum_upgrade_delay", 5)
+                    maximum_upgrade_delay = FEATURES.get("maximum_upgrade_delay", 10)
+                    sleep(uniform(minimum_upgrade_delay, maximum_upgrade_delay) + random())
                 else:
                     break
             else:
@@ -262,6 +319,8 @@ class BotFarmer(BaseFarmer):
         self.make_tasks()
         if FEATURES.get('buy_upgrades', True):
             self.buy_upgrades(FEATURES.get('buy_decision_method', 'payback'))
+        if FEATURES.get('buy_skins', True):
+            self.buy_skins()
         self.claim_combo_reward()
         if self.is_taps_boost_available:
             self.boost(BOOST_ENERGY)

@@ -12,6 +12,8 @@ URL_CONFIG = "https://api.hamsterkombatgame.io/clicker/config"
 URL_SYNC = "https://api.hamsterkombatgame.io/clicker/sync"
 URL_TAP = "https://api.hamsterkombatgame.io/clicker/tap"
 URL_INIT = "https://api.hamsterkombatgame.io/clicker"
+URL_GET_SKINS = "https://api.hamsterkombatgame.io/clicker/get-skin"
+URL_BUY_SKIN = "https://api.hamsterkombatgame.io/clicker/buy-skin" #POST
 
 MSG_BUY_UPGRADE = "Прокачал: {name} : ур.{level} за {price} даст +{profitPerHourDelta}/час"
 MSG_SESSION_ERROR = "Ошибка во время выполнения запроса: {error}"
@@ -24,6 +26,10 @@ MSG_CIPHER = "Новый шифр: {cipher}"
 MSG_SYNC = "Обновление данных"
 MSG_TASK_COMPLETED = "Задание выполнено. Награда: {reward}"
 MSG_TASK_NOT_COMPLETED = "Задание не выполнено"
+MSG_BUY_SKIN = "Скин {skin_name} куплен"
+MSG_SKIN_NOT_ENOUGH_MONEY = "Не хватило денег на скин"
+MSG_SKIN_ALREADY_PURCHASED = "Скин уже куплен"
+
 
 BOOST_ENERGY = "BoostFullAvailableTaps"
 
@@ -41,4 +47,23 @@ HEADERS = {
     "Sec-Fetch-Dest":	"empty",
     "Referer":	"https://hamsterkombatgame.io/",
     "Accept-Encoding":	"gzip, deflate, br",
+}
+
+
+DICT_SKINS = {
+    "skin18": 1_000_000,
+    "skin19": 1_000_000,
+    "skin20": 1_000_000,
+    "skin21": 1_000_000,
+    "skin22": 1_000_000,
+    "skin23": 1_000_000,
+    "skin24": 1_000_000,
+    "skin25": 1_000_000,
+    "skin26": 1_000_000,
+    "skin27": 1_000_000,
+    "skin28": 1_000_000,
+    "skin1": 2_500_000,
+    "skin2": 2_500_000,
+    "skin3": 2_500_000,
+    "skin4": 2_500_000,
 }
