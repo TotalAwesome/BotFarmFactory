@@ -5,7 +5,7 @@ from random import choice
 from requests import Session
 from .utils import check_proxy, retry, logging, debug_logger
 from .strings import USER_AGENTS, LOG_TEMPLATE, MSG_PROXY_CONNECTION_ERROR
-from config import DEBUG
+from config import DEBUG, SLEEP_AT_NIGHT, NIGHT_HOURS
 
 
 class BaseFarmer(Session):
@@ -15,7 +15,6 @@ class BaseFarmer(Session):
     У дочерних классов реализовать методы:
         set_headers -> Установка заголовков
         authenticate -> Аутентификация и рефреш если надо
-        is_ready_to_farm -> Пора ли запускать фарминг
         farm -> Выполнение всех необходимых действий с аккаунтом за один прогон
         set_start_time -> Таймштамп следующего прогона
         refresh_token -> Если нужен рефреш
@@ -87,6 +86,8 @@ class BaseFarmer(Session):
 
     @property
     def is_ready_to_farm(self):
+        if SLEEP_AT_NIGHT and datetime().hour in range(*NIGHT_HOURS):
+            return False
         return self.start_time <= time()
     
     def set_start_time(self):
