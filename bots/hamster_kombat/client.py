@@ -11,7 +11,7 @@ from bots.hamster_kombat.strings import URL_BOOSTS_FOR_BUY, URL_BUY_BOOST, URL_B
     URL_CLAIM_DAILY_COMBO, MSG_BUY_UPGRADE, MSG_COMBO_EARNED, MSG_TAP, MSG_CLAIMED_COMBO_CARDS, \
     MSG_SYNC, URL_CONFIG, URL_CLAIM_DAILY_CIPHER, MSG_CIPHER, URL_INIT, URL_AUTH, URL_SELECT_EXCHANGE, \
     URL_LIST_TASKS, MSG_TASK_COMPLETED, MSG_TASK_NOT_COMPLETED, URL_GET_SKINS, URL_BUY_SKIN, \
-    DICT_SKINS, DICT_GAMES, MSG_BUY_SKIN, MSG_PROMO_COMPLETED, \
+    DICT_GAMES, MSG_BUY_SKIN, MSG_PROMO_COMPLETED, \
     URL_APPLY_PROMO, URL_GET_PROMOS, \
     MSG_PROMO_UPDATE_ERROR, MSG_PROMO_OK, MSG_PROMO_ERROR, MSG_TRY_PROMO, MSG_PROMO_STATUS
 from bots.hamster_kombat.config import FEATURES
@@ -28,7 +28,10 @@ class BotFarmer(BaseFarmer):
     boosts = None
     upgrades = None
     task_checked_at = None
+    config_version = None
     promo_status = {}
+    skins_info = []
+    my_skins_ids = []
     promo_completed = False
 
     @property
@@ -80,7 +83,7 @@ class BotFarmer(BaseFarmer):
         if FEATURES.get('apply_promo', True) and not self.promo_completed:
             promo_next_step = choice(range(10 * 60, 15 * 60))
             sleep_seconds.append(promo_next_step)
-        self.start_time = time() + min(sleep_seconds) + random()
+        self.start_time = time() + min(sleep_seconds)
 
     def get_cipher_data(self):
         result = self.post(URL_CONFIG).json()
@@ -102,40 +105,42 @@ class BotFarmer(BaseFarmer):
                 self.log(MSG_CIPHER.format(cipher=cipher))
                 self.post(URL_CLAIM_DAILY_CIPHER, json={"cipher": cipher})
 
-    def get_skins(self):
-        response = self.post(URL_GET_SKINS)
+    '''
+    Получаем данные о скинах в игре
+    '''
+    def get_skins_info(self):
+        response = self.get(f"{URL_CONFIG}/{self.config_version}")
         if response.status_code == 200:
             result = response.json()
-            if result := result.get("skins"):
-                skins_info = {}
-                skins_info["featured"] = list(filter(lambda x: x['isFeatured'], result))
-                skins_info["available"] = list(filter(lambda x: x['isAvailable'], result))
-                return skins_info
-            else:
-                return None
-        else:
-            return None
+            self.skins_info = result.get('config', {}).get('skins')
+
+    '''
+    Получаем данные о купленных скинах
+    '''
+    def get_skins_state(self):
+        my_skins = self.state.get('skin', {}).get('available')
+        self.my_skins_ids = [item['skinId'] for item in my_skins]
 
     def buy_skins(self):
-        skins_info = self.get_skins()
-        if not skins_info:
-            return
-        available_skins = skins_info.get("available")
-        my_skins_info = self.state['skin']
-        my_skin_ids = [item['skinId'] for item in my_skins_info['available']]
-        for available_skin in available_skins:
-            skin_id = available_skin.get("id")
-            if (skin_id in DICT_SKINS) and (skin_id not in my_skin_ids):
-                skin_cost = DICT_SKINS[skin_id]
-                if self.balance > skin_cost:
-                    response = self.buy_skin(skin_id)
-                    result = response.json()
-                    if response.status_code == 200:
-                        self.log(MSG_BUY_SKIN.format(skin_name=skin_id))
-                        self.sync()
-                        sleep(2 + random()*5)
-                    else:
-                        break
+        self.get_skins_info()
+        self.get_skins_state()
+        max_skin_price = FEATURES.get('max_skin_price', 0)
+        for skin in self.skins_info:
+            skin_price = skin.get('price')
+            skin_id = skin.get('id')
+            if (
+                skin_price <= self.balance
+                and skin_price <= max_skin_price
+                and skin_id not in self.my_skins_ids
+                ):
+                response = self.buy_skin(skin_id)
+                result = response.json()
+                if response.status_code == 200:
+                    self.log(MSG_BUY_SKIN.format(skin_name=skin_id))
+                    self.sync()
+                    sleep(2 + random()*5)
+                else:
+                    break
 
     def buy_skin(self, skin_name):
         data = {"skinId": skin_name, "timestamp": int(time())}
@@ -146,6 +151,7 @@ class BotFarmer(BaseFarmer):
         try:
             response = self.post(url=URL_SYNC)
             self.state = response.json()["clickerUser"]
+            self.config_version = response.headers.get('config-version')
         except Exception as e:
             pass
 
@@ -308,17 +314,18 @@ class BotFarmer(BaseFarmer):
         response = self.post(URL_GET_PROMOS)
         if response.status_code == 200:
             result = response.json()
-            promo_state = result.get('states')
-            for game_id in DICT_GAMES:
+            for game in DICT_GAMES:
                 game_info = {}
-                promo_max_daily_keys = DICT_GAMES[game_id].get('max_daily_keys')
-                game_state = find_game_state_by_id(promo_state=promo_state, target_game_id=game_id)
+                game_id = DICT_GAMES[game].get('promo_id')
+                game_description = find_game_state_by_id(promo_state=result.get('promos'), target_game_id=game_id)
+                promo_max_daily_keys = game_description.get('keysPerDay')
+                game_state = find_game_state_by_id(promo_state=result.get('states'), target_game_id=game_id)
                 keys_counter = 0 if not game_state else game_state.get('receiveKeysToday', 0)
                 game_info['keys_left'] = promo_max_daily_keys - keys_counter
-                game_info['app_token'] = DICT_GAMES[game_id].get('app_token')
-                game_info['game_id'] = DICT_GAMES[game_id].get('promo_id')
-                game_info['name'] = DICT_GAMES[game_id].get('name')
-                self.promo_status[game_id] = game_info
+                game_info['app_token'] = DICT_GAMES[game].get('app_token')
+                game_info['game_id'] = game_id
+                game_info['name'] = game
+                self.promo_status[game] = game_info
             if log_info:
                 all_keys_left_zero = all(item['keys_left'] == 0 for item in self.promo_status.values())
                 if all_keys_left_zero:
@@ -335,10 +342,13 @@ class BotFarmer(BaseFarmer):
         self.update_promos(log_info=True)
         if not self.promo_status:
             return
-        for game_id in self.promo_status:
-            game_info = self.promo_status[game_id]
-            promo_generator = PromoGenerator(app_token=game_info['app_token'], game_id=game_info['game_id'], proxies=self.proxies)
+        for game in self.promo_status:
+            game_info = self.promo_status[game]
             if game_info['keys_left'] > 0:
+                promo_generator = PromoGenerator(app_token=game_info['app_token'],
+                                                 game_id=game_info['game_id'],
+                                                 proxies=self.proxies
+                                                 )
                 promo_code = promo_generator.get_promo()
                 data = {"promoCode": promo_code}
                 self.log(MSG_TRY_PROMO.format(code=promo_code))
@@ -372,13 +382,11 @@ class BotFarmer(BaseFarmer):
         self.make_tasks()
         if FEATURES.get('buy_upgrades', True):
             self.buy_upgrades(FEATURES.get('buy_decision_method', 'payback'))
+            self.claim_combo_reward()
         if FEATURES.get('buy_skins', True):
-            self.buy_skins()
-        self.claim_combo_reward()
+            self.buy_skins()        
         if FEATURES.get('apply_promo', True):
             self.apply_promo()
         if self.is_taps_boost_available:
             self.boost(BOOST_ENERGY)
         self.log(" ".join(f"{k}: {v} |" for k, v in self.stats.items()))
-        # sleep(choice(range(1, 10)))
-        # sleep(FEATURES.get('delay_between_attempts', 60 * 10))

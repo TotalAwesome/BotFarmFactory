@@ -13,6 +13,7 @@
         6. max_upgrade_payback - максимальная окупаемость апргейда в часах
         7. buy_skins - покупать скины
         8. apply_promo - получать и применять промокоды для игр
+        9. блок, отвечающий за таймауты
     
 """
 
@@ -25,6 +26,7 @@ FEATURES = {
     "taps": True,
     "max_upgrade_payback": 24*100,
     "buy_skins": False,
+    "max_skin_price": 10_000_000,
     "apply_promo": False,
     "minimum_farm_sleep": 2 * 60 * 60, # (2 часа) минимальная задержка до следующего захода 
     "maximum_farm_sleep": 3 * 60 * 60, # (6 часов) максимальная задержка до следующего захода
