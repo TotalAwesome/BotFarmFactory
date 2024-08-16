@@ -5,14 +5,18 @@ from base64 import b64decode
 from time import time, sleep
 from random import randrange, choice, random, uniform
 from telethon.types import InputBotAppShortName
+from bots.hamster_kombat.promo import PromoGenerator
 from bots.hamster_kombat.strings import URL_BOOSTS_FOR_BUY, URL_BUY_BOOST, URL_BUY_UPGRADE, \
     URL_SYNC, URL_TAP, URL_UPGRADES_FOR_BUY, HEADERS, BOOST_ENERGY, URL_CHECK_TASK, \
     URL_CLAIM_DAILY_COMBO, MSG_BUY_UPGRADE, MSG_COMBO_EARNED, MSG_TAP, MSG_CLAIMED_COMBO_CARDS, \
     MSG_SYNC, URL_CONFIG, URL_CLAIM_DAILY_CIPHER, MSG_CIPHER, URL_INIT, URL_AUTH, URL_SELECT_EXCHANGE, \
     URL_LIST_TASKS, MSG_TASK_COMPLETED, MSG_TASK_NOT_COMPLETED, URL_GET_SKINS, URL_BUY_SKIN, \
-    DICT_SKINS, MSG_BUY_SKIN
+    DICT_SKINS, DICT_GAMES, MSG_BUY_SKIN, MSG_PROMO_COMPLETED, \
+    URL_APPLY_PROMO, URL_GET_PROMOS, \
+    MSG_PROMO_UPDATE_ERROR, MSG_PROMO_OK, MSG_PROMO_ERROR, MSG_TRY_PROMO, MSG_PROMO_STATUS
 from bots.hamster_kombat.config import FEATURES
-from bots.hamster_kombat.utils import sorted_by_payback, sorted_by_price, sorted_by_profit, sorted_by_profitness
+from bots.hamster_kombat.utils import sorted_by_payback, sorted_by_price, sorted_by_profit, sorted_by_profitness, \
+    find_game_state_by_id
     
 
 class BotFarmer(BaseFarmer):
@@ -24,6 +28,8 @@ class BotFarmer(BaseFarmer):
     boosts = None
     upgrades = None
     task_checked_at = None
+    promo_status = {}
+    promo_completed = False
 
     @property
     def exchage_id(self):
@@ -58,20 +64,23 @@ class BotFarmer(BaseFarmer):
 
     def set_start_time(self):
         """
-        Если тапы включены, то рассчитываем время следующего захода как минимальное из:
-        - периода накопления энергии
+        Берём минимальное из значений:
         - рандомного значения между минимальным и максимальным периодом до следующего захода
-        Если тапы отключены, берем рандомное значение между минимальным и максимальным периодом до следующего захода
+        - (если включены тапы) периода накопления энергии
+        - (если включены промокоды и на сегодня введены не все) случайное значение от 10 до 15 минут
         """
+        sleep_seconds = []
         minimum_farm_sleep = FEATURES.get("minimum_farm_sleep", 2 * 60 * 60)
         maximum_farm_sleep = FEATURES.get("maximum_farm_sleep", 3 * 60 * 60)
-        bot_farm_sleep = uniform(minimum_farm_sleep, maximum_farm_sleep) + random()
+        bot_farm_sleep = uniform(minimum_farm_sleep, maximum_farm_sleep)
+        sleep_seconds.append(bot_farm_sleep)
         if FEATURES.get('taps', True):
             tap_sleep_seconds = int(self.state['maxTaps'] / self.state['tapsRecoverPerSec'])            
-            sleep_seconds = min(tap_sleep_seconds, bot_farm_sleep)
-        else:
-            sleep_seconds = bot_farm_sleep
-        self.start_time = time() + sleep_seconds
+            sleep_seconds.append(tap_sleep_seconds)
+        if FEATURES.get('apply_promo', True) and not self.promo_completed:
+            promo_next_step = choice(range(10 * 60, 15 * 60))
+            sleep_seconds.append(promo_next_step)
+        self.start_time = time() + min(sleep_seconds) + random()
 
     def get_cipher_data(self):
         result = self.post(URL_CONFIG).json()
@@ -295,6 +304,52 @@ class BotFarmer(BaseFarmer):
                     else:
                         self.log(MSG_TASK_NOT_COMPLETED)
 
+    def update_promos(self, log_info=False):
+        response = self.post(URL_GET_PROMOS)
+        if response.status_code == 200:
+            result = response.json()
+            promo_state = result.get('states')
+            for game_id in DICT_GAMES:
+                game_info = {}
+                promo_max_daily_keys = DICT_GAMES[game_id].get('max_daily_keys')
+                game_state = find_game_state_by_id(promo_state=promo_state, target_game_id=game_id)
+                keys_counter = 0 if not game_state else game_state.get('receiveKeysToday', 0)
+                game_info['keys_left'] = promo_max_daily_keys - keys_counter
+                game_info['app_token'] = DICT_GAMES[game_id].get('app_token')
+                game_info['game_id'] = DICT_GAMES[game_id].get('promo_id')
+                game_info['name'] = DICT_GAMES[game_id].get('name')
+                self.promo_status[game_id] = game_info
+            if log_info:
+                all_keys_left_zero = all(item['keys_left'] == 0 for item in self.promo_status.values())
+                if all_keys_left_zero:
+                    self.log(MSG_PROMO_COMPLETED)
+                    self.promo_completed = True
+                else:
+                    keys_left_status = ' '.join(f"{item['name']}: {item['keys_left']}" for item in self.promo_status.values())
+                    self.log(MSG_PROMO_STATUS.format(keys_left_status=keys_left_status))
+        else:
+            self.log(MSG_PROMO_UPDATE_ERROR)
+            self.promo_status = None
+
+    def apply_promo(self):
+        self.update_promos(log_info=True)
+        if not self.promo_status:
+            return
+        for game_id in self.promo_status:
+            game_info = self.promo_status[game_id]
+            promo_generator = PromoGenerator(app_token=game_info['app_token'], game_id=game_info['game_id'], proxies=self.proxies)
+            if game_info['keys_left'] > 0:
+                promo_code = promo_generator.get_promo()
+                data = {"promoCode": promo_code}
+                self.log(MSG_TRY_PROMO.format(code=promo_code))
+                response = self.post(URL_APPLY_PROMO, json=data)
+                if response.status_code == 200:
+                    result = response.json()
+                    self.log(MSG_PROMO_OK)
+                else:
+                    self.log(MSG_PROMO_ERROR)
+        self.update_promos(log_info=True)
+
     @property
     def stats(self):
         return {
@@ -320,6 +375,8 @@ class BotFarmer(BaseFarmer):
         if FEATURES.get('buy_skins', True):
             self.buy_skins()
         self.claim_combo_reward()
+        if FEATURES.get('apply_promo', True):
+            self.apply_promo()
         if self.is_taps_boost_available:
             self.boost(BOOST_ENERGY)
         self.log(" ".join(f"{k}: {v} |" for k, v in self.stats.items()))

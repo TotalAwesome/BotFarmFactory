@@ -1,3 +1,4 @@
+# взаимодействие с API игры
 URL_CLAIM_DAILY_CIPHER = "https://api.hamsterkombatgame.io/clicker/claim-daily-cipher"
 URL_CLAIM_DAILY_COMBO = "https://api.hamsterkombatgame.io/clicker/claim-daily-combo"
 URL_UPGRADES_FOR_BUY = "https://api.hamsterkombatgame.io/clicker/upgrades-for-buy"
@@ -13,8 +14,16 @@ URL_SYNC = "https://api.hamsterkombatgame.io/clicker/sync"
 URL_TAP = "https://api.hamsterkombatgame.io/clicker/tap"
 URL_INIT = "https://api.hamsterkombatgame.io/clicker"
 URL_GET_SKINS = "https://api.hamsterkombatgame.io/clicker/get-skin"
-URL_BUY_SKIN = "https://api.hamsterkombatgame.io/clicker/buy-skin" #POST
+URL_BUY_SKIN = "https://api.hamsterkombatgame.io/clicker/buy-skin" #POST\
+URL_GET_PROMOS = "https://api.hamsterkombatgame.io/clicker/get-promos"
+URL_APPLY_PROMO = "https://api.hamsterkombatgame.io/clicker/apply-promo"
 
+# взаимодействие с генератором промокодов
+URL_REGISTER_EVENT = "https://api.gamepromo.io/promo/register-event"
+URL_LOGIN = "https://api.gamepromo.io/promo/login-client"
+URL_CREATE_CODE = "https://api.gamepromo.io/promo/create-code"
+
+# шаблоны сообщений в лог
 MSG_BUY_UPGRADE = "Прокачал: {name} : ур.{level} за {price} даст +{profitPerHourDelta}/час"
 MSG_SESSION_ERROR = "Ошибка во время выполнения запроса: {error}"
 MSG_COMBO_EARNED = "Получено вознаграждение за комбо: {coins}"
@@ -27,8 +36,14 @@ MSG_SYNC = "Обновление данных"
 MSG_TASK_COMPLETED = "Задание выполнено. Награда: {reward}"
 MSG_TASK_NOT_COMPLETED = "Задание не выполнено"
 MSG_BUY_SKIN = "Скин {skin_name} куплен"
-MSG_SKIN_NOT_ENOUGH_MONEY = "Не хватило денег на скин"
-MSG_SKIN_ALREADY_PURCHASED = "Скин уже куплен"
+
+
+MSG_PROMO_UPDATE_ERROR = "Ошибка обновления статуса промкодов"
+MSG_PROMO_STATUS = "Осталось ввести промокодов: {keys_left_status}"
+MSG_PROMO_COMPLETED = "Все промокоды введены"
+MSG_PROMO_OK = "Промокод применен успешно"
+MSG_PROMO_ERROR = "Промокод не применен"
+MSG_TRY_PROMO = "Попытка применения промокода: {code}"
 
 
 BOOST_ENERGY = "BoostFullAvailableTaps"
@@ -47,6 +62,33 @@ HEADERS = {
     "Sec-Fetch-Dest":	"empty",
     "Referer":	"https://hamsterkombatgame.io/",
     "Accept-Encoding":	"gzip, deflate, br",
+}
+
+GET_PROMO_HEADERS = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                     "Content-Type": "application/json; charset=utf-8",
+                     "Host": "api.gamepromo.io"}
+
+DICT_GAMES = {
+    '43e35910-c168-4634-ad4f-52fd764a843f': {'name': 'Bike Ride 3D', 'max_daily_keys': 4,
+                                             'app_token': 'd28721be-fd2d-4b45-869e-9f253b554e50',
+                                             'promo_id': '43e35910-c168-4634-ad4f-52fd764a843f',
+                                            },
+    'fe693b26-b342-4159-8808-15e3ff7f8767': {'name': 'My Clone Army', 'max_daily_keys': 4,
+                                             'app_token': '74ee0b5b-775e-4bee-974f-63e7f4d5bacb',
+                                             'promo_id': 'fe693b26-b342-4159-8808-15e3ff7f8767',
+                                            },
+    'b4170868-cef0-424f-8eb9-be0622e8e8e3': {'name': 'Chain Cube 2048', 'max_daily_keys': 4,
+                                             'app_token': 'd1690a07-3780-4068-810f-9b5bbf2931b2',
+                                             'promo_id': 'b4170868-cef0-424f-8eb9-be0622e8e8e3',
+                                            },
+    'c4480ac7-e178-4973-8061-9ed5b2e17954': {'name': 'Train Miner', 'max_daily_keys': 4,
+                                             'app_token': '82647f43-3f87-402d-88dd-09a90025313f',
+                                             'promo_id': 'c4480ac7-e178-4973-8061-9ed5b2e17954',
+                                            },
+    'dc128d28-c45b-411c-98ff-ac7726fbaea4': {'name': 'Merge Away', 'max_daily_keys': 4,
+                                             'app_token': '8d1cc2ad-e097-4b86-90ef-7a27e19fb833',
+                                             'promo_id': 'dc128d28-c45b-411c-98ff-ac7726fbaea4',
+                                            },
 }
 
 
