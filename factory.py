@@ -4,37 +4,20 @@
 """
 
 from time import sleep
-from importlib import import_module
 from random import random, shuffle
-from os import path, listdir
+# from os import path, listdir
 
 from initiator import Initiator
 from accounts import TELEGRAM_ACCOUNTS
 from bots.base.base import logging
 from bots.base.utils import check_proxy
-from config import ENABLED_BOTS
-
-bots = []
-
-if path.isdir("bots"):
-    for directory in listdir("bots"):
-        if directory == 'template':
-            continue
-        if ENABLED_BOTS and directory not in ENABLED_BOTS:
-            continue
-        try:
-            module = import_module(f"bots.{directory}.client")
-            bots.append(module.BotFarmer)
-        except ImportError:
-            pass
-        except Exception as e:
-            logging.error(e)
-else:
-    raise Exception("No bots :(")
+from config import MULTITHREAD
+from utils import BOTS
+if MULTITHREAD:
+    from threading import Thread
 
 
 def make_account_farmers(account):
-    
     phone = account['phone']
     if proxy := account.get('proxy'):
         proxies = dict(http=proxy, https=proxy)
@@ -45,7 +28,7 @@ def make_account_farmers(account):
         logging.error(f'{phone} Error: {e}')
         return []
     farmers = []
-    for farmer_class in bots:
+    for farmer_class in BOTS:
         try:
             farmer = farmer_class(initiator=initiator, proxy=proxy)
         except Exception as e:
@@ -57,23 +40,36 @@ def make_account_farmers(account):
     initiator.disconnect()
     sleep(random() * 10)
     return farmers
-    
 
-farmers = []
-for account in TELEGRAM_ACCOUNTS:
-    farmers += make_account_farmers(account)
+def main(farmers):
+    while True:
+        shuffle(farmers)
+        for farmer in farmers:
+            farmer.proceed_farming()
+            sleep(1 + random())
+        sleep(1)
 
-print('')
-logging.info("Найдены фармеры: {farmer_names}".format(
-    farmer_names=", ".join(set([farmer.name.lower() for farmer in farmers])))
-    )
-    
-if not farmers:
-    exit()
+def farm_in_thread(phone):
+    import asyncio
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    main(make_account_farmers(phone))
 
-while True:
-    shuffle(farmers)
-    for farmer in farmers:
-        farmer.proceed_farming()
-        sleep(1 + random())
-    sleep(1)
+
+if MULTITHREAD:
+    for account in TELEGRAM_ACCOUNTS:
+        Thread(target=farm_in_thread, args=(account,)).start()
+    while True:
+        input()
+else:
+    farmers = []
+    for account in TELEGRAM_ACCOUNTS:
+        farmers += make_account_farmers(account)
+    print('')
+    farmer_names = ", ".join(set([farmer.name.lower() for farmer in farmers]))
+    logging.info("Найдены фармеры: {farmer_names}".format(farmer_names=farmer_names))
+
+    if not farmers:
+        exit()
+
+    main(farmers)
