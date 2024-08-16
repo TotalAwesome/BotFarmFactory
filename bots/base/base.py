@@ -96,7 +96,12 @@ class BaseFarmer(Session):
         self.update_user_agent()
     
     def update_user_agent(self):
-        self.headers['user-agent'] = choice(USER_AGENTS)
+        user_agent_header = 'user-agent'
+        for header in self.headers:
+            if header.lower() == 'user-agent':
+                user_agent_header = header
+                break
+        self.headers[user_agent_header] = choice(USER_AGENTS)
 
     def authenticate(self, *args, **kwargs):
         raise NotImplementedError
