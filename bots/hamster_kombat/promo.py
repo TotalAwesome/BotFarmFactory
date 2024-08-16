@@ -1,3 +1,7 @@
+"""
+(c) TotalAwesome
+"""
+
 import uuid
 import time
 import string
