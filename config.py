@@ -18,6 +18,10 @@ ENABLED_BOTS = [
     # иначе будут работать только те, что в этом списке
 ]
 
+NIGHT_HOURS = (0, 7)
+SLEEP_AT_NIGHT = False
+THREAD_PER_ACCOUNT = False
+
 try:
     from config_local import *
 except ImportError:
