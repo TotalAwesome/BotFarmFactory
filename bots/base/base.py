@@ -86,7 +86,7 @@ class BaseFarmer(Session):
 
     @property
     def is_ready_to_farm(self):
-        if SLEEP_AT_NIGHT and datetime().hour in range(*NIGHT_HOURS):
+        if SLEEP_AT_NIGHT and datetime.now().hour in range(*NIGHT_HOURS):
             return False
         return self.start_time <= time()
     
@@ -115,7 +115,6 @@ class BaseFarmer(Session):
 
     def proceed_farming(self):
         if self.is_alive and self.is_ready_to_farm:
-            print('=' * 150)
             try:
                 self.farm()
                 self.set_start_time()
