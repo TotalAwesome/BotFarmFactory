@@ -3,6 +3,7 @@ import re
 from time import time as current_time, sleep
 from random import choice, uniform, random
 from bots.base.base import BaseFarmer
+from telethon.types import InputBotAppShortName
 from bots.onewin.strings import (
     HEADERS, BUILDING_INFO,
     URL_INIT, URL_ACCOUNT_BALANCE, URL_DAILY_REWARD_INFO, URL_MINING,
@@ -26,29 +27,34 @@ class BotFarmer(BaseFarmer):
     auth_data = None
     token = None
     extra_code = "refId6370423806"
-    initialization_data = dict(peer=name, bot=name, url=URL_INIT)
     friends_coins = 0
     friends = 0
+
+    @property
+    def initialization_data(self):
+        return dict(peer=self.name, 
+                    app=InputBotAppShortName(self.initiator.get_input_entity(self.name), "start"),
+                    start_param=self.extra_code)
 
     def authenticate(self):
         if not self.auth_data:
             try:
                 init_data = self.initiator.get_auth_data(**self.initialization_data)
-                self.auth_data = init_data["authData"]
+                self.auth_data = init_data
             except Exception as e:
                 self.log(MSG_INITIALIZATION_ERROR.format(error=e))
         try:
-            response = self.post(URL_INIT, headers=self.headers,params=self.auth_data)
+            self.headers['x-user-id'] = str(self.auth_data['userId'])
+            headers = self.headers.copy()
+            response = self.post(URL_INIT, headers=headers, params=self.auth_data['authData'])
             if response.status_code == 200:
                 result = response.json()
                 if token := result.get("token"):
-                    self.token = token
-                    self.set_headers()
-                    self.headers["Authorization"] = f"Bearer {self.token}"
+                    self.headers["Authorization"] = f"Bearer {token}"
                 else:
                     self.error(MSG_ACCESS_TOKEN_ERROR)
             else:
-                self.error(MSG_AUTHENTICATION_ERROR.format(status_code=response.status_code,text=response.text))
+                self.error(MSG_AUTHENTICATION_ERROR.format(status_code=response.status_code, text=response.text))
         except Exception as e:
             self.log(MSG_URL_ERROR.format(error=e))            
 
