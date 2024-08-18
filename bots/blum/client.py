@@ -147,21 +147,25 @@ class BotFarmer(BaseFarmer):
             self.log(f"{result.status_code},  {result.text}")
 
     def play_game(self):
-        for _ in range(self.play_passes or 0):
-            self.log(MSG_BEGIN_GAME.format(self.play_passes))
-            res = self.post(URL_PLAY_START)
-            if res.status_code == 200:
-                data = res.json()
-                data['points'] = int(randrange(*GAME_RESULT_RANGE))
-                sleep(30)
-                while True:
-                    result = self.post(URL_PLAY_CLAIM, json=data)
-                    if result.status_code == 200:
-                        break
-                    else:
-                        sleep(1)
-                self.log(MSG_PLAYED_GAME.format(result=data['points']))
-                self.update_balance()
+        if not GAME_TOGGLE_ON:
+            self.log(MSG_GAME_OFF)
+            return
+        else: 
+            for _ in range(self.play_passes or 0):
+                self.log(MSG_BEGIN_GAME.format(self.play_passes))
+                res = self.post(URL_PLAY_START)
+                if res.status_code == 200:
+                    data = res.json()
+                    data['points'] = int(randrange(*GAME_RESULT_RANGE))
+                    sleep(30)
+                    while True:
+                        result = self.post(URL_PLAY_CLAIM, json=data)
+                        if result.status_code == 200:
+                            break
+                        else:
+                            sleep(1)
+                    self.log(MSG_PLAYED_GAME.format(result=data['points']))
+                    self.update_balance()
     
     def daily_reward(self):
         result = self.get(URL_DAILY_REWARD, return_codes=(404,))
@@ -180,18 +184,11 @@ class BotFarmer(BaseFarmer):
                 result = self.post(URL_FRIENDS_CLAIM)
                 if result.status_code == 200:
                     self.log(MSG_FRIENDS_CLAIM.format(points=result.json()['claimBalance']))
-    
-    def play_game_toggle(self):
-    	if GAME_TOGGLE_ON: 
-    		self.play_game() 
-    	else:
-    		self.log(MSG_GAME_OFF) 
-    		return
- 
+     
     def farm(self):
         self.daily_reward()
         self.friends_claim()
         self.update_balance()
-        self.play_game_toggle()
+        self.play_game()
         self.start_farming()
         self.check_tasks()
