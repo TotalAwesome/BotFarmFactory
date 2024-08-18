@@ -6,10 +6,10 @@ from bots.base.base import BaseFarmer
 from bots.blum.strings import HEADERS, URL_REFRESH_TOKEN, URL_BALANCE, URL_TASKS, \
     URL_WEBAPP_INIT, URL_AUTH, URL_FARMING_CLAIM, URL_FARMING_START, URL_PLAY_START, \
     URL_PLAY_CLAIM,  URL_DAILY_REWARD, URL_FRIENDS_BALANCE, URL_FRIENDS_CLAIM, MSG_AUTH, \
-    MSG_REFRESH, MSG_BALANCE, MSG_START_FARMING, MSG_CLAIM_FARM, MSG_BEGIN_GAME, \
+    MSG_REFRESH, MSG_BALANCE, MSG_START_FARMING, MSG_CLAIM_FARM, MSG_BEGIN_GAME, MSG_GAME_OFF, \
     MSG_PLAYED_GAME, MSG_DAILY_REWARD, MSG_FRIENDS_CLAIM, URL_CHECK_NAME, MSG_INPUT_USERNAME, \
     URL_TASK_CLAIM, URL_TASK_START, MSG_TASK_CLAIMED, MSG_TASK_STARTED
-from bots.blum.config import MANUAL_USERNAME
+from bots.blum.config import MANUAL_USERNAME, GAME_TOGGLE_ON
 
 GAME_RESULT_RANGE = (190, 280)
 DEFAULT_EST_TIME = 60
@@ -147,21 +147,25 @@ class BotFarmer(BaseFarmer):
             self.log(f"{result.status_code},  {result.text}")
 
     def play_game(self):
-        for _ in range(self.play_passes or 0):
-            self.log(MSG_BEGIN_GAME.format(self.play_passes))
-            res = self.post(URL_PLAY_START)
-            if res.status_code == 200:
-                data = res.json()
-                data['points'] = int(randrange(*GAME_RESULT_RANGE))
-                sleep(30)
-                while True:
-                    result = self.post(URL_PLAY_CLAIM, json=data)
-                    if result.status_code == 200:
-                        break
-                    else:
-                        sleep(1)
-                self.log(MSG_PLAYED_GAME.format(result=data['points']))
-                self.update_balance()
+        if not GAME_TOGGLE_ON:
+            self.log(MSG_GAME_OFF)
+            return
+        else: 
+            for _ in range(self.play_passes or 0):
+                self.log(MSG_BEGIN_GAME.format(self.play_passes))
+                res = self.post(URL_PLAY_START)
+                if res.status_code == 200:
+                    data = res.json()
+                    data['points'] = int(randrange(*GAME_RESULT_RANGE))
+                    sleep(30)
+                    while True:
+                        result = self.post(URL_PLAY_CLAIM, json=data)
+                        if result.status_code == 200:
+                            break
+                        else:
+                            sleep(1)
+                    self.log(MSG_PLAYED_GAME.format(result=data['points']))
+                    self.update_balance()
     
     def daily_reward(self):
         result = self.get(URL_DAILY_REWARD, return_codes=(404,))
@@ -180,7 +184,7 @@ class BotFarmer(BaseFarmer):
                 result = self.post(URL_FRIENDS_CLAIM)
                 if result.status_code == 200:
                     self.log(MSG_FRIENDS_CLAIM.format(points=result.json()['claimBalance']))
-
+     
     def farm(self):
         self.daily_reward()
         self.friends_claim()
