@@ -4,6 +4,7 @@ from bots.base.base import BaseFarmer
 from base64 import b64decode
 from time import time, sleep
 from random import randrange, choice, random, uniform
+from threading import Thread
 from telethon.types import InputBotAppShortName
 from bots.hamster_kombat.promo import PromoGenerator
 from bots.hamster_kombat.strings import URL_BOOSTS_FOR_BUY, URL_BUY_BOOST, URL_BUY_UPGRADE, \
@@ -11,28 +12,43 @@ from bots.hamster_kombat.strings import URL_BOOSTS_FOR_BUY, URL_BUY_BOOST, URL_B
     URL_CLAIM_DAILY_COMBO, MSG_BUY_UPGRADE, MSG_COMBO_EARNED, MSG_TAP, MSG_CLAIMED_COMBO_CARDS, \
     MSG_SYNC, URL_CONFIG, URL_CLAIM_DAILY_CIPHER, MSG_CIPHER, URL_INIT, URL_AUTH, URL_SELECT_EXCHANGE, \
     URL_LIST_TASKS, MSG_TASK_COMPLETED, MSG_TASK_NOT_COMPLETED, URL_GET_SKINS, URL_BUY_SKIN, \
-    DICT_GAMES, MSG_BUY_SKIN, MSG_PROMO_COMPLETED, \
+    PROMO_TOKENS, MSG_BUY_SKIN, MSG_PROMO_COMPLETED, \
     URL_APPLY_PROMO, URL_GET_PROMOS, \
     MSG_PROMO_UPDATE_ERROR, MSG_PROMO_OK, MSG_PROMO_ERROR, MSG_TRY_PROMO, MSG_PROMO_STATUS
 from bots.hamster_kombat.config import FEATURES
 from bots.hamster_kombat.utils import sorted_by_payback, sorted_by_price, sorted_by_profit, sorted_by_profitness, \
-    find_game_state_by_id
+    get_keys_count_per_game
     
+
+def generate_promo_keys(dict_with_keys, **kwargs):
+    client = PromoGenerator(**kwargs)
+    while True:
+        new_key = client.get_promo()
+        actual = dict_with_keys['actual']
+        activated = dict_with_keys['activated']
+        actual[client.promo_id] = actual.get(client.promo_id, [])
+        activated[client.promo_id] = activated.get(client.promo_id, [])
+        if not new_key in actual[client.promo_id] \
+            and not new_key in activated[client.promo_id]:
+            actual[client.promo_id].append(new_key)
+        sleep(5)
+
 
 class BotFarmer(BaseFarmer):
 
     name = 'hamster_kombat_bot'
     app_extra = 'kentId102796269'
-    # initialization_data = dict(peer=name, bot=name, url=URL_INIT, start_param=extra_code)
     state = None
     boosts = None
     upgrades = None
     task_checked_at = None
     config_version = None
     promo_status = {}
+    promo_threads = {}
+    promo_keys = {'actual': {},
+                  'activated': {}}
     skins_info = []
     my_skins_ids = []
-    promo_completed = False
 
     @property
     def exchage_id(self):
@@ -46,6 +62,7 @@ class BotFarmer(BaseFarmer):
 
     def set_headers(self):
         self.headers = HEADERS.copy()
+        self.start_promo_collector()
 
     def authenticate(self):
         init_data = self.initiator.get_auth_data(**self.initialization_data)
@@ -58,12 +75,23 @@ class BotFarmer(BaseFarmer):
         self.is_alive = False
         raise KeyError
 
+    def start_promo_collector(self):
+        self.proxies = {}
+        for promo_id, app_token in PROMO_TOKENS.items():
+            if not promo_id in BotFarmer.promo_threads:
+                kwargs = dict(promo_id=promo_id, 
+                              app_token=app_token, 
+                              proxies=self.proxies, 
+                              dict_with_keys=BotFarmer.promo_keys)
+                thread = Thread(target=generate_promo_keys, kwargs=kwargs)
+                BotFarmer.promo_threads[promo_id] = thread
+                thread.start()
+
     def set_exchange(self):
         self.sync()
         if not self.exchage_id:
             eid = choice(('binance', 'okx', 'bybit', 'gate_io', 'bingx'))
             self.post(URL_SELECT_EXCHANGE, json={'exchangeId': eid})
-
 
     def set_start_time(self):
         """
@@ -90,9 +118,7 @@ class BotFarmer(BaseFarmer):
         return result['dailyCipher']
 
     def claim_daily_cipher(self):
-        """
-        Разгадываем морзянку
-        """
+        """ Разгадываем морзянку """
         cipher_data = self.get_cipher_data()
         if not cipher_data['isClaimed']:
             raw_cipher = cipher_data['cipher']
@@ -105,19 +131,15 @@ class BotFarmer(BaseFarmer):
                 self.log(MSG_CIPHER.format(cipher=cipher))
                 self.post(URL_CLAIM_DAILY_CIPHER, json={"cipher": cipher})
 
-    '''
-    Получаем данные о скинах в игре
-    '''
     def get_skins_info(self):
+        """ Получаем данные о скинах в игре """
         response = self.get(f"{URL_CONFIG}/{self.config_version}")
         if response.status_code == 200:
             result = response.json()
             self.skins_info = result.get('config', {}).get('skins')
 
-    '''
-    Получаем данные о купленных скинах
-    '''
     def get_skins_state(self):
+        """ Получаем данные о купленных скинах """
         my_skins = self.state.get('skin', {}).get('available')
         self.my_skins_ids = [item['skinId'] for item in my_skins]
 
@@ -310,55 +332,45 @@ class BotFarmer(BaseFarmer):
                     else:
                         self.log(MSG_TASK_NOT_COMPLETED)
 
-    def update_promos(self, log_info=False):
+    def update_promos(self):
         response = self.post(URL_GET_PROMOS)
         if response.status_code == 200:
             result = response.json()
-            for game in DICT_GAMES:
-                game_info = {}
-                game_id = DICT_GAMES[game].get('promo_id')
-                game_description = find_game_state_by_id(promo_state=result.get('promos'), target_game_id=game_id)
-                promo_max_daily_keys = game_description.get('keysPerDay')
-                game_state = find_game_state_by_id(promo_state=result.get('states'), target_game_id=game_id)
-                keys_counter = 0 if not game_state else game_state.get('receiveKeysToday', 0)
-                game_info['keys_left'] = promo_max_daily_keys - keys_counter
-                game_info['app_token'] = DICT_GAMES[game].get('app_token')
-                game_info['game_id'] = game_id
-                game_info['name'] = game
-                self.promo_status[game] = game_info
-            if log_info:
-                all_keys_left_zero = all(item['keys_left'] == 0 for item in self.promo_status.values())
-                if all_keys_left_zero:
-                    self.log(MSG_PROMO_COMPLETED)
-                    self.promo_completed = True
-                else:
-                    keys_left_status = ' '.join(f"{item['name']}: {item['keys_left']}" for item in self.promo_status.values())
-                    self.log(MSG_PROMO_STATUS.format(keys_left_status=keys_left_status))
+            self.promo_status = {}
+            states = game.get('states', [])
+            activated_keys = get_keys_count_per_game(states)
+            for game in result.get('promos', []):
+                self.promo_status[game['promoId']] = {
+                    "keys_per_day": game['keysPerDay'],
+                    "game_name": game['title']['en'],
+                    "keys_today": activated_keys.get(promo_id, 0),
+                }
         else:
             self.log(MSG_PROMO_UPDATE_ERROR)
             self.promo_status = None
 
     def apply_promo(self):
-        self.update_promos(log_info=True)
-        if not self.promo_status:
-            return
-        for game in self.promo_status:
-            game_info = self.promo_status[game]
-            if game_info['keys_left'] > 0:
-                promo_generator = PromoGenerator(app_token=game_info['app_token'],
-                                                 game_id=game_info['game_id'],
-                                                 proxies=self.proxies
-                                                 )
-                promo_code = promo_generator.get_promo()
+        self.update_promos()
+        for promo_id, promo_state in self.promo_status.items():
+            if promo['keys_per_day'] == (keys_today := promo['keys_today']):
+                continue
+            promo_keys = BotFarmer.promo_keys
+            actual = promo_keys['actual'][promo_id] = promo_keys['actual'].get(promo_id, {})
+            activated = promo_keys['activated'][promo_id] = promo_keys['activated'].get(promo_id, {})
+            if actual:
+                promo_code = actual.pop(0)
                 data = {"promoCode": promo_code}
                 self.log(MSG_TRY_PROMO.format(code=promo_code))
                 response = self.post(URL_APPLY_PROMO, json=data)
                 if response.status_code == 200:
                     result = response.json()
+                    self.promo_status[promo_id]['keys_today'] = result.get('promoState', {}).get('receiveKeysToday', keys_today)
                     self.log(MSG_PROMO_OK)
                 else:
                     self.log(MSG_PROMO_ERROR)
-        self.update_promos(log_info=True)
+                if activated:
+                    activated.pop(0)
+                activated.append(key)
 
     @property
     def stats(self):

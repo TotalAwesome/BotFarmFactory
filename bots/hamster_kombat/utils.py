@@ -17,8 +17,9 @@ def sorted_by_payback(prepared):
         prepared, key=lambda x: x["price"] / x["profitPerHourDelta"], reverse=False
     )
 
-def find_game_state_by_id(promo_state, target_game_id):
-    for game_state in promo_state:
-        if game_state.get('promoId') == target_game_id:
-            return game_state
-    return None
+def get_keys_count_per_game(states):
+    result = {}
+    for state in states:
+        result[state['promoId']] =  state["receiveKeysToday"]
+    return result
+    
