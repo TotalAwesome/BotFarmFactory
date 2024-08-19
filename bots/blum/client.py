@@ -6,9 +6,9 @@ from bots.base.base import BaseFarmer
 from bots.blum.strings import HEADERS, URL_REFRESH_TOKEN, URL_BALANCE, URL_TASKS, \
     URL_WEBAPP_INIT, URL_AUTH, URL_FARMING_CLAIM, URL_FARMING_START, URL_PLAY_START, \
     URL_PLAY_CLAIM,  URL_DAILY_REWARD, URL_FRIENDS_BALANCE, URL_FRIENDS_CLAIM, MSG_AUTH, \
-    MSG_REFRESH, MSG_BALANCE, MSG_START_FARMING, MSG_CLAIM_FARM, MSG_BEGIN_GAME, MSG_GAME_OFF, \
+    MSG_REFRESH, MSG_BALANCE_UPDATE, MSG_START_FARMING, MSG_CLAIM_FARM, MSG_BEGIN_GAME, MSG_GAME_OFF, \
     MSG_PLAYED_GAME, MSG_DAILY_REWARD, MSG_FRIENDS_CLAIM, URL_CHECK_NAME, MSG_INPUT_USERNAME, \
-    URL_TASK_CLAIM, URL_TASK_START, MSG_TASK_CLAIMED, MSG_TASK_STARTED
+    URL_TASK_CLAIM, URL_TASK_START, MSG_TASK_CLAIMED, MSG_TASK_STARTED, MSG_BALANCE_INFO
 from bots.blum.config import MANUAL_USERNAME, GAME_TOGGLE_ON
 
 GAME_RESULT_RANGE = (190, 280)
@@ -112,8 +112,9 @@ class BotFarmer(BaseFarmer):
         else:
             return DEFAULT_EST_TIME
 
-    def update_balance(self):
-        self.log(MSG_BALANCE)
+    def update_balance(self, log_info=False):
+        if log_info:
+            self.log(MSG_BALANCE_UPDATE)
         response = self.get(URL_BALANCE, headers=self.headers)
         if response.status_code == 200:
             self.balance_data = response.json()
@@ -142,9 +143,10 @@ class BotFarmer(BaseFarmer):
             result = self.post(URL_FARMING_START)
             self.update_balance()
         elif self.balance_data["timestamp"] >= self.balance_data["farming"]["endTime"]:
-            self.log(MSG_CLAIM_FARM.format(amount=self.balance_data["farming"]["balance"]))
             result = self.post(URL_FARMING_CLAIM)
-            self.log(f"{result.status_code},  {result.text}")
+            self.log(MSG_CLAIM_FARM.format(amount=self.balance_data["farming"]["balance"]))
+        self.log(MSG_BALANCE_INFO.format(balance=self.balance,
+                                         play_passes=self.play_passes))
 
     def play_game(self):
         if not GAME_TOGGLE_ON:
@@ -188,7 +190,7 @@ class BotFarmer(BaseFarmer):
     def farm(self):
         self.daily_reward()
         self.friends_claim()
-        self.update_balance()
+        self.update_balance(log_info=True)
         self.play_game()
         self.start_farming()
         self.check_tasks()
