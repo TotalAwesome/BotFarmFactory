@@ -337,7 +337,7 @@ class BotFarmer(BaseFarmer):
         if response.status_code == 200:
             result = response.json()
             self.promo_status = {}
-            states = game.get('states', [])
+            states = result.get('states', [])
             activated_keys = get_keys_count_per_game(states)
             for game in result.get('promos', []):
                 self.promo_status[game['promoId']] = {

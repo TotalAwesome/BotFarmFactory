@@ -20,7 +20,7 @@ ENABLED_BOTS = [
 
 SLEEP_AT_NIGHT = False  # При True ночью фарминг не производится
 NIGHT_HOURS = (0, 7)  # Диапазон времени, когда у фермы тихий час
-MULTITHREAD = False  # При True на каждый аккаунт будет отдельный поток
+MULTITHREAD = True  # При True на каждый аккаунт будет отдельный поток
 
 try:
     from config_local import *
