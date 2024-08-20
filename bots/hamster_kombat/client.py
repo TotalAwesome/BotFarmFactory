@@ -1,5 +1,6 @@
 import re
 
+from datetime import datetime
 from bots.base.base import BaseFarmer
 from base64 import b64decode
 from time import time, sleep
@@ -10,7 +11,7 @@ from bots.hamster_kombat.strings import URL_BOOSTS_FOR_BUY, URL_BUY_BOOST, URL_B
     URL_CLAIM_DAILY_COMBO, MSG_BUY_UPGRADE, MSG_COMBO_EARNED, MSG_TAP, MSG_CLAIMED_COMBO_CARDS, \
     MSG_SYNC, URL_CONFIG, URL_CLAIM_DAILY_CIPHER, MSG_CIPHER, URL_INIT, URL_AUTH, URL_SELECT_EXCHANGE, \
     URL_LIST_TASKS, MSG_TASK_COMPLETED, MSG_TASK_NOT_COMPLETED, URL_GET_SKINS, URL_BUY_SKIN, \
-    DICT_SKINS, MSG_BUY_SKIN
+    MSG_BUY_SKIN
 from bots.hamster_kombat.config import FEATURES
 from bots.hamster_kombat.utils import sorted_by_payback, sorted_by_price, sorted_by_profit, sorted_by_profitness
     
@@ -24,6 +25,9 @@ class BotFarmer(BaseFarmer):
     boosts = None
     upgrades = None
     task_checked_at = None
+    config_version = None
+    skins_info = []
+    my_skins_ids = [] 
 
     @property
     def exchage_id(self):
@@ -107,26 +111,43 @@ class BotFarmer(BaseFarmer):
         else:
             return None
 
+    '''
+    Получаем данные о скинах в игре
+    '''
+    def get_skins_info(self):
+        response = self.get(f"{URL_CONFIG}/{self.config_version}")
+        if response.status_code == 200:
+            result = response.json()
+            self.skins_info = result.get('config', {}).get('skins')
+
+    '''
+    Получаем данные о купленных скинах
+    '''
+    def get_skins_state(self):
+        my_skins = self.state.get('skin', {}).get('available')
+        self.my_skins_ids = [item['skinId'] for item in my_skins]
+
     def buy_skins(self):
-        skins_info = self.get_skins()
-        if not skins_info:
-            return
-        available_skins = skins_info.get("available")
-        my_skins_info = self.state['skin']
-        my_skin_ids = [item['skinId'] for item in my_skins_info['available']]
-        for available_skin in available_skins:
-            skin_id = available_skin.get("id")
-            if (skin_id in DICT_SKINS) and (skin_id not in my_skin_ids):
-                skin_cost = DICT_SKINS[skin_id]
-                if self.balance > skin_cost:
-                    response = self.buy_skin(skin_id)
-                    result = response.json()
-                    if response.status_code == 200:
-                        self.log(MSG_BUY_SKIN.format(skin_name=skin_id))
-                        self.sync()
-                        sleep(2 + random()*5)
-                    else:
-                        break
+        self.get_skins_info()
+        self.get_skins_state()
+        max_skin_price = FEATURES.get('max_skin_price', 0)
+        for skin in self.skins_info:
+            skin_price = skin.get('price')
+            skin_id = skin.get('id')
+            if (
+                skin_price <= self.balance
+                and skin_price <= max_skin_price
+                and skin_id not in self.my_skins_ids
+                and (not skin.get('expiresAt') or datetime.utcnow() < datetime.fromisoformat(skin['expiresAt'][:-1]))
+                ):
+                response = self.buy_skin(skin_id)
+                result = response.json()
+                if response.status_code == 200:
+                    self.log(MSG_BUY_SKIN.format(skin_name=skin_id))
+                    self.sync()
+                    sleep(2 + random()*5)
+                else:
+                    break
 
     def buy_skin(self, skin_name):
         data = {"skinId": skin_name, "timestamp": int(time())}
@@ -137,6 +158,7 @@ class BotFarmer(BaseFarmer):
         try:
             response = self.post(url=URL_SYNC)
             self.state = response.json()["clickerUser"]
+            self.config_version = response.headers.get('config-version')
         except Exception as e:
             pass
 
@@ -223,7 +245,8 @@ class BotFarmer(BaseFarmer):
                 and not upgrade["isExpired"]
                 and upgrade["profitPerHourDelta"] > 0
                 and not upgrade.get("cooldownSeconds")
-                and upgrade["price"] / upgrade["profitPerHourDelta"] <= FEATURES['max_upgrade_payback']
+                and (not FEATURES['max_upgrade_payback'] or \
+                    upgrade["price"] / upgrade["profitPerHourDelta"] <= FEATURES['max_upgrade_payback'])
             ):
                 item = upgrade.copy()
                 if 'condition' in item :

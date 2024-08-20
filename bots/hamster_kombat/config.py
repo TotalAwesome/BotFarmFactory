@@ -7,23 +7,21 @@
             - profit -> покупать самую прибыльну
             - profitness -> покупать самую профитную (сколько добыча на каждый потраченный хома-рубль)
             )
-        3. delay_between_attempts -> Задержка между заходами в секундах
-        4. percent_to_spend -> Процент от депозита который можно потратить за 1 подход
-        5. taps -> включение/отключение тапов
-        6. max_upgrade_payback - максимальная окупаемость апргейда в часах
+        3. taps -> включение/отключение тапов
+        4. max_upgrade_payback - максимальная окупаемость апргейда в часах, например 40*100. По умолчанию - не ограничена.
+        5. buy_skins - покупать скины
+        6. блок, отвечающий за таймауты
         7. buy_skins - покупать скины
-    
 """
 
 
 FEATURES = {
     "buy_upgrades": True,
     "buy_decision_method": "payback",
-    "delay_between_attempts": 60 * 10,
-    "percent_to_spend": 10,
     "taps": True,
-    "max_upgrade_payback": 24*100,
+    "max_upgrade_payback": None,
     "buy_skins": False,
+    "max_skin_price": 10_000_000,
     "minimum_farm_sleep": 2 * 60 * 60, # (2 часа) минимальная задержка до следующего захода 
     "maximum_farm_sleep": 3 * 60 * 60, # (6 часов) максимальная задержка до следующего захода
     "minimum_upgrade_delay": 5, # (5 секунд) минимальная задержка между апгрейдами
