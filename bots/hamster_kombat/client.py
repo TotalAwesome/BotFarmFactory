@@ -4,26 +4,51 @@ from bots.base.base import BaseFarmer
 from base64 import b64decode
 from time import time, sleep
 from random import randrange, choice, random, uniform
+from threading import Thread
 from telethon.types import InputBotAppShortName
+from bots.hamster_kombat.promo import PromoGenerator
 from bots.hamster_kombat.strings import URL_BOOSTS_FOR_BUY, URL_BUY_BOOST, URL_BUY_UPGRADE, \
     URL_SYNC, URL_TAP, URL_UPGRADES_FOR_BUY, HEADERS, BOOST_ENERGY, URL_CHECK_TASK, \
     URL_CLAIM_DAILY_COMBO, MSG_BUY_UPGRADE, MSG_COMBO_EARNED, MSG_TAP, MSG_CLAIMED_COMBO_CARDS, \
     MSG_SYNC, URL_CONFIG, URL_CLAIM_DAILY_CIPHER, MSG_CIPHER, URL_INIT, URL_AUTH, URL_SELECT_EXCHANGE, \
     URL_LIST_TASKS, MSG_TASK_COMPLETED, MSG_TASK_NOT_COMPLETED, URL_GET_SKINS, URL_BUY_SKIN, \
-    DICT_SKINS, MSG_BUY_SKIN, MSG_SKIN_NOT_ENOUGH_MONEY, MSG_SKIN_ALREADY_PURCHASED
+    PROMO_TOKENS, MSG_BUY_SKIN, MSG_PROMO_COMPLETED, \
+    URL_APPLY_PROMO, URL_GET_PROMOS, \
+    MSG_PROMO_UPDATE_ERROR, MSG_PROMO_OK, MSG_PROMO_ERROR, MSG_TRY_PROMO, MSG_PROMO_STATUS
 from bots.hamster_kombat.config import FEATURES
-from bots.hamster_kombat.utils import sorted_by_payback, sorted_by_price, sorted_by_profit, sorted_by_profitness
+from bots.hamster_kombat.utils import sorted_by_payback, sorted_by_price, sorted_by_profit, sorted_by_profitness, \
+    get_keys_count_per_game
     
+
+def generate_promo_keys(dict_with_keys, **kwargs):
+    client = PromoGenerator(**kwargs)
+    while True:
+        new_key = client.get_promo()
+        actual = dict_with_keys['actual']
+        activated = dict_with_keys['activated']
+        actual[client.promo_id] = actual.get(client.promo_id, [])
+        activated[client.promo_id] = activated.get(client.promo_id, [])
+        if not new_key in actual[client.promo_id] \
+            and not new_key in activated[client.promo_id]:
+            actual[client.promo_id].append(new_key)
+        sleep(5)
+
 
 class BotFarmer(BaseFarmer):
 
     name = 'hamster_kombat_bot'
     app_extra = 'kentId102796269'
-    # initialization_data = dict(peer=name, bot=name, url=URL_INIT, start_param=extra_code)
     state = None
     boosts = None
     upgrades = None
     task_checked_at = None
+    config_version = None
+    promo_status = {}
+    promo_threads = {}
+    promo_keys = {'actual': {},
+                  'activated': {}}
+    skins_info = []
+    my_skins_ids = []
 
     @property
     def exchage_id(self):
@@ -37,6 +62,7 @@ class BotFarmer(BaseFarmer):
 
     def set_headers(self):
         self.headers = HEADERS.copy()
+        self.start_promo_collector()
 
     def authenticate(self):
         init_data = self.initiator.get_auth_data(**self.initialization_data)
@@ -49,38 +75,54 @@ class BotFarmer(BaseFarmer):
         self.is_alive = False
         raise KeyError
 
+    @property
+    def promo_completed(self):
+        return all([game['keys_per_day'] == game['keys_today'] 
+                    for game in self.promo_status.values()])
+
+    def start_promo_collector(self):
+        for promo_id, app_token in PROMO_TOKENS.items():
+            if not promo_id in BotFarmer.promo_threads:
+                kwargs = dict(promo_id=promo_id, 
+                              app_token=app_token, 
+                              proxies=self.proxies, 
+                              dict_with_keys=BotFarmer.promo_keys)
+                thread = Thread(target=generate_promo_keys, kwargs=kwargs)
+                BotFarmer.promo_threads[promo_id] = thread
+                thread.start()
+
     def set_exchange(self):
         self.sync()
         if not self.exchage_id:
             eid = choice(('binance', 'okx', 'bybit', 'gate_io', 'bingx'))
             self.post(URL_SELECT_EXCHANGE, json={'exchangeId': eid})
 
-
     def set_start_time(self):
         """
-        Если тапы включены, то рассчитываем время следующего захода как минимальное из:
-        - периода накопления энергии
+        Берём минимальное из значений:
         - рандомного значения между минимальным и максимальным периодом до следующего захода
-        Если тапы отключены, берем рандомное значение между минимальным и максимальным периодом до следующего захода
+        - (если включены тапы) периода накопления энергии
+        - (если включены промокоды и на сегодня введены не все) случайное значение от 10 до 15 минут
         """
+        sleep_seconds = []
         minimum_farm_sleep = FEATURES.get("minimum_farm_sleep", 2 * 60 * 60)
         maximum_farm_sleep = FEATURES.get("maximum_farm_sleep", 3 * 60 * 60)
-        bot_farm_sleep = uniform(minimum_farm_sleep, maximum_farm_sleep) + random()
+        bot_farm_sleep = uniform(minimum_farm_sleep, maximum_farm_sleep)
+        sleep_seconds.append(bot_farm_sleep)
         if FEATURES.get('taps', True):
             tap_sleep_seconds = int(self.state['maxTaps'] / self.state['tapsRecoverPerSec'])            
-            sleep_seconds = min(tap_sleep_seconds, bot_farm_sleep)
-        else:
-            sleep_seconds = bot_farm_sleep
-        self.start_time = time() + sleep_seconds
+            sleep_seconds.append(tap_sleep_seconds)
+        if FEATURES.get('apply_promo', True) and not self.promo_completed:
+            promo_next_step = choice(range(10 * 60, 15 * 60))
+            sleep_seconds.append(promo_next_step)
+        self.start_time = time() + min(sleep_seconds)
 
     def get_cipher_data(self):
         result = self.post(URL_CONFIG).json()
         return result['dailyCipher']
 
     def claim_daily_cipher(self):
-        """
-        Разгадываем морзянку
-        """
+        """ Разгадываем морзянку """
         cipher_data = self.get_cipher_data()
         if not cipher_data['isClaimed']:
             raw_cipher = cipher_data['cipher']
@@ -93,52 +135,49 @@ class BotFarmer(BaseFarmer):
                 self.log(MSG_CIPHER.format(cipher=cipher))
                 self.post(URL_CLAIM_DAILY_CIPHER, json={"cipher": cipher})
 
-    def get_skins(self):
-        response = self.post(URL_GET_SKINS)
+    def get_skins_info(self):
+        """ Получаем данные о скинах в игре """
+        response = self.get(f"{URL_CONFIG}/{self.config_version}")
         if response.status_code == 200:
             result = response.json()
-            if result := result.get("skins"):
-                skins_info = {}
-                skins_info["featured"] = list(filter(lambda x: x['isFeatured'], result))
-                skins_info["available"] = list(filter(lambda x: x['isAvailable'], result))
-                return skins_info
-            else:
-                return None
-        else:
-            return None
+            self.skins_info = result.get('config', {}).get('skins')
+
+    def get_skins_state(self):
+        """ Получаем данные о купленных скинах """
+        my_skins = self.state.get('skin', {}).get('available')
+        self.my_skins_ids = [item['skinId'] for item in my_skins]
 
     def buy_skins(self):
-        skins_info = self.get_skins()
-        if not skins_info:
-            return
-        available_skins = skins_info.get("available")
-        for available_skin in available_skins:
-            skin_id = available_skin.get("id")
-            if skin_id in DICT_SKINS:
-                skin_cost = DICT_SKINS[skin_id]
-                if self.balance > skin_cost:
-                    response = self.buy_skin(skin_id)
-                    result = response.json()
-                    if response.status_code == 200:
-                        self.log(MSG_BUY_SKIN.format(skin_name=skin_id))
-                        self.sync()
-                        sleep(random()*5)
-                    elif response.status_code == 400 and result.get("error_code") == "INSUFFICIENT_FUNDS":
-                        self.log(MSG_SKIN_NOT_ENOUGH_MONEY)
-                        break
-                    elif response.status_code == 400 and result.get("error_code") == "SKIN_ALREADY_AVAILABLE":
-                        self.log(MSG_SKIN_ALREADY_PURCHASED)
-                        sleep(2 + random()*5)
-                        continue
-                    else:
-                        break
+        self.get_skins_info()
+        self.get_skins_state()
+        max_skin_price = FEATURES.get('max_skin_price', 0)
+        for skin in self.skins_info:
+            skin_price = skin.get('price')
+            skin_id = skin.get('id')
+            if (
+                skin_price <= self.balance
+                and skin_price <= max_skin_price
+                and skin_id not in self.my_skins_ids
+                ):
+                response = self.buy_skin(skin_id)
+                result = response.json()
+                if response.status_code == 200:
+                    self.log(MSG_BUY_SKIN.format(skin_name=skin_id))
+                    self.sync()
+                    sleep(2 + random()*5)
+                else:
+                    break
 
+    def buy_skin(self, skin_name):
+        data = {"skinId": skin_name, "timestamp": int(time())}
+        return self.post(URL_BUY_SKIN, json=data)
 
     def sync(self):
         self.log(MSG_SYNC)
         try:
             response = self.post(url=URL_SYNC)
             self.state = response.json()["clickerUser"]
+            self.config_version = response.headers.get('config-version')
         except Exception as e:
             pass
 
@@ -297,6 +336,46 @@ class BotFarmer(BaseFarmer):
                     else:
                         self.log(MSG_TASK_NOT_COMPLETED)
 
+    def update_promos(self):
+        response = self.post(URL_GET_PROMOS)
+        if response.status_code == 200:
+            result = response.json()
+            self.promo_status = {}
+            states = result.get('states', [])
+            activated_keys = get_keys_count_per_game(states)
+            for game in result.get('promos', []):
+                self.promo_status[game['promoId']] = {
+                    "keys_per_day": game['keysPerDay'],
+                    "game_name": game['title']['en'],
+                    "keys_today": activated_keys.get(game['promoId'], 0),
+                }
+        else:
+            self.log(MSG_PROMO_UPDATE_ERROR)
+            self.promo_status = None
+
+    def apply_promo(self):
+        self.update_promos()
+        for promo_id, promo_state in self.promo_status.items():
+            if promo_state['keys_per_day'] == (keys_today := promo_state['keys_today']):
+                continue
+            promo_keys = BotFarmer.promo_keys
+            actual = promo_keys['actual'][promo_id] = promo_keys['actual'].get(promo_id, [])
+            activated = promo_keys['activated'][promo_id] = promo_keys['activated'].get(promo_id, [])
+            if actual:
+                promo_code = actual.pop(0)
+                data = {"promoCode": promo_code}
+                self.log(MSG_TRY_PROMO.format(code=promo_code))
+                response = self.post(URL_APPLY_PROMO, json=data)
+                if response.status_code == 200:
+                    result = response.json()
+                    self.promo_status[promo_id]['keys_today'] = result.get('promoState', {}).get('receiveKeysToday', keys_today)
+                    self.log(MSG_PROMO_OK)
+                else:
+                    self.log(MSG_PROMO_ERROR)
+                if activated:
+                    activated.pop(0)
+                activated.append(promo_code)
+
     @property
     def stats(self):
         return {
@@ -319,11 +398,11 @@ class BotFarmer(BaseFarmer):
         self.make_tasks()
         if FEATURES.get('buy_upgrades', True):
             self.buy_upgrades(FEATURES.get('buy_decision_method', 'payback'))
+            self.claim_combo_reward()
         if FEATURES.get('buy_skins', True):
-            self.buy_skins()
-        self.claim_combo_reward()
+            self.buy_skins()        
+        if FEATURES.get('apply_promo', True):
+            self.apply_promo()
         if self.is_taps_boost_available:
             self.boost(BOOST_ENERGY)
         self.log(" ".join(f"{k}: {v} |" for k, v in self.stats.items()))
-        # sleep(choice(range(1, 10)))
-        # sleep(FEATURES.get('delay_between_attempts', 60 * 10))

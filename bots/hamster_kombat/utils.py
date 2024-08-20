@@ -16,3 +16,10 @@ def sorted_by_payback(prepared):
     return sorted(
         prepared, key=lambda x: x["price"] / x["profitPerHourDelta"], reverse=False
     )
+
+def get_keys_count_per_game(states):
+    result = {}
+    for state in states:
+        result[state['promoId']] =  state["receiveKeysToday"]
+    return result
+    

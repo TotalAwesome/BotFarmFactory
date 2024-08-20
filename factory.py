@@ -5,7 +5,6 @@
 
 from time import sleep
 from random import random, shuffle
-# from os import path, listdir
 
 from initiator import Initiator
 from accounts import TELEGRAM_ACCOUNTS

@@ -1,6 +1,7 @@
 from os import path, listdir
 from importlib import import_module
 from config import ENABLED_BOTS
+from bots.base.base import logging
 
 def import_bots():
     bots = []
