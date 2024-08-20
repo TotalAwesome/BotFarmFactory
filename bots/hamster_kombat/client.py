@@ -1,5 +1,6 @@
 import re
 
+from datetime import datetime
 from bots.base.base import BaseFarmer
 from base64 import b64decode
 from time import time, sleep
@@ -158,6 +159,7 @@ class BotFarmer(BaseFarmer):
                 skin_price <= self.balance
                 and skin_price <= max_skin_price
                 and skin_id not in self.my_skins_ids
+                and (not skin.get('expiresAt') or datetime.utcnow() < datetime.fromisoformat(skin['expiresAt'][:-1]))
                 ):
                 response = self.buy_skin(skin_id)
                 result = response.json()
@@ -264,7 +266,8 @@ class BotFarmer(BaseFarmer):
                 and not upgrade["isExpired"]
                 and upgrade["profitPerHourDelta"] > 0
                 and not upgrade.get("cooldownSeconds")
-                and upgrade["price"] / upgrade["profitPerHourDelta"] <= FEATURES['max_upgrade_payback']
+                and (not FEATURES['max_upgrade_payback'] or \
+                    upgrade["price"] / upgrade["profitPerHourDelta"] <= FEATURES['max_upgrade_payback'])
             ):
                 item = upgrade.copy()
                 if 'condition' in item :
