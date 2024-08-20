@@ -75,8 +75,12 @@ class BotFarmer(BaseFarmer):
         self.is_alive = False
         raise KeyError
 
+    @property
+    def promo_completed(self):
+        return all([game['keys_per_day'] == game['keys_today'] 
+                    for game in self.promo_status.values()])
+
     def start_promo_collector(self):
-        self.proxies = {}
         for promo_id, app_token in PROMO_TOKENS.items():
             if not promo_id in BotFarmer.promo_threads:
                 kwargs = dict(promo_id=promo_id, 
@@ -343,7 +347,7 @@ class BotFarmer(BaseFarmer):
                 self.promo_status[game['promoId']] = {
                     "keys_per_day": game['keysPerDay'],
                     "game_name": game['title']['en'],
-                    "keys_today": activated_keys.get(promo_id, 0),
+                    "keys_today": activated_keys.get(game['promoId'], 0),
                 }
         else:
             self.log(MSG_PROMO_UPDATE_ERROR)
@@ -352,11 +356,11 @@ class BotFarmer(BaseFarmer):
     def apply_promo(self):
         self.update_promos()
         for promo_id, promo_state in self.promo_status.items():
-            if promo['keys_per_day'] == (keys_today := promo['keys_today']):
+            if promo_state['keys_per_day'] == (keys_today := promo_state['keys_today']):
                 continue
             promo_keys = BotFarmer.promo_keys
-            actual = promo_keys['actual'][promo_id] = promo_keys['actual'].get(promo_id, {})
-            activated = promo_keys['activated'][promo_id] = promo_keys['activated'].get(promo_id, {})
+            actual = promo_keys['actual'][promo_id] = promo_keys['actual'].get(promo_id, [])
+            activated = promo_keys['activated'][promo_id] = promo_keys['activated'].get(promo_id, [])
             if actual:
                 promo_code = actual.pop(0)
                 data = {"promoCode": promo_code}
@@ -370,7 +374,7 @@ class BotFarmer(BaseFarmer):
                     self.log(MSG_PROMO_ERROR)
                 if activated:
                     activated.pop(0)
-                activated.append(key)
+                activated.append(promo_code)
 
     @property
     def stats(self):
