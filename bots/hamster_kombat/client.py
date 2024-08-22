@@ -13,6 +13,7 @@ from bots.hamster_kombat.strings import URL_BOOSTS_FOR_BUY, URL_BUY_BOOST, URL_B
     URL_CLAIM_DAILY_COMBO, MSG_BUY_UPGRADE, MSG_COMBO_EARNED, MSG_TAP, MSG_CLAIMED_COMBO_CARDS, \
     MSG_SYNC, URL_CONFIG, URL_CLAIM_DAILY_CIPHER, MSG_CIPHER, URL_INIT, URL_AUTH, URL_SELECT_EXCHANGE, \
     URL_LIST_TASKS, MSG_TASK_COMPLETED, MSG_TASK_NOT_COMPLETED, URL_GET_SKINS, URL_BUY_SKIN, \
+    MSG_BOOST, MSG_BOOST_AVAILABLE, MSG_TAP_SIM, \
     PROMO_TOKENS, MSG_BUY_SKIN, MSG_PROMO_COMPLETED, \
     URL_APPLY_PROMO, URL_GET_PROMOS, \
     MSG_PROMO_UPDATE_ERROR, MSG_PROMO_OK, MSG_PROMO_ERROR, MSG_TRY_PROMO, MSG_PROMO_STATUS
@@ -201,6 +202,7 @@ class BotFarmer(BaseFarmer):
     def boost(self, boost_name=BOOST_ENERGY):
         data = {"boostId": boost_name, "timestamp": int(time())}
         self.post(URL_BUY_BOOST, json=data)
+        self.log(MSG_BOOST.format(boostype = boost_name))
 
     def upgrade(self, upgrade_name):
         data = {"upgradeId": upgrade_name, "timestamp": int(time())}
@@ -242,7 +244,9 @@ class BotFarmer(BaseFarmer):
                 boost["id"] == BOOST_ENERGY
                 and boost["cooldownSeconds"] == 0
                 and boost["level"] <= boost["maxLevel"]
+                and FEATURES.get('apply_boosts', True)
             ):
+                self.log(MSG_BOOST_AVAILABLE.format(boostid = boost["id"]))
                 return True
     
 
@@ -408,4 +412,10 @@ class BotFarmer(BaseFarmer):
             self.apply_promo()
         if self.is_taps_boost_available:
             self.boost(BOOST_ENERGY)
+            self.sync()
+            tap_sim_sec = choice(range(FEATURES.get('tap_wait'[0], 110), FEATURES.get('tap_wait'[1], 130)))
+            self.log(MSG_TAP_SIM.format(sec = tap_sim_sec))
+            sleep(tap_sim_sec)
+            self.tap()
+
         self.log(" ".join(f"{k}: {v} |" for k, v in self.stats.items()))
