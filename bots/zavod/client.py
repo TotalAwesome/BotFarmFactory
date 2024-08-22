@@ -7,7 +7,7 @@ from bots.zavod.strings import HEADERS, URL_INIT, URL_CLAIM, URL_FARM, URL_PROFI
     MSG_GUILD, MSG_JOINED_GUILD, MSG_UPGRADED_TOOLKIT, MSG_UPGRADED_WORKBENCH, MSG_BURNED_TOKENS, MSG_CLAIMED_MISSION, \
     MSG_LINK_MISSION, MSG_TELEGRAM_MISSION, MSG_ERROR_UPGRADING_TOOLKIT, MSG_ERROR_UPGRADING_WORKBENCH, \
     MSG_ERROR_BURNING_TOKENS, MSG_ERROR_FETCHING_MISSIONS, MSG_ERROR_CLAIMING_MISSION, \
-    MSG_ERROR_CONFIRMING_LINK_MISSION, MSG_ERROR_CONFIRMING_TELEGRAM_MISSION
+    MSG_ERROR_CONFIRMING_LINK_MISSION, MSG_ERROR_CONFIRMING_TELEGRAM_MISSION, URL_GUILD_JOIN
 from time import sleep
 
 class BotFarmer(BaseFarmer):
@@ -70,7 +70,7 @@ class BotFarmer(BaseFarmer):
         self.log(MSG_WORKBENCH_LEVEL.format(work=work))
         self.log(MSG_GUILD.format(guild=guild))
         if guild is None:
-            self.post('https://zavod-api.mdaowallet.com/guilds/join', json={'guildId': 81,})
+            self.post(URL_GUILD_JOIN, json={'guildId': 81,})
             self.log(MSG_JOINED_GUILD)
 
         # Upgrade logic based on tool and workbench levels
