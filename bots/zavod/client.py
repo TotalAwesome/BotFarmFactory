@@ -174,7 +174,6 @@ class BotFarmer(BaseFarmer):
         self.update_profile()
         self.update_farming()
         self.claim()
-        sleep(1)
         self.update_farming()
         sleep(2)
         self.up()

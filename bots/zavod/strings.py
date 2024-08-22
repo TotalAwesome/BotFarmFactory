@@ -1,7 +1,7 @@
 URL_INIT = "https://zavod.mdaowallet.com/"
 URL_PROFILE = "https://zavod-api.mdaowallet.com/user/profile"  # GET
 URL_FARM = "https://zavod-api.mdaowallet.com/user/farm"  # POST
-URL_CLAIM = "https://zavod-api.mdaowallet.com/user/claim"  # GET
+URL_CLAIM = "https://zavod-api.mdaowallet.com/user/claim"
 URL_UPGRADE_TOOLKIT = 'https://zavod-api.mdaowallet.com/user/upgradeToolkit'
 URL_UPGRADE_WORKBENCH = 'https://zavod-api.mdaowallet.com/user/upgradeWorkbench'
 URL_BURN_TOKENS = 'https://zavod-api.mdaowallet.com/guilds/burnTokens'
