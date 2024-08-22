@@ -6,6 +6,8 @@ URL_BUY_UPGRADE = "https://api.simple.app/api/v1/public/telegram/buy-mining-bloc
 URL_CLAIM_FRIENDS = "https://api.simple.app/api/v1/public/telegram/claim_friends/" # POST 
 URL_CLAIM_SPIN = "https://api.simple.app/api/v1/public/telegram/claim-spin/" # POST {userId, authData, frontCoef, amount}
 URL_START_FARM = "https://api.simple.app/api/v1/public/telegram/activate/"  # POST
+URL_REGISTER = "https://apii.simple.app/api/v1/public/telegram/register/" # POST  authData, email, refCode, userId
+URL_SET_EMAIL = "https://apii.simple.app/api/v1/public/telegram/set-client-email/" # POST
 URL_CLAIM_FARMED = "https://api.simple.app/api/v1/public/telegram/claim/" # POST
 URL_FRIENDS = "https://api.simple.app/api/v1/public/telegram/friends/" # POST
 URL_SPIN = "https://api.simple.app/api/v1/public/telegram/claim-spin/"
@@ -20,13 +22,15 @@ URL_CLAIM_CARD = "https://api.simple.app/api/v1/public/telegram-collection/card-
 MSG_PROFILE_UPDATE = "Обновление профиля"
 MSG_TAP = "Натапал {taps} монет"
 MSG_START_FARMING = "Начал фармить"
-MSG_START_TASK = "Запустил таску"
+MSG_START_TASK = "Запустил таску ({title})"
+MSG_TASK_CLAIMED = "Выполнил таску ({title}) на {bonus} SMPL"
 MSG_BUY_UPGRADE = "Прокачал: {name} ({level}) цена: {price} окупаемость: {payback}"
 MSG_SPIN = "Крутанул рулетку, получил: {type} кол-во: {amount}"
 MSG_CLAIM_FARM = "Собрал нафармленное: {amount}"
 MSG_CLAIM_REFS = "Собрал нафармленное рефами: {amount}"
 MSG_STATE = "Баланс: {balance} | Прибыль в час: {mine_per_hour} | тапов в час: {taps_per_hour}"
 MSG_CLAIMED_CARD = "Склеймил карту (профит {amount}): {title}"
+MSG_REGISTRATION = "Зарегистрировался..."
 
 class UpgradeTypes:
     TAPS_LIMIT = 1
@@ -39,6 +43,12 @@ SPIN_TYPES = {
     2: "размер тапа",
     3: "монеты",
 }
+
+EMAIL_DOMAINS = ('{}@yahoo.com', 
+                 '{}@gmail.com', 
+                 '{}@mail.ru', 
+                 '{}@rambler.ru', 
+                 '{}@outlook.com')
 
 HEADERS = {
     'Host' : 'api.simple.app',
