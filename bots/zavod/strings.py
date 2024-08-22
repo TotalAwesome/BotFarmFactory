@@ -10,6 +10,8 @@ URL_CLAIM_MISSION = 'https://zavod-api.mdaowallet.com/missions/claim/'
 URL_CONFIRM_LINK_MISSION = 'https://zavod-api.mdaowallet.com/missions/confirm/link/'
 URL_CONFIRM_TELEGRAM_MISSION = 'https://zavod-api.mdaowallet.com/missions/confirm/telegram/'
 URL_GUILD_JOIN = 'https://zavod-api.mdaowallet.com/guilds/join'
+URL_WORKBENCH_SETTINGS = 'https://zavod-api.mdaowallet.com/farm/workbenchSettings'
+URL_TOOLKIT_SETTINGS = 'https://zavod-api.mdaowallet.com/farm/toolkitSettings'
 
 MSG_CLAIM = 'Забрали награду'
 MSG_PROFILE = 'Обновили профиль'
