@@ -14,13 +14,14 @@ DEBUG = True
 RETRY_ATTEMPTS = 3
 
 ENABLED_BOTS = [
+     "zavod",
     # Пустой список = все боты включены
     # иначе будут работать только те, что в этом списке
 ]
 
 SLEEP_AT_NIGHT = False  # При True ночью фарминг не производится
 NIGHT_HOURS = (0, 7)  # Диапазон времени, когда у фермы тихий час
-MULTITHREAD = True  # При True на каждый аккаунт будет отдельный поток
+MULTITHREAD = False  # При True на каждый аккаунт будет отдельный поток
 
 try:
     from config_local import *
