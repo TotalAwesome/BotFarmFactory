@@ -8,10 +8,10 @@ from bots.blum.strings import HEADERS, URL_REFRESH_TOKEN, URL_BALANCE, URL_TASKS
     URL_PLAY_CLAIM,  URL_DAILY_REWARD, URL_FRIENDS_BALANCE, URL_FRIENDS_CLAIM, MSG_AUTH, \
     MSG_REFRESH, MSG_BALANCE_UPDATE, MSG_START_FARMING, MSG_CLAIM_FARM, MSG_BEGIN_GAME, MSG_GAME_OFF, \
     MSG_PLAYED_GAME, MSG_DAILY_REWARD, MSG_FRIENDS_CLAIM, URL_CHECK_NAME, MSG_INPUT_USERNAME, \
-    URL_TASK_CLAIM, URL_TASK_START, MSG_TASK_CLAIMED, MSG_TASK_STARTED, MSG_BALANCE_INFO
-from bots.blum.config import MANUAL_USERNAME, GAME_TOGGLE_ON
+    URL_TASK_CLAIM, URL_TASK_START, MSG_TASK_CLAIMED, MSG_TASK_STARTED, MSG_TASKS_OFF, \
+    MSG_BALANCE_INFO
+from bots.blum.config import MANUAL_USERNAME, GAME_TOGGLE_ON, GAME_RESULT_RANGE, TASK_TOGGLE
 
-GAME_RESULT_RANGE = (190, 280)
 DEFAULT_EST_TIME = 60
 
 
@@ -122,21 +122,25 @@ class BotFarmer(BaseFarmer):
             self.play_passes = self.balance_data['playPasses']
     
     def check_tasks(self):
-        self.update_tasks()
-        for task in self.tasks:
-            if task['type'] == 'SOCIAL_SUBSCRIPTION' and task['status'] == "NOT_STARTED":
-                response = self.post(URL_TASK_START.format(**task))
-                if response.status_code == 200:
-                    self.log(MSG_TASK_STARTED.format(**task))
-                    task.update(response.json())
-                    sleep(random() * 5)
-            if task['status'] == "READY_FOR_CLAIM":
-                response = self.post(URL_TASK_CLAIM.format(**task))
-                if response.status_code == 200:
-                    self.log(MSG_TASK_CLAIMED.format(**task))
-                    task.update(response.json())
-                    sleep(random() * 5)
-    
+        if TASK_TOGGLE:
+            self.update_tasks()
+            for task in self.tasks:
+                if task['type'] == 'SOCIAL_SUBSCRIPTION' and task['status'] == "NOT_STARTED":
+                    response = self.post(URL_TASK_START.format(**task))
+                    if response.status_code == 200:
+                        self.log(MSG_TASK_STARTED.format(**task))
+                        task.update(response.json())
+                        sleep(random() * 5)
+                if task['status'] == "READY_FOR_CLAIM":
+                    response = self.post(URL_TASK_CLAIM.format(**task))
+                    if response.status_code == 200:
+                        self.log(MSG_TASK_CLAIMED.format(**task))
+                        task.update(response.json())
+                        sleep(random() * 5)
+        else:
+            self.log(MSG_TASKS_OFF)
+            return
+
     def start_farming(self):
         if 'farming' not in self.balance_data:
             self.log(MSG_START_FARMING)

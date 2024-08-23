@@ -31,6 +31,7 @@ MSG_FRIENDS_CLAIM = "Друзья нафармили: {points}"
 MSG_INPUT_USERNAME = "Введи имя для Blum: "
 MSG_TASK_STARTED = "Начал выполнять таску {title}"
 MSG_TASK_CLAIMED = "Выполнил таску {title} на {reward} монет"
+MSG_TASKS_OFF = "Выполнение тасков выключено"
 
 HEADERS = {
     "Accept": 'application/json',
