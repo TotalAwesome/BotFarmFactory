@@ -126,15 +126,10 @@ class BotFarmer(BaseFarmer):
         """ Разгадываем морзянку """
         cipher_data = self.get_cipher_data()
         if not cipher_data['isClaimed']:
-            raw_cipher = cipher_data['cipher']
-            re_result = re.search('\d+', raw_cipher[3:])
-            if re_result:
-                str_len = re_result[0]
-                raw_cipher = raw_cipher.replace(str_len, "", 1)
-                raw_cipher = raw_cipher.encode()
-                cipher = b64decode(raw_cipher).decode()
-                self.log(MSG_CIPHER.format(cipher=cipher))
-                self.post(URL_CLAIM_DAILY_CIPHER, json={"cipher": cipher})
+            raw_cipher = cipher_data['cipher'][:3] + cipher_data['cipher'][4:]
+            cipher = b64decode(raw_cipher).decode()
+            self.log(MSG_CIPHER.format(cipher=cipher))
+            self.post(URL_CLAIM_DAILY_CIPHER, json={"cipher": cipher})
 
     def get_skins_info(self):
         """ Получаем данные о скинах в игре """

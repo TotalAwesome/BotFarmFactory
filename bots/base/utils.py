@@ -45,7 +45,7 @@ def retry(func):
                     return result
                 if result.status_code not in (200, 201, 202):
                     if result.status_code == 429:
-                        self.log(MSG_BAD_RESPONSE.format(status=result.status_code, text=result.text))
+                        self.log(MSG_BAD_RESPONSE.format(status=result.status_code))
                         sleep(10)
                         attempts += 1
                         continue
@@ -55,7 +55,7 @@ def retry(func):
                         continue 
                     # elif result.status_code in (401, 403):
                     else:
-                        self.log(MSG_BAD_RESPONSE.format(status=result.status_code, text=result.text))
+                        self.log(MSG_BAD_RESPONSE.format(status=result.status_code))
                         raise Exception(f"code: {result.status_code} {result.text}")
                 return result
             except Exception as error:

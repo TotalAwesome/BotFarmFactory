@@ -1,4 +1,5 @@
-from random import random, randrange, shuffle
+import string
+from random import random, randrange, shuffle, choice
 from bots.base.base import BaseFarmer
 from time import time, sleep
 from bots.simple.utils import get_sorted_upgrades
@@ -7,7 +8,7 @@ from bots.simple.strings import HEADERS, URL_INIT, URL_PROFILE, URL_TAP, URL_GET
     URL_GET_TASK_LIST, URL_CLAIM_FARMED, URL_START_FARM, URL_CHECK_TASK, URL_START_TASK, URL_CLAIM_FRIENDS, \
     URL_BUY_UPGRADE, URL_CLAIM_SPIN, MSG_PROFILE_UPDATE, MSG_TAP, MSG_START_FARMING, MSG_BUY_UPGRADE, SPIN_TYPES, \
     MSG_SPIN, MSG_START_TASK, MSG_CLAIM_FARM, MSG_CLAIM_REFS, MSG_STATE, URL_COLLECTIONS, URL_GET_COLLECTION, \
-    URL_CLAIM_CARD, MSG_CLAIMED_CARD
+    URL_CLAIM_CARD, MSG_CLAIMED_CARD, URL_REGISTER, EMAIL_DOMAINS, MSG_REGISTRATION, URL_SET_EMAIL, MSG_TASK_CLAIMED
 
 
 class BotFarmer(BaseFarmer):
@@ -32,11 +33,15 @@ class BotFarmer(BaseFarmer):
         self.payload_base = self.initiator.get_auth_data(**self.initialization_data)
 
     def api_call(self, url, payload=None):
-        _payload = self.payload_base.copy()
-        _payload.update(payload or {})
-        result = self.post(url, json=_payload, return_codes=(400,))
+        payload = payload or {}
+        payload.update(self.payload_base)
+        result = self.post(url, json=payload, return_codes=(400, 429))
         if result.status_code == 200:
             return result.json()
+        elif result.status_code == 429:
+            delay = int(result.headers.get('retry-after'))
+            self.start_time = time() + delay
+            raise Exception(f'error 429: sleeping {delay} seconds')
         else:
             self.log(str(result.status_code) + ' ' + result.text)
             return {}
@@ -44,6 +49,18 @@ class BotFarmer(BaseFarmer):
     def update_profile(self):
         self.info = self.api_call(URL_PROFILE).get('data', {})
         self.log(MSG_PROFILE_UPDATE)
+        if not self.info['hasEmail']:
+            self.register()
+
+    def register(self):
+        charmap = string.ascii_letters + '_.-'
+        email = choice(EMAIL_DOMAINS).format(
+            ''.join(str(choice(charmap)) for _ in range(randrange(6, 12)))
+            )
+        payload = dict(**self.payload_base, refCode=self.extra_code, email=email)
+        self.post(URL_REGISTER, json=payload)
+        self.post(URL_SET_EMAIL, json=dict(email=email, **self.payload_base))
+        self.log(MSG_REGISTRATION)
 
     @property
     def mine_per_hour(self):
@@ -66,17 +83,27 @@ class BotFarmer(BaseFarmer):
                 self.api_call(URL_TAP, payload=payload)
                 self.log(MSG_TAP.format(taps=taps))
 
-    def start_task(self, task_id, task_type):
-        payload = self.payload_base.copy()
-        payload.update(dict(id=task_id, type=task_type))
+    def start_task(self, task):
+        payload = dict(id=task['id'], type=task['type'], **self.payload_base)
         self.api_call(URL_START_TASK, payload=payload)
-        self.log(MSG_START_TASK)
+        self.log(MSG_START_TASK.format(**task))
         
 
-    def check_task(self, task_id, task_type):
-        payload = self.payload_base.copy()
-        payload.update(dict(id=task_id, type=task_type))
-        self.api_call(URL_CHECK_TASK, payload=payload)
+    def check_task(self, task):
+        payload = dict(id=task['id'], type=task['type'], **self.payload_base)
+        result = self.api_call(URL_CHECK_TASK, payload=payload)
+        if result['result'] == 'OK':
+            self.log(MSG_TASK_CLAIMED.format(**task))
+
+    def claim_tasks(self):
+        task_list = self.api_call(URL_GET_TASK_LIST, payload=dict(platform=1, lang='en'))
+        for task in task_list['data']['social']:
+            if task['status'] == 1:
+                self.start_task(task)
+                sleep(randrange(5, 10))
+            elif task['status'] == 2:
+                self.check_task(task)
+                sleep(randrange(5, 10))
         
     def is_it_not_expensive(self, price):
         min_dst_balance = self.freezed_balance * (1 - PERCENT_TO_SPEND / 100)
@@ -173,7 +200,12 @@ class BotFarmer(BaseFarmer):
 
     def farm(self):
         self.update_profile()
-        actions = [self.claim_cards, self.tap, self.claim_farmed, self.claim_friends, self.claim_spin]
+        actions = [self.claim_tasks, 
+                   self.claim_cards, 
+                   self.claim_farmed, 
+                   self.claim_friends, 
+                   self.claim_spin,
+                   self.tap, ]
         shuffle(actions)
         for action in actions:
             action()
