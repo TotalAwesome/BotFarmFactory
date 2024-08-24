@@ -129,7 +129,7 @@ class BotFarmer(BaseFarmer):
             raw_cipher = cipher_data['cipher']
             re_result = re.search('\d+', raw_cipher[3:])
             if re_result:
-                str_len = re_result[0]
+                str_len = re_result[0][0]
                 raw_cipher = raw_cipher.replace(str_len, "", 1)
                 raw_cipher = raw_cipher.encode()
                 cipher = b64decode(raw_cipher).decode()
