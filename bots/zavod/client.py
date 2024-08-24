@@ -3,9 +3,11 @@ import random
 import requests
 from bots.base.utils import to_localtz_timestamp, api_response
 from bots.base.base import BaseFarmer, time
+
 from time import sleep, time as current_time
 from bots.zavod.strings import HEADERS, URL_INIT, URL_PROFILE, URL_FARM, URL_CLAIM, \
     URL_UPGRADE_TOOLKIT, URL_TOOLKIT_SETTINGS, URL_BURN_TOKENS, URL_GUILD_JOIN, \
+
     MSG_TOKENS, MSG_TOOLKIT_LEVEL, MSG_WORKBENCH_LEVEL, MSG_GUILD, MSG_JOINED_GUILD, MSG_UPGRADED_TOOLKIT, \
     MSG_UPGRADED_WORKBENCH, MSG_BURNED_TOKENS, MSG_CLAIMED_MISSION, MSG_LINK_MISSION, MSG_TELEGRAM_MISSION, \
     MSG_ERROR_UPGRADING_TOOLKIT, MSG_ERROR_UPGRADING_WORKBENCH, MSG_ERROR_BURNING_TOKENS, MSG_ERROR_FETCHING_MISSIONS, \
@@ -17,6 +19,7 @@ from bots.zavod.strings import HEADERS, URL_INIT, URL_PROFILE, URL_FARM, URL_CLA
 from bots.zavod.configs import BOT_NAME, EXTRA_CODE, GUILD_ID, SLEEP_TIME_CLAIM, SLEEP_TIME_FARM, SLEEP_TIME_UPGRADE, \
     TOOLKIT_LEVEL_BURN, WORKBENCH_LEVEL_BURN, ENABLE_UPGRADES, ENABLE_GAME, ENABLE_GUILD_JOIN, ENABLE_WORKBENCH_UPGRADE, \
     ENABLE_TOOLKIT_UPGRADE, MIN_WAIT_TIME, MAX_WAIT_TIME, ENABLE_TASK, ENABLE_UP
+
 
 
 class BotFarmer(BaseFarmer):
@@ -107,6 +110,7 @@ class BotFarmer(BaseFarmer):
                 self.post(URL_UPGRADE_TOOLKIT)  # Используем URL из configs.py
                 self.log(MSG_UPGRADED_TOOLKIT)
                 sleep(SLEEP_TIME_UPGRADE)  # Используем задержку из configs.py
+
                 self.info['profile']['tokens'] = tokens - cost.get(tool, 0)
             except Exception as e:
                 self.log(MSG_ERROR_UPGRADING_TOOLKIT.format(error=e))
@@ -123,6 +127,7 @@ class BotFarmer(BaseFarmer):
                 self.post(URL_UPGRADE_WORKBENCH)  # Используем URL из configs.py
                 self.log(MSG_UPGRADED_WORKBENCH)
                 sleep(SLEEP_TIME_UPGRADE)  # Используем задержку из configs.py
+
                 self.info['profile']['tokens'] = tokens - cost.get(work, 0)
             except Exception as e:
                 self.log(MSG_ERROR_UPGRADING_WORKBENCH.format(error=e))
@@ -143,8 +148,7 @@ class BotFarmer(BaseFarmer):
             task = self.get(URL_MISSIONS, params={
                                 'offset': '0',
                                 'status': 'ACTIVE',
-                            }
-                            )
+                            })
             for q in task['missions']:
                 id = q['id']
                 state = q['state']
@@ -180,6 +184,7 @@ class BotFarmer(BaseFarmer):
         sleep(SLEEP_TIME_CLAIM)  # Используем задержку из configs.py
         try:
             response = self.post(f'{URL_CONFIRM_LINK_MISSION}{id}')  # Используем URL из configs.py
+
             self.log(MSG_LINK_MISSION.format(prize=response['prize'], name=response['name']['ru']))
         except Exception as e:
             self.log(MSG_ERROR_CONFIRMING_LINK_MISSION.format(id=id, error=e))
@@ -188,6 +193,7 @@ class BotFarmer(BaseFarmer):
         sleep(SLEEP_TIME_CLAIM)  # Используем задержку из configs.py
         try:
             response = self.post(f'{URL_CONFIRM_TELEGRAM_MISSION}{id}')  # Используем URL из configs.py
+
             self.log(MSG_TELEGRAM_MISSION.format(name=response['name']['ru']))
         except Exception as e:
             self.log(MSG_ERROR_CONFIRMING_TELEGRAM_MISSION.format(id=id, error=e))
@@ -238,6 +244,7 @@ class BotFarmer(BaseFarmer):
         elif response.status_code != 200:
             print(json.dumps(response, indent=4))
 
+
     def farm(self):
         self.update_profile()
         self.update_farming()
@@ -250,5 +257,3 @@ class BotFarmer(BaseFarmer):
         self.up()
         sleep(1)
         self.game_init()
-
-    
