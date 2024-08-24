@@ -9,8 +9,9 @@ from bots.blum.strings import HEADERS, URL_REFRESH_TOKEN, URL_BALANCE, URL_TASKS
     MSG_REFRESH, MSG_BALANCE_UPDATE, MSG_START_FARMING, MSG_CLAIM_FARM, MSG_BEGIN_GAME, MSG_GAME_OFF, \
     MSG_PLAYED_GAME, MSG_DAILY_REWARD, MSG_FRIENDS_CLAIM, URL_CHECK_NAME, MSG_INPUT_USERNAME, \
     URL_TASK_CLAIM, URL_TASK_START, MSG_TASK_CLAIMED, MSG_TASK_STARTED, MSG_TASKS_OFF, \
-    MSG_BALANCE_INFO
-from bots.blum.config import MANUAL_USERNAME, GAME_TOGGLE_ON, GAME_RESULT_RANGE, TASK_TOGGLE
+    MSG_BALANCE_INFO, MSG_GAME_KEEP
+from bots.blum.config import MANUAL_USERNAME, GAME_TOGGLE_ON, GAME_RESULT_RANGE, TASK_TOGGLE, \
+    GAME_BANK, GAME_ROUNDS
 
 DEFAULT_EST_TIME = 60
 
@@ -158,7 +159,12 @@ class BotFarmer(BaseFarmer):
             return
         else: 
             for _ in range(self.play_passes or 0):
-                self.log(MSG_BEGIN_GAME.format(self.play_passes))
+                if self.play_passes <= GAME_BANK: 
+                    self.log(MSG_GAME_KEEP.format(GAME_BANK-self.play_passes))
+                    return
+                elif _ == GAME_ROUNDS:
+                    return                    
+                self.log(MSG_BEGIN_GAME.format(self.play_passes, bank=GAME_BANK, play=(GAME_ROUNDS-_)))
                 res = self.post(URL_PLAY_START)
                 if res.status_code == 200:
                     data = res.json()
