@@ -15,7 +15,8 @@ MSG_ACCOUNT_INFO_ERROR = "Не получена информация об акк
 MSG_CURRENT_BALANCE = "Текущий баланс - {coins} монет"
 MSG_BUY_UPGRADE = "Прокачал: {name} : ур.{level}"
 MSG_DAILY_REWARD = "Забрал ежедневную награду - {coins} монет"
-MSG_DAILY_REWARD_ERROR = "Не получена ежедневная награда. Код состояния: {status_code}, Ответ: {text}"
+MSG_DAILY_REWARD_STATE_ERROR = "Не получена информация об ежедневной награде. Код состояния: {status_code}, Ответ: {text}"
+MSG_DAILY_REWARD_CLAIM_ERROR = "Не получена ежедневная награда. Код состояния: {status_code}, Ответ: {text}"
 MSG_DAILY_REWARD_IS_COLLECTED = "Ежедневная награда уже получена"
 MSG_FRIENDS_REWARD = "Забрал награду от рефералов - {coins} монет"
 MSG_FRIENDS_REWARD_ERROR = "Не получена награда от рефералов. Код состояния: {status_code}, Ответ: {text}"
@@ -66,7 +67,22 @@ BUILDING_INFO = {
                    "min_balance": 20_000},
     "fortunecrash":{"purchase_id":"FortuneCrash1", "rus_name": "Онлайн школа",
                    "requirements": {"name":"luckyloot", "level":3},
-                   "min_balance": 20_000}
+                   "min_balance": 20_000},
+    "metacrash":{"purchase_id":"MetaCrash1", "rus_name": "Сервис доставки",
+                 "requirements": {"name":"fortunecrash", "level":7},
+                 "min_balance": 50_000},
+    "starx":{"purchase_id":"StarX", "rus_name": "IT-компания",
+             "requirements": {"name":"rocketqueen", "level":5},
+             "min_balance": 100_000},
+    "semiconductor":{"purchase_id":"semiconductor1", "rus_name": "Социальная сеть",
+                     "requirements": {"name":"starx", "level":5},
+                     "min_balance": 100_000},
+    "renewenergy":{"purchase_id":"renewenergy1", "rus_name": "Банк",
+                   "requirements": {"name":"starx", "level":10},
+                   "min_balance": 150_000},
+    # "":{"purchase_id":"", "rus_name": "Крипто биржа",
+    #                "requirements": {"name":"", "level":20},
+    #                "min_balance": 200_000},
 }
 
 

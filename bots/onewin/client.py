@@ -1,3 +1,8 @@
+"""
+Author: ammoroz
+Date: 08-08-2024
+
+"""
 import json
 import re
 from time import time as current_time, sleep
@@ -10,7 +15,7 @@ from bots.onewin.strings import (
     URL_FRIENDS_INFO, URL_FRIEND_CLAIM,
     MSG_CURRENT_BALANCE, MSG_DAILY_REWARD, MSG_DAILY_REWARD_IS_COLLECTED,
     MSG_BUY_UPGRADE, MSG_BUY_BUILDING, MSG_ACCESS_TOKEN_ERROR, MSG_URL_ERROR,
-    MSG_AUTHENTICATION_ERROR, MSG_ACCOUNT_INFO_ERROR, MSG_DAILY_REWARD_ERROR,
+    MSG_AUTHENTICATION_ERROR, MSG_ACCOUNT_INFO_ERROR, MSG_DAILY_REWARD_CLAIM_ERROR,MSG_DAILY_REWARD_STATE_ERROR,
     MSG_INITIALIZATION_ERROR,MSG_FRIENDS_REWARD,MSG_FRIENDS_REWARD_ERROR
 )
 from bots.onewin.config import (
@@ -75,7 +80,10 @@ class BotFarmer(BaseFarmer):
         response = self.get(URL_DAILY_REWARD_INFO, headers=self.headers)
         if response.status_code == 200:
             result = response.json()
-            self.daily_reward_is_collected = result["days"][0]["isCollected"]
+            if reward_info := result.get('days'):
+                self.daily_reward_is_collected = reward_info[0]["isCollected"]
+            else:
+                self.error(MSG_DAILY_REWARD_STATE_ERROR.format(status_code=response.status_code,text=response.text))
 
     def get_daily_reward(self):
         self.daily_reward_info()
@@ -88,7 +96,7 @@ class BotFarmer(BaseFarmer):
                 self.daily_reward = result["days"][0]["money"]
                 self.log(MSG_DAILY_REWARD.format(coins=self.daily_reward))
             else:
-                self.error(MSG_DAILY_REWARD_ERROR.format(status_code=response.status_code,text=response.text))
+                self.error(MSG_DAILY_REWARD_CLAIM_ERROR.format(status_code=response.status_code,text=response.text))
         else:
             self.log(MSG_DAILY_REWARD_IS_COLLECTED)
 
@@ -148,9 +156,11 @@ class BotFarmer(BaseFarmer):
             while True:
                 if sorted_upgrades := self.get_sorted_upgrades(FEATURES["buy_decision_method"]):
                     upgrade = sorted_upgrades[0]
-                    if upgrade["cost"]*2 <= self.balance \
-                    and self.balance > FEATURES["min_cash_value_in_balance"] \
-                    and num_purchases_per_cycle and counter < num_purchases_per_cycle:
+                    if (
+                        upgrade["cost"]*2 <= self.balance
+                        and self.balance > FEATURES["min_cash_value_in_balance"]
+                        and num_purchases_per_cycle and counter < num_purchases_per_cycle
+                        ):
                         self.upgrade(upgrade['id'])
                         sleep(2 + random() * 3)
                     else:
