@@ -25,6 +25,7 @@ class BotFarmer(BaseFarmer):
     extra_code = 'ref_QjG2zG'
     refreshable_token = True
     codes_to_refresh = (401,)
+    s = None
     initialization_data = dict(peer=name, bot=name, url=URL_INIT, start_param=extra_code)
 
     def set_headers(self, *args, **kwargs):
@@ -45,8 +46,29 @@ class BotFarmer(BaseFarmer):
             if 'data' in json_data and 'token' in json_data['data']:
                 self.token = json_data['data']['token']
                 self.is_alive = True
+                self.s = json_data['data']['collect']['userInfo']['stock']
             else:
                 self.is_alive = False
+
+    def stock(self):
+        stock = self.s
+        self.log("Крутим рулетку")
+        while stock > 0:
+            data = {
+                'lotteryId': '1',
+                '_token': self.token,
+            }
+            response = self.post('https://xapi.tapcoins.app/lucky/lottery/draw', headers=self.headers, data=data)
+            if response.status_code == 200:
+                stock -= 1
+                sleep(8)
+            else:
+                stock = 0
+                self.log("Ошибка крутануть не вышло")
+        data = {'_token': self.token, }
+        response = self.post('https://xapi.tapcoins.app/user/assets/list', headers=self.headers, data=data).json()
+        usdt = response['data'][0]['balance']
+        self.log(f'Баланс USDT: {usdt}')
 
     def set_start_time(self):
         if BUY_UPGRADES:
@@ -231,6 +253,7 @@ class BotFarmer(BaseFarmer):
     def farm(self):
         self.sync()
         self.get_balance(True)
+        self.stock()
         self.get_hour_earnings(True)
         self.daily_bonus()
         self.get_bounty()
