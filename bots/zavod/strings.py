@@ -16,6 +16,20 @@ URL_GUILD_JOIN = 'https://zavod-api.mdaowallet.com/guilds/join'
 URL_WORKBENCH_SETTINGS = 'https://zavod-api.mdaowallet.com/farm/workbenchSettings'
 URL_TOOLKIT_SETTINGS = 'https://zavod-api.mdaowallet.com/farm/toolkitSettings'
 
+MSG_CLAIM = 'Забрали награду'
+MSG_PROFILE = 'Обновили профиль'
+MSG_STATE = 'Баланс: {balance}'
+MSG_TOKENS = 'Монет: {tokens}'
+MSG_TOOLKIT_LEVEL = 'Уровень инструментов: {tool}'
+MSG_WORKBENCH_LEVEL = 'Уровень верстака: {work}'
+MSG_GUILD = 'Гильдия: {guild}'
+MSG_JOINED_GUILD = 'Вступили в гильдию'
+MSG_UPGRADED_TOOLKIT = 'Улучшили инструменты'
+MSG_UPGRADED_WORKBENCH = 'Улучшили верстак'
+MSG_BURNED_TOKENS = 'Сожгли {tokens} монет'
+MSG_CLAIMED_MISSION = 'Получили {prize} за {name}'
+MSG_LINK_MISSION = 'Делаем задание на {prize} за {name}'
+MSG_TELEGRAM_MISSION = 'Выполняем задание {name}'
 
 # Messages
 MSG_CLAIM = 'Забрали награду'
@@ -70,3 +84,4 @@ MSG_UPGRADES_DISABLED = "Прокачка отключена."
 MSG_TOOLKIT_UPGRADES_DISABLED = "Прокачка инструментов отключена."
 MSG_WORKBENCH_UPGRADES_DISABLED = "Прокачка верстака отключена."
 MSG_GUILD_JOIN_DISABLED = "Вступление в гильдию отключено."
+
