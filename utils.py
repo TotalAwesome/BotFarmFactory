@@ -1,7 +1,8 @@
 from os import path, listdir
 from importlib import import_module
-from config import ENABLED_BOTS
+from config import ENABLED_BOTS, DISABLED_BOTS
 from bots.base.base import logging
+
 
 def import_bots():
     bots = []
@@ -10,6 +11,8 @@ def import_bots():
             if directory == 'template':
                 continue
             if ENABLED_BOTS and directory not in ENABLED_BOTS:
+                continue
+            if DISABLED_BOTS and directory in DISABLED_BOTS:
                 continue
             try:
                 module = import_module(f"bots.{directory}.client")
@@ -21,5 +24,6 @@ def import_bots():
     else:
         raise Exception("No bots :(")
     return bots
+
 
 BOTS = import_bots()

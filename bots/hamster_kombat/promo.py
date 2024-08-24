@@ -5,9 +5,10 @@
 import uuid
 import time
 import string
-from random import randint, choices
+from random import randint, choices, choice
 from requests import Session
 
+from bots.base.strings import USER_AGENTS
 from bots.hamster_kombat.strings import (
     GET_PROMO_HEADERS, 
     URL_REGISTER_EVENT, URL_LOGIN, URL_CREATE_CODE
@@ -26,15 +27,35 @@ def get_event_data(game_id):
             "eventId": f"{uuid.uuid1()}",
             "eventOrigin": "undefined"}
 
+def retry(func):
+    def wrapper(*args, **kwargs):
+        while True:
+            try:
+                result = func(*args, **kwargs)
+                if result.status_code == 200:
+                    return result
+                elif result.status_code == 429:
+                    time.sleep(30)
+                else:
+                    time.sleep(1)
+            except Exception as e:
+                time.sleep(5)
+    return wrapper
+            
+
 
 class PromoGenerator(Session):
 
+
     def __init__(self, app_token, promo_id, proxies) -> None:
+        self.request = retry(self.request)
         super().__init__()
         self.headers = GET_PROMO_HEADERS
         self.app_token = app_token
         self.promo_id = promo_id
         self.proxies = proxies
+        self.headers = {}
+        self.headers['User-Agent'] = choice(USER_AGENTS)
         self.authenticate()
 
     def authenticate(self):
