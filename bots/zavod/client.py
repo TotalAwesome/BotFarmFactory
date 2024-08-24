@@ -4,16 +4,15 @@ import requests
 from bots.base.utils import to_localtz_timestamp, api_response
 from bots.base.base import BaseFarmer, time
 from time import sleep, time as current_time
-from bots.zavod.strings import HEADERS, API_URL_INIT, API_URL_CLAIM, API_URL_FARM, API_URL_PROFILE, \
-    API_URL_UPGRADE_TOOLKIT, API_URL_UPGRADE_WORKBENCH, API_URL_BURN_TOKENS, API_URL_MISSIONS, API_URL_CLAIM_MISSION, \
-    API_URL_CONFIRM_LINK_MISSION, API_URL_CONFIRM_TELEGRAM_MISSION, API_URL_WORKBENCH_SETTINGS, \
-    API_URL_TOOLKIT_SETTINGS, API_URL_GUILD_JOIN, \
+from bots.zavod.strings import HEADERS, URL_INIT, URL_PROFILE, URL_FARM, URL_CLAIM, \
+    URL_UPGRADE_TOOLKIT, URL_TOOLKIT_SETTINGS, URL_BURN_TOKENS, URL_GUILD_JOIN, \
     MSG_TOKENS, MSG_TOOLKIT_LEVEL, MSG_WORKBENCH_LEVEL, MSG_GUILD, MSG_JOINED_GUILD, MSG_UPGRADED_TOOLKIT, \
     MSG_UPGRADED_WORKBENCH, MSG_BURNED_TOKENS, MSG_CLAIMED_MISSION, MSG_LINK_MISSION, MSG_TELEGRAM_MISSION, \
     MSG_ERROR_UPGRADING_TOOLKIT, MSG_ERROR_UPGRADING_WORKBENCH, MSG_ERROR_BURNING_TOKENS, MSG_ERROR_FETCHING_MISSIONS, \
     MSG_ERROR_CLAIMING_MISSION, MSG_ERROR_CONFIRMING_LINK_MISSION, MSG_ERROR_CONFIRMING_TELEGRAM_MISSION, \
-    MSG_GAME_DISABLED, MSG_UPGRADES_DISABLED, MSG_TOOLKIT_UPGRADES_DISABLED, MSG_WORKBENCH_UPGRADES_DISABLED, \
-    MSG_GUILD_JOIN_DISABLED, MSG_CLAIM, MSG_PROFILE, API_URL_GAME_CRAFT, MSG_GAME_START, API_URL_GAME_FIN
+    MSG_GAME_DISABLED, MSG_TOOLKIT_UPGRADES_DISABLED, MSG_WORKBENCH_UPGRADES_DISABLED, \
+    MSG_CLAIM, MSG_PROFILE, API_URL_GAME_CRAFT, MSG_GAME_START, API_URL_GAME_FIN, URL_WORKBENCH_SETTINGS, \
+    URL_UPGRADE_WORKBENCH, URL_MISSIONS, URL_CLAIM_MISSION, URL_CONFIRM_LINK_MISSION, URL_CONFIRM_TELEGRAM_MISSION
 
 from bots.zavod.configs import BOT_NAME, EXTRA_CODE, GUILD_ID, SLEEP_TIME_CLAIM, SLEEP_TIME_FARM, SLEEP_TIME_UPGRADE, \
     TOOLKIT_LEVEL_BURN, WORKBENCH_LEVEL_BURN, ENABLE_UPGRADES, ENABLE_GAME, ENABLE_GUILD_JOIN, ENABLE_WORKBENCH_UPGRADE, \
@@ -24,7 +23,7 @@ class BotFarmer(BaseFarmer):
     name = BOT_NAME  # Имя бота из configs.py
     extra_code = EXTRA_CODE  # Дополнительный код из configs.py
     info = dict(profile={}, farming={})
-    initialization_data = dict(peer=name, bot=name, url=API_URL_INIT)  # Используем URL из configs.py
+    initialization_data = dict(peer=name, bot=name, url=URL_INIT)  # Используем URL из configs.py
     payload_base = {}
     codes_to_refresh = (400,)
     refreshable_token = True
@@ -48,12 +47,12 @@ class BotFarmer(BaseFarmer):
         self.start_time = time() + random.uniform(MIN_WAIT_TIME, MAX_WAIT_TIME)
 
     def update_profile(self):
-        if result := self.get(API_URL_PROFILE):  # Используем URL из configs.py
+        if result := self.get(URL_PROFILE):  # Используем URL из configs.py
             self.info['profile'] = result
             self.log(MSG_PROFILE)
 
     def update_farming(self):
-        if result := self.get(API_URL_FARM):  # Используем URL из configs.py
+        if result := self.get(URL_FARM):  # Используем URL из configs.py
             self.info['farming'] = result
 
     @property
@@ -64,7 +63,7 @@ class BotFarmer(BaseFarmer):
 
     def claim(self):
         if time() >= self.claim_date:
-            if result := self.post(API_URL_CLAIM, return_codes=(500,)):
+            if result := self.post(URL_CLAIM, return_codes=(500,)):
                 self.info['profile'] = result
                 self.log(MSG_CLAIM)
 
@@ -74,7 +73,7 @@ class BotFarmer(BaseFarmer):
             return
 
         guild = self.info['profile']['guildId']
-        self.ide = self.get(API_URL_FARM)  # Используем URL из configs.py
+        self.ide = self.get(URL_FARM)  # Используем URL из configs.py
         tokens = round(self.info['profile']['tokens'])
         self.log(MSG_TOKENS.format(tokens=tokens))
         tool = self.ide['toolkitLevel']
@@ -83,7 +82,7 @@ class BotFarmer(BaseFarmer):
         self.log(MSG_WORKBENCH_LEVEL.format(work=work))
         self.log(MSG_GUILD.format(guild=guild))
         if guild is None and ENABLE_GUILD_JOIN:
-            self.post(API_URL_GUILD_JOIN, json={'guildId': GUILD_ID, })  # Используем URL и ID из configs.py
+            self.post(URL_GUILD_JOIN, json={'guildId': GUILD_ID, })  # Используем URL и ID из configs.py
             self.log(MSG_JOINED_GUILD)
 
         if ENABLE_UPGRADES:
@@ -101,11 +100,11 @@ class BotFarmer(BaseFarmer):
             self.log(MSG_TOOLKIT_UPGRADES_DISABLED)
             return
         tool += 1
-        toolkit_settings = self.get(API_URL_TOOLKIT_SETTINGS)  # Используем URL из configs.py
+        toolkit_settings = self.get(URL_TOOLKIT_SETTINGS)  # Используем URL из configs.py
         cost = {item['level']: item['price'] for item in toolkit_settings}
         if tokens >= cost.get(tool, float('inf')) and tool < 5:  # Check for tool level first
             try:
-                self.post(API_URL_UPGRADE_TOOLKIT)  # Используем URL из configs.py
+                self.post(URL_UPGRADE_TOOLKIT)  # Используем URL из configs.py
                 self.log(MSG_UPGRADED_TOOLKIT)
                 sleep(SLEEP_TIME_UPGRADE)  # Используем задержку из configs.py
                 self.info['profile']['tokens'] = tokens - cost.get(tool, 0)
@@ -117,11 +116,11 @@ class BotFarmer(BaseFarmer):
             self.log(MSG_WORKBENCH_UPGRADES_DISABLED)
             return
         work += 1
-        workbench_settings = self.get(API_URL_WORKBENCH_SETTINGS)  # Используем URL из configs.py
+        workbench_settings = self.get(URL_WORKBENCH_SETTINGS)  # Используем URL из configs.py
         cost = {item['level']: item['price'] for item in workbench_settings}
         if tokens >= cost.get(work, float('inf')) and work < 49:
             try:
-                self.post(API_URL_UPGRADE_WORKBENCH)  # Используем URL из configs.py
+                self.post(URL_UPGRADE_WORKBENCH)  # Используем URL из configs.py
                 self.log(MSG_UPGRADED_WORKBENCH)
                 sleep(SLEEP_TIME_UPGRADE)  # Используем задержку из configs.py
                 self.info['profile']['tokens'] = tokens - cost.get(work, 0)
@@ -130,7 +129,7 @@ class BotFarmer(BaseFarmer):
 
     def burn(self, tokens):
         try:
-            self.post(API_URL_BURN_TOKENS, json={"amount": tokens})  # Используем URL из configs.py
+            self.post(URL_BURN_TOKENS, json={"amount": tokens})  # Используем URL из configs.py
             self.log(MSG_BURNED_TOKENS.format(tokens=tokens))
         except Exception as e:
             self.log(MSG_ERROR_BURNING_TOKENS.format(error=e))
@@ -141,7 +140,7 @@ class BotFarmer(BaseFarmer):
             return
 
         try:
-            task = self.get(API_URL_MISSIONS, params={
+            task = self.get(URL_MISSIONS, params={
                                 'offset': '0',
                                 'status': 'ACTIVE',
                             }
@@ -172,7 +171,7 @@ class BotFarmer(BaseFarmer):
     def taskclaim(self, id):
         sleep(SLEEP_TIME_CLAIM)  # Используем задержку из configs.py
         try:
-            response = self.post(f'{API_URL_CLAIM_MISSION}{id}', return_codes=(403,))
+            response = self.post(f'{URL_CLAIM_MISSION}{id}', return_codes=(403,))
             self.log(MSG_CLAIMED_MISSION.format(prize=response['prize'], name=response['name']['ru']))
         except Exception as e:
             self.log(MSG_ERROR_CLAIMING_MISSION.format(id=id, error=e))
@@ -180,7 +179,7 @@ class BotFarmer(BaseFarmer):
     def link(self, id):
         sleep(SLEEP_TIME_CLAIM)  # Используем задержку из configs.py
         try:
-            response = self.post(f'{API_URL_CONFIRM_LINK_MISSION}{id}')  # Используем URL из configs.py
+            response = self.post(f'{URL_CONFIRM_LINK_MISSION}{id}')  # Используем URL из configs.py
             self.log(MSG_LINK_MISSION.format(prize=response['prize'], name=response['name']['ru']))
         except Exception as e:
             self.log(MSG_ERROR_CONFIRMING_LINK_MISSION.format(id=id, error=e))
@@ -188,7 +187,7 @@ class BotFarmer(BaseFarmer):
     def telegram(self, id):
         sleep(SLEEP_TIME_CLAIM)  # Используем задержку из configs.py
         try:
-            response = self.post(f'{API_URL_CONFIRM_TELEGRAM_MISSION}{id}')  # Используем URL из configs.py
+            response = self.post(f'{URL_CONFIRM_TELEGRAM_MISSION}{id}')  # Используем URL из configs.py
             self.log(MSG_TELEGRAM_MISSION.format(name=response['name']['ru']))
         except Exception as e:
             self.log(MSG_ERROR_CONFIRMING_TELEGRAM_MISSION.format(id=id, error=e))

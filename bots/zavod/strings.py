@@ -1,20 +1,20 @@
 # Настройки API
-API_URL_INIT = 'https://zavod-api.mdaowallet.com/telegram/auth'
-API_URL_CLAIM = 'https://zavod-api.mdaowallet.com/user/claim'
-API_URL_FARM = 'https://zavod-api.mdaowallet.com/user/farm'
-API_URL_PROFILE = 'https://zavod-api.mdaowallet.com/user/profile'
-API_URL_UPGRADE_TOOLKIT = 'https://zavod-api.mdaowallet.com/user/upgradeToolkit'
-API_URL_UPGRADE_WORKBENCH = 'https://zavod-api.mdaowallet.com/user/upgradeWorkbench'
-API_URL_BURN_TOKENS = 'https://zavod-api.mdaowallet.com/guilds/burnTokens'
-API_URL_MISSIONS = 'https://zavod-api.mdaowallet.com/missions'
-API_URL_CLAIM_MISSION = 'https://zavod-api.mdaowallet.com/missions/claim/'
-API_URL_CONFIRM_LINK_MISSION = 'https://zavod-api.mdaowallet.com/missions/confirm/link/'
-API_URL_CONFIRM_TELEGRAM_MISSION = 'https://zavod-api.mdaowallet.com/missions/confirm/telegram/'
-API_URL_WORKBENCH_SETTINGS = 'https://zavod-api.mdaowallet.com/farm/workbenchSettings'
-API_URL_TOOLKIT_SETTINGS = 'https://zavod-api.mdaowallet.com/farm/toolkitSettings'
-API_URL_GUILD_JOIN = 'https://zavod-api.mdaowallet.com/guilds/join'  # Добавлен API-URL для вступления в гильдию
 API_URL_GAME_CRAFT = 'https://zavod-api.mdaowallet.com/craftGame'
 API_URL_GAME_FIN = 'https://zavod-api.mdaowallet.com/craftGame/finishLevel'
+URL_INIT = "https://zavod.mdaowallet.com/"
+URL_PROFILE = "https://zavod-api.mdaowallet.com/user/profile"  # GET
+URL_FARM = "https://zavod-api.mdaowallet.com/user/farm"  # POST
+URL_CLAIM = "https://zavod-api.mdaowallet.com/user/claim"  # GET
+URL_UPGRADE_TOOLKIT = 'https://zavod-api.mdaowallet.com/user/upgradeToolkit'
+URL_UPGRADE_WORKBENCH = 'https://zavod-api.mdaowallet.com/user/upgradeWorkbench'
+URL_BURN_TOKENS = 'https://zavod-api.mdaowallet.com/guilds/burnTokens'
+URL_MISSIONS = 'https://zavod-api.mdaowallet.com/missions'
+URL_CLAIM_MISSION = 'https://zavod-api.mdaowallet.com/missions/claim/'
+URL_CONFIRM_LINK_MISSION = 'https://zavod-api.mdaowallet.com/missions/confirm/link/'
+URL_CONFIRM_TELEGRAM_MISSION = 'https://zavod-api.mdaowallet.com/missions/confirm/telegram/'
+URL_GUILD_JOIN = 'https://zavod-api.mdaowallet.com/guilds/join'
+URL_WORKBENCH_SETTINGS = 'https://zavod-api.mdaowallet.com/farm/workbenchSettings'
+URL_TOOLKIT_SETTINGS = 'https://zavod-api.mdaowallet.com/farm/toolkitSettings'
 
 
 # Messages
