@@ -36,6 +36,9 @@ MSG_SYNC = "Обновление данных"
 MSG_TASK_COMPLETED = "Задание выполнено. Награда: {reward}"
 MSG_TASK_NOT_COMPLETED = "Задание не выполнено"
 MSG_BUY_SKIN = "Скин {skin_name} куплен"
+MSG_BOOST_AVAILABLE = "Доступен Boost: {boostid}"
+MSG_BOOST = "Применил Boost: {boostype}"
+MSG_TAP_SIM = "Симуляция тапов Boost: {sec} сек."
 
 
 MSG_PROMO_UPDATE_ERROR = "Ошибка обновления статуса промкодов"
