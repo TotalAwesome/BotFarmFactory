@@ -3,11 +3,12 @@ Author: Eyn
 Date: 17-07-2024
 
 """
+import json
 import random
 from time import time, sleep
 
 from bots.base.base import BaseFarmer
-from bots.tapcoins.config import BUY_UPGRADES, UPGRADES_COUNT
+from bots.tapcoins.config import BUY_UPGRADES, UPGRADES_COUNT, skip_ids
 from bots.tapcoins.strings import HEADERS, URL_INIT, URL_LOGIN, URL_CARDS_CATEGORIES, URL_CARDS_LIST, \
     URL_CARDS_UPGRADE, URL_LUCKY_BOUNTY, MSG_NO_CARDS_TO_UPGRADE, \
     MSG_CARD_UPGRADED, MSG_NOT_ENOUGH_COINS, MSG_CARD_UPGRADED_COMBO, URL_DAILY, URL_DAILY_COMPLETE, \
@@ -242,13 +243,23 @@ class BotFarmer(BaseFarmer):
     def complete_tasks(self):
         response = self.post(URL_GET_TASKS, {'adv': 0, '_token': self.token})
         tasks = response.json()['data']
-
         for task in tasks:
             if task['completed'] == 0 and task['verifiable'] == 0:
                 sleep(1)
+                if task['id'] not in skip_ids:
+                    self.post(URL_COMPLETE_TASK, {'adv': 0, 'taskId': task['id'], '_token': self.token})
+                    self.log(f'Выполнили таску: {task['id']} {task['title']}')
+        sleep(2)
+        response = self.post(URL_GET_TASKS, {'adv': 1, '_token': self.token})
+        tasks = response.json()['data']
+        for task in tasks:
+            if task['completed'] == 0 and task['verifiable'] == 0:
+                count = task['daily_completion_count']
+                if task['completed'] == 0 and task['verifiable'] == 0 and count < 5:
+                    sleep(2)
+                    self.post(URL_COMPLETE_TASK, {'adv': 1, 'taskId': task['id'], '_token': self.token})
+                    self.log(f'Выполнили таску: {task['id']} {task['title']}')
 
-                self.post(URL_COMPLETE_TASK, {'adv': 0, 'taskId': task['id'], '_token': self.token})
-                self.log(MSG_TASK_COMPLETED.format(name=task['title']))
 
     def farm(self):
         self.sync()
