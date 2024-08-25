@@ -247,8 +247,10 @@ class BotFarmer(BaseFarmer):
             if task['completed'] == 0 and task['verifiable'] == 0:
                 sleep(1)
                 if task['id'] not in skip_ids:
+                    i = task['id']
+                    t = task['title']
                     self.post(URL_COMPLETE_TASK, {'adv': 0, 'taskId': task['id'], '_token': self.token})
-                    self.log(f'Выполнили таску: {task['id']} {task['title']}')
+                    self.log(f'Выполнили таску: {i} {t}')
         sleep(2)
         response = self.post(URL_GET_TASKS, {'adv': 1, '_token': self.token})
         tasks = response.json()['data']
@@ -257,8 +259,10 @@ class BotFarmer(BaseFarmer):
                 count = task['daily_completion_count']
                 if task['completed'] == 0 and task['verifiable'] == 0 and count < 5:
                     sleep(2)
+                    i = task['id']
+                    t = task['title']
                     self.post(URL_COMPLETE_TASK, {'adv': 1, 'taskId': task['id'], '_token': self.token})
-                    self.log(f'Выполнили таску: {task['id']} {task['title']}')
+                    self.log(f'Выполнили таску: {i} {t}')
 
 
     def farm(self):
