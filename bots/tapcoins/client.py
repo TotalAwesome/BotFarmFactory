@@ -3,12 +3,11 @@ Author: Eyn
 Date: 17-07-2024
 
 """
-import json
 import random
 from time import time, sleep
 
 from bots.base.base import BaseFarmer
-from bots.tapcoins.config import BUY_UPGRADES, UPGRADES_COUNT, skip_ids
+from bots.tapcoins.config import BUY_UPGRADES, UPGRADES_COUNT
 from bots.tapcoins.strings import HEADERS, URL_INIT, URL_LOGIN, URL_CARDS_CATEGORIES, URL_CARDS_LIST, \
     URL_CARDS_UPGRADE, URL_LUCKY_BOUNTY, MSG_NO_CARDS_TO_UPGRADE, \
     MSG_CARD_UPGRADED, MSG_NOT_ENOUGH_COINS, MSG_CARD_UPGRADED_COMBO, URL_DAILY, URL_DAILY_COMPLETE, \
@@ -26,7 +25,6 @@ class BotFarmer(BaseFarmer):
     extra_code = 'ref_QjG2zG'
     refreshable_token = True
     codes_to_refresh = (401,)
-    s = None
     initialization_data = dict(peer=name, bot=name, url=URL_INIT, start_param=extra_code)
 
     def set_headers(self, *args, **kwargs):
@@ -47,29 +45,8 @@ class BotFarmer(BaseFarmer):
             if 'data' in json_data and 'token' in json_data['data']:
                 self.token = json_data['data']['token']
                 self.is_alive = True
-                self.s = json_data['data']['collect']['userInfo']['stock']
             else:
                 self.is_alive = False
-
-    def stock(self):
-        stock = self.s
-        self.log("Крутим рулетку")
-        while stock > 0:
-            data = {
-                'lotteryId': '1',
-                '_token': self.token,
-            }
-            response = self.post('https://xapi.tapcoins.app/lucky/lottery/draw', headers=self.headers, data=data)
-            if response.status_code == 200:
-                stock -= 1
-                sleep(8)
-            else:
-                stock = 0
-                self.log("Ошибка крутануть не вышло")
-        data = {'_token': self.token, }
-        response = self.post('https://xapi.tapcoins.app/user/assets/list', headers=self.headers, data=data).json()
-        usdt = response['data'][0]['balance']
-        self.log(f'Баланс USDT: {usdt}')
 
     def set_start_time(self):
         if BUY_UPGRADES:
@@ -243,32 +220,17 @@ class BotFarmer(BaseFarmer):
     def complete_tasks(self):
         response = self.post(URL_GET_TASKS, {'adv': 0, '_token': self.token})
         tasks = response.json()['data']
+
         for task in tasks:
             if task['completed'] == 0 and task['verifiable'] == 0:
                 sleep(1)
-                if task['id'] not in skip_ids:
-                    i = task['id']
-                    t = task['title']
-                    self.post(URL_COMPLETE_TASK, {'adv': 0, 'taskId': task['id'], '_token': self.token})
-                    self.log(f'Выполнили таску: {i} {t}')
-        sleep(2)
-        response = self.post(URL_GET_TASKS, {'adv': 1, '_token': self.token})
-        tasks = response.json()['data']
-        for task in tasks:
-            if task['completed'] == 0 and task['verifiable'] == 0:
-                count = task['daily_completion_count']
-                if task['completed'] == 0 and task['verifiable'] == 0 and count < 5:
-                    sleep(2)
-                    i = task['id']
-                    t = task['title']
-                    self.post(URL_COMPLETE_TASK, {'adv': 1, 'taskId': task['id'], '_token': self.token})
-                    self.log(f'Выполнили таску: {i} {t}')
 
+                self.post(URL_COMPLETE_TASK, {'adv': 0, 'taskId': task['id'], '_token': self.token})
+                self.log(MSG_TASK_COMPLETED.format(name=task['title']))
 
     def farm(self):
         self.sync()
         self.get_balance(True)
-        self.stock()
         self.get_hour_earnings(True)
         self.daily_bonus()
         self.get_bounty()
