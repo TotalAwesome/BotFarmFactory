@@ -32,9 +32,9 @@ MSG_ERROR_UPGRADING_TOOLKIT = 'Ошибка обновления инструм�
 MSG_ERROR_UPGRADING_WORKBENCH = 'Ошибка обновления верстака: {error}'
 MSG_ERROR_BURNING_TOKENS = 'Ошибка сжигания монет: {error}'
 MSG_ERROR_FETCHING_MISSIONS = 'Ошибка получения заданий: {error}'
-MSG_ERROR_CLAIMING_MISSION = 'Ошибка получения задания {id}: {error}'
-MSG_ERROR_CONFIRMING_LINK_MISSION = 'Ошибка подтверждения задания {id}: {error}'
-MSG_ERROR_CONFIRMING_TELEGRAM_MISSION = 'Ошибка подтверждения задания {id}: {error}'
+MSG_ERROR_CLAIMING_MISSION = 'Ошибка получения задания {mid}: {error}'
+MSG_ERROR_CONFIRMING_LINK_MISSION = 'Ошибка подтверждения задания {mid}: {error}'
+MSG_ERROR_CONFIRMING_TELEGRAM_MISSION = 'Ошибка подтверждения задания {mid}: {error}'
 
 HEADERS = {
 

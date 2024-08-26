@@ -1,7 +1,9 @@
-from random import random
+import json
+import random
+import requests
 from bots.base.utils import to_localtz_timestamp, api_response
 from bots.base.base import BaseFarmer, time
-from bots.zavod.strings import HEADERS, URL_INIT, URL_CLAIM, URL_FARM, URL_PROFILE, MSG_CLAIM, MSG_PROFILE, MSG_STATE, \
+from bots.zavod.strings import HEADERS, URL_INIT, URL_CLAIM, URL_FARM, URL_PROFILE, MSG_CLAIM, MSG_PROFILE, \
     URL_UPGRADE_TOOLKIT, URL_UPGRADE_WORKBENCH, URL_BURN_TOKENS, URL_MISSIONS, URL_CLAIM_MISSION, \
     URL_CONFIRM_LINK_MISSION, URL_CONFIRM_TELEGRAM_MISSION, \
     MSG_TOKENS, MSG_TOOLKIT_LEVEL, MSG_WORKBENCH_LEVEL, MSG_GUILD, MSG_JOINED_GUILD, MSG_UPGRADED_TOOLKIT, \
@@ -11,8 +13,8 @@ from bots.zavod.strings import HEADERS, URL_INIT, URL_CLAIM, URL_FARM, URL_PROFI
     URL_WORKBENCH_SETTINGS, URL_TOOLKIT_SETTINGS, URL_GUILD_JOIN
 from time import sleep
 
-class BotFarmer(BaseFarmer):
 
+class BotFarmer(BaseFarmer):
     name = 'Mdaowalletbot'
     extra_code = "102796269"
     info = dict(profile={}, farming={})
@@ -37,7 +39,7 @@ class BotFarmer(BaseFarmer):
         self.initiator.disconnect()
 
     def set_start_time(self):
-        self.start_time = self.claim_date + int(random() * 10)
+        self.start_time = self.claim_date + random.randint(0, 9)
 
     def update_profile(self):
         if result := self.get(URL_PROFILE):
@@ -56,7 +58,7 @@ class BotFarmer(BaseFarmer):
 
     def claim(self):
         if time() >= self.claim_date:
-            if result := self.post(URL_CLAIM):
+            if result := self.post(URL_CLAIM, return_codes=(500,)):
                 self.info['profile'] = result
                 self.log(MSG_CLAIM)
 
@@ -71,7 +73,7 @@ class BotFarmer(BaseFarmer):
         self.log(MSG_WORKBENCH_LEVEL.format(work=work))
         self.log(MSG_GUILD.format(guild=guild))
         if guild is None:
-            self.post(URL_GUILD_JOIN, json={'guildId': 81,})
+            self.post(URL_GUILD_JOIN, json={'guildId': 81, })
             self.log(MSG_JOINED_GUILD)
 
         self.upgrade_tool(tool, tokens)
@@ -79,8 +81,6 @@ class BotFarmer(BaseFarmer):
 
         if tool == 5 and work == 49:
             self.burn(tokens)
-
-        self.process_missions()
 
     def upgrade_tool(self, tool, tokens):
         tool += 1
@@ -117,11 +117,10 @@ class BotFarmer(BaseFarmer):
 
     def process_missions(self):
         try:
-            task = self.get(URL_MISSIONS,
-                params={
-                        'offset': '0',
-                        'status': 'ACTIVE',
-                        }
+            task = self.get(URL_MISSIONS, params={
+                                'offset': '0',
+                                'status': 'ACTIVE',
+                            }
                             )
             for q in task['missions']:
                 id = q['id']
@@ -149,7 +148,7 @@ class BotFarmer(BaseFarmer):
     def taskclaim(self, id):
         sleep(2)
         try:
-            response = self.post(f'{URL_CLAIM_MISSION}{id}')
+            response = self.post(f'{URL_CLAIM_MISSION}{id}', return_codes=(403,))
             self.log(MSG_CLAIMED_MISSION.format(prize=response['prize'], name=response['name']['ru']))
         except Exception as e:
             self.log(MSG_ERROR_CLAIMING_MISSION.format(id=id, error=e))
@@ -170,11 +169,58 @@ class BotFarmer(BaseFarmer):
         except Exception as e:
             self.log(MSG_ERROR_CONFIRMING_TELEGRAM_MISSION.format(id=id, error=e))
 
+    def game_init(self):
+        response = requests.get('https://zavod-api.mdaowallet.com/craftGame', headers=self.headers)
+        if response.status_code == 200:
+            sleep(2)
+            self.game()
+    def game(self):
+        self.log('Я хочу сыграть с тобой в игру :)')
+        numbers = random.sample(range(20), 3)
+        a, b, c = numbers
+        json_data = {
+            'selectedSells': [
+                a,
+                b,
+                c,
+            ],
+            'action': 'SAVE',
+        }
+
+        response = requests.post(
+            'https://zavod-api.mdaowallet.com/craftGame/finishLevel',
+            headers=self.headers,
+            json=json_data
+        )
+        if response.status_code != 200:
+            test = response.json()
+            print(json.dumps(test, indent=4))
+
+        if response.status_code == 200:
+            game_data = response.json()
+            if game_data['level'] > 0:
+                self.log(f"Выиграли lvl: {game_data['level']}")
+                sleep(3)
+                self.game()
+            elif game_data['level'] == 0:
+                self.log('Ты проиграл')
+        elif response.status_code == 403:
+            self.log('Рано еще играть')
+
+        elif response.status_code != 200:
+            print(json.dumps(response, indent=4))
+
     def farm(self):
         self.update_profile()
+        sleep(1)
         self.update_farming()
+        sleep(1)
+        self.process_missions()
+        sleep(1)
         self.claim()
         sleep(1)
         self.update_farming()
-        sleep(2)
+        sleep(1)
         self.up()
+        sleep(1)
+        self.game_init()
