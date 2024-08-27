@@ -46,9 +46,10 @@ class BotFarmer(BaseFarmer):
             self.log(str(result.status_code) + ' ' + result.text)
             return {}
 
-    def update_profile(self):
+    def update_profile(self, log_info=False):
         self.info = self.api_call(URL_PROFILE).get('data', {})
-        self.log(MSG_PROFILE_UPDATE)
+        if log_info:
+            self.log(MSG_PROFILE_UPDATE)
         if not self.info['hasEmail']:
             self.register()
 
@@ -98,7 +99,7 @@ class BotFarmer(BaseFarmer):
     def claim_tasks(self):
         task_list = self.api_call(URL_GET_TASK_LIST, payload=dict(platform=1, lang='en'))
         for task in task_list['data']['social']:
-            if (task['title'] not in TASK_EXCLUDE) and (task['id'] not in TASK_EXCLUDE):
+            if task['id'] not in TASK_EXCLUDE:
                 if task['status'] == 1:
                     self.start_task(task)
                     sleep(randrange(5, 10))
@@ -200,7 +201,7 @@ class BotFarmer(BaseFarmer):
                         sleep(random() * random() * 10)
 
     def farm(self):
-        self.update_profile()
+        self.update_profile(log_info=True)
         actions = [self.claim_tasks, 
                    self.claim_cards, 
                    self.claim_farmed, 
@@ -216,7 +217,7 @@ class BotFarmer(BaseFarmer):
             self.freeze_balance()
             self.buy_upgrades()
             self.buy_taplimit_upgrade()
-        self.update_profile()
+        self.update_profile(log_info=True)
         self.log(MSG_STATE.format(balance=self.info['balance'],
                                   mine_per_hour=self.mine_per_hour,
                                   taps_per_hour=self.taps_per_hour))
