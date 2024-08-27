@@ -5,9 +5,8 @@ PERCENT_TO_SPEND = 100  # Какой процент от депозита дол
 try:
     from bots.simple.config_local import TASK_EXCLUDE
 except:
-    # вносим id или title квеста
+    # вносим id таска, который не проходится из лога (комментарий # можно не писать)
     TASK_EXCLUDE = [
-        "Invite one more friend",
         6270925024, # Пригласи одного или нескольких друзей
         6270925049, # Войди в приложение через магазин
         6270925048, # Опубликуй историю в Instagram
