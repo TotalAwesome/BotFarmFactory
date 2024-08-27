@@ -3,7 +3,7 @@ from random import random, randrange, shuffle, choice
 from bots.base.base import BaseFarmer
 from time import time, sleep
 from bots.simple.utils import get_sorted_upgrades
-from bots.simple.config import BUY_UPGRADES, PERCENT_TO_SPEND
+from bots.simple.config import BUY_UPGRADES, PERCENT_TO_SPEND, TASK_EXCLUDE
 from bots.simple.strings import HEADERS, URL_INIT, URL_PROFILE, URL_TAP, URL_GET_MINING_BLOCKS, URL_FRIENDS, \
     URL_GET_TASK_LIST, URL_CLAIM_FARMED, URL_START_FARM, URL_CHECK_TASK, URL_START_TASK, URL_CLAIM_FRIENDS, \
     URL_BUY_UPGRADE, URL_CLAIM_SPIN, MSG_PROFILE_UPDATE, MSG_TAP, MSG_START_FARMING, MSG_BUY_UPGRADE, SPIN_TYPES, \
@@ -46,9 +46,10 @@ class BotFarmer(BaseFarmer):
             self.log(str(result.status_code) + ' ' + result.text)
             return {}
 
-    def update_profile(self):
+    def update_profile(self, log_info=False):
         self.info = self.api_call(URL_PROFILE).get('data', {})
-        self.log(MSG_PROFILE_UPDATE)
+        if log_info:
+            self.log(MSG_PROFILE_UPDATE)
         if not self.info['hasEmail']:
             self.register()
 
@@ -98,12 +99,13 @@ class BotFarmer(BaseFarmer):
     def claim_tasks(self):
         task_list = self.api_call(URL_GET_TASK_LIST, payload=dict(platform=1, lang='en'))
         for task in task_list['data']['social']:
-            if task['status'] == 1:
-                self.start_task(task)
-                sleep(randrange(5, 10))
-            elif task['status'] == 2:
-                self.check_task(task)
-                sleep(randrange(5, 10))
+            if task['id'] not in TASK_EXCLUDE:
+                if task['status'] == 1:
+                    self.start_task(task)
+                    sleep(randrange(5, 10))
+                elif task['status'] == 2:
+                    self.check_task(task)
+                    sleep(randrange(5, 10))
         
     def is_it_not_expensive(self, price):
         min_dst_balance = self.freezed_balance * (1 - PERCENT_TO_SPEND / 100)
@@ -199,7 +201,7 @@ class BotFarmer(BaseFarmer):
                         sleep(random() * random() * 10)
 
     def farm(self):
-        self.update_profile()
+        self.update_profile(log_info=True)
         actions = [self.claim_tasks, 
                    self.claim_cards, 
                    self.claim_farmed, 
@@ -215,7 +217,7 @@ class BotFarmer(BaseFarmer):
             self.freeze_balance()
             self.buy_upgrades()
             self.buy_taplimit_upgrade()
-        self.update_profile()
+        self.update_profile(log_info=True)
         self.log(MSG_STATE.format(balance=self.info['balance'],
                                   mine_per_hour=self.mine_per_hour,
                                   taps_per_hour=self.taps_per_hour))
