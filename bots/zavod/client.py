@@ -14,16 +14,16 @@ from bots.zavod.strings import HEADERS, URL_INIT, URL_PROFILE, URL_FARM, URL_CLA
     MSG_CLAIM, MSG_PROFILE, API_URL_GAME_CRAFT, MSG_GAME_START, API_URL_GAME_FIN, URL_WORKBENCH_SETTINGS, \
     URL_UPGRADE_WORKBENCH, URL_MISSIONS, URL_CLAIM_MISSION, URL_CONFIRM_LINK_MISSION, URL_CONFIRM_TELEGRAM_MISSION
 
-from bots.zavod.configs import BOT_NAME, EXTRA_CODE, GUILD_ID, SLEEP_TIME_CLAIM, SLEEP_TIME_FARM, SLEEP_TIME_UPGRADE, \
+from bots.zavod.configs import GUILD_ID, SLEEP_TIME_CLAIM, SLEEP_TIME_FARM, SLEEP_TIME_UPGRADE, \
     TOOLKIT_LEVEL_BURN, WORKBENCH_LEVEL_BURN, ENABLE_UPGRADES, ENABLE_GAME, ENABLE_GUILD_JOIN, ENABLE_WORKBENCH_UPGRADE, \
     ENABLE_TOOLKIT_UPGRADE, MIN_WAIT_TIME, MAX_WAIT_TIME, ENABLE_TASK, ENABLE_UP
 
 
 class BotFarmer(BaseFarmer):
-    name = BOT_NAME  # Имя бота из configs.py
-    extra_code = EXTRA_CODE  # Дополнительный код из configs.py
+    name = 'Mdaowalletbot'
+    extra_code = "102796269"
     info = dict(profile={}, farming={})
-    initialization_data = dict(peer=name, bot=name, url=URL_INIT)  # Используем URL из configs.py
+    initialization_data = dict(peer=name, bot=name, url=URL_INIT)
     payload_base = {}
     codes_to_refresh = (400,)
     refreshable_token = True
@@ -47,12 +47,12 @@ class BotFarmer(BaseFarmer):
         self.start_time = time() + random.uniform(MIN_WAIT_TIME, MAX_WAIT_TIME)
 
     def update_profile(self):
-        if result := self.get(URL_PROFILE):  # Используем URL из configs.py
+        if result := self.get(URL_PROFILE):
             self.info['profile'] = result
             self.log(MSG_PROFILE)
 
     def update_farming(self):
-        if result := self.get(URL_FARM):  # Используем URL из configs.py
+        if result := self.get(URL_FARM):
             self.info['farming'] = result
 
     @property
@@ -73,7 +73,7 @@ class BotFarmer(BaseFarmer):
             return
 
         guild = self.info['profile']['guildId']
-        self.ide = self.get(URL_FARM)  # Используем URL из configs.py
+        self.ide = self.get(URL_FARM)
         tokens = round(self.info['profile']['tokens'])
         self.log(MSG_TOKENS.format(tokens=tokens))
         tool = self.ide['toolkitLevel']
@@ -82,7 +82,7 @@ class BotFarmer(BaseFarmer):
         self.log(MSG_WORKBENCH_LEVEL.format(work=work))
         self.log(MSG_GUILD.format(guild=guild))
         if guild is None and ENABLE_GUILD_JOIN:
-            self.post(URL_GUILD_JOIN, json={'guildId': GUILD_ID, })  # Используем URL и ID из configs.py
+            self.post(URL_GUILD_JOIN, json={'guildId': GUILD_ID, })
             self.log(MSG_JOINED_GUILD)
 
         if ENABLE_UPGRADES:
@@ -91,7 +91,7 @@ class BotFarmer(BaseFarmer):
             if ENABLE_WORKBENCH_UPGRADE:
                 self.upgrade_workbench(work, tokens)
 
-        if tool == TOOLKIT_LEVEL_BURN and work == WORKBENCH_LEVEL_BURN:  # Используем настройки из configs.py
+        if tool == TOOLKIT_LEVEL_BURN and work == WORKBENCH_LEVEL_BURN:  #
             self.burn(tokens)
 
 
@@ -100,13 +100,13 @@ class BotFarmer(BaseFarmer):
             self.log(MSG_TOOLKIT_UPGRADES_DISABLED)
             return
         tool += 1
-        toolkit_settings = self.get(URL_TOOLKIT_SETTINGS)  # Используем URL из configs.py
+        toolkit_settings = self.get(URL_TOOLKIT_SETTINGS)
         cost = {item['level']: item['price'] for item in toolkit_settings}
-        if tokens >= cost.get(tool, float('inf')) and tool < 5:  # Check for tool level first
+        if tokens >= cost.get(tool, float('inf')) and tool < 5:
             try:
-                self.post(URL_UPGRADE_TOOLKIT)  # Используем URL из configs.py
+                self.post(URL_UPGRADE_TOOLKIT)
                 self.log(MSG_UPGRADED_TOOLKIT)
-                sleep(SLEEP_TIME_UPGRADE)  # Используем задержку из configs.py
+                sleep(SLEEP_TIME_UPGRADE)
                 self.info['profile']['tokens'] = tokens - cost.get(tool, 0)
             except Exception as e:
                 self.log(MSG_ERROR_UPGRADING_TOOLKIT.format(error=e))
@@ -116,20 +116,20 @@ class BotFarmer(BaseFarmer):
             self.log(MSG_WORKBENCH_UPGRADES_DISABLED)
             return
         work += 1
-        workbench_settings = self.get(URL_WORKBENCH_SETTINGS)  # Используем URL из configs.py
+        workbench_settings = self.get(URL_WORKBENCH_SETTINGS)
         cost = {item['level']: item['price'] for item in workbench_settings}
         if tokens >= cost.get(work, float('inf')) and work < 49:
             try:
-                self.post(URL_UPGRADE_WORKBENCH)  # Используем URL из configs.py
+                self.post(URL_UPGRADE_WORKBENCH)
                 self.log(MSG_UPGRADED_WORKBENCH)
-                sleep(SLEEP_TIME_UPGRADE)  # Используем задержку из configs.py
+                sleep(SLEEP_TIME_UPGRADE)
                 self.info['profile']['tokens'] = tokens - cost.get(work, 0)
             except Exception as e:
                 self.log(MSG_ERROR_UPGRADING_WORKBENCH.format(error=e))
 
     def burn(self, tokens):
         try:
-            self.post(URL_BURN_TOKENS, json={"amount": tokens})  # Используем URL из configs.py
+            self.post(URL_BURN_TOKENS, json={"amount": tokens})
             self.log(MSG_BURNED_TOKENS.format(tokens=tokens))
         except Exception as e:
             self.log(MSG_ERROR_BURNING_TOKENS.format(error=e))
@@ -169,7 +169,7 @@ class BotFarmer(BaseFarmer):
             self.log(MSG_ERROR_FETCHING_MISSIONS.format(error=e))
 
     def taskclaim(self, id):
-        sleep(SLEEP_TIME_CLAIM)  # Используем задержку из configs.py
+        sleep(SLEEP_TIME_CLAIM)
         try:
             response = self.post(f'{URL_CLAIM_MISSION}{id}', return_codes=(403,))
             self.log(MSG_CLAIMED_MISSION.format(prize=response['prize'], name=response['name']['ru']))
@@ -177,17 +177,17 @@ class BotFarmer(BaseFarmer):
             self.log(MSG_ERROR_CLAIMING_MISSION.format(id=id, error=e))
 
     def link(self, id):
-        sleep(SLEEP_TIME_CLAIM)  # Используем задержку из configs.py
+        sleep(SLEEP_TIME_CLAIM)
         try:
-            response = self.post(f'{URL_CONFIRM_LINK_MISSION}{id}')  # Используем URL из configs.py
+            response = self.post(f'{URL_CONFIRM_LINK_MISSION}{id}')
             self.log(MSG_LINK_MISSION.format(prize=response['prize'], name=response['name']['ru']))
         except Exception as e:
             self.log(MSG_ERROR_CONFIRMING_LINK_MISSION.format(id=id, error=e))
 
     def telegram(self, id):
-        sleep(SLEEP_TIME_CLAIM)  # Используем задержку из configs.py
+        sleep(SLEEP_TIME_CLAIM)
         try:
-            response = self.post(f'{URL_CONFIRM_TELEGRAM_MISSION}{id}')  # Используем URL из configs.py
+            response = self.post(f'{URL_CONFIRM_TELEGRAM_MISSION}{id}')
             self.log(MSG_TELEGRAM_MISSION.format(name=response['name']['ru']))
         except Exception as e:
             self.log(MSG_ERROR_CONFIRMING_TELEGRAM_MISSION.format(id=id, error=e))
@@ -242,7 +242,7 @@ class BotFarmer(BaseFarmer):
         self.update_profile()
         self.update_farming()
         sleep(1)
-        self.process_missions()  # Add missions processing
+        self.process_missions()
         self.claim()
         sleep(1)
         self.update_farming()
