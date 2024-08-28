@@ -1,8 +1,11 @@
-import json
+#v1.00
 import random
-from bots.base.utils import to_localtz_timestamp, api_response
+from time import sleep
 from bots.base.base import BaseFarmer, time
-from time import sleep, time as current_time
+from bots.base.utils import to_localtz_timestamp, api_response
+from bots.zavod.configs import GUILD_ID, SLEEP_TIME_CLAIM, SLEEP_TIME_UPGRADE, \
+    TOOLKIT_LEVEL_BURN, WORKBENCH_LEVEL_BURN, ENABLE_UPGRADES, ENABLE_GAME, ENABLE_GUILD_JOIN, ENABLE_WORKBENCH_UPGRADE, \
+    ENABLE_TOOLKIT_UPGRADE, MIN_WAIT_TIME, MAX_WAIT_TIME, ENABLE_TASK, ENABLE_UP
 from bots.zavod.strings import HEADERS, URL_INIT, URL_PROFILE, URL_FARM, URL_CLAIM, \
     URL_UPGRADE_TOOLKIT, URL_TOOLKIT_SETTINGS, URL_BURN_TOKENS, URL_GUILD_JOIN, \
     MSG_TOKENS, MSG_TOOLKIT_LEVEL, MSG_WORKBENCH_LEVEL, MSG_GUILD, MSG_JOINED_GUILD, MSG_UPGRADED_TOOLKIT, \
@@ -12,10 +15,6 @@ from bots.zavod.strings import HEADERS, URL_INIT, URL_PROFILE, URL_FARM, URL_CLA
     MSG_GAME_DISABLED, MSG_TOOLKIT_UPGRADES_DISABLED, MSG_WORKBENCH_UPGRADES_DISABLED, \
     MSG_CLAIM, MSG_PROFILE, API_URL_GAME_CRAFT, MSG_GAME_START, API_URL_GAME_FIN, URL_WORKBENCH_SETTINGS, \
     URL_UPGRADE_WORKBENCH, URL_MISSIONS, URL_CLAIM_MISSION, URL_CONFIRM_LINK_MISSION, URL_CONFIRM_TELEGRAM_MISSION
-
-from bots.zavod.configs import GUILD_ID, SLEEP_TIME_CLAIM, SLEEP_TIME_FARM, SLEEP_TIME_UPGRADE, \
-    TOOLKIT_LEVEL_BURN, WORKBENCH_LEVEL_BURN, ENABLE_UPGRADES, ENABLE_GAME, ENABLE_GUILD_JOIN, ENABLE_WORKBENCH_UPGRADE, \
-    ENABLE_TOOLKIT_UPGRADE, MIN_WAIT_TIME, MAX_WAIT_TIME, ENABLE_TASK, ENABLE_UP
 
 
 class BotFarmer(BaseFarmer):
@@ -93,7 +92,6 @@ class BotFarmer(BaseFarmer):
         if tool == TOOLKIT_LEVEL_BURN and work == WORKBENCH_LEVEL_BURN:  #
             self.burn(tokens)
 
-
     def upgrade_tool(self, tool, tokens):
         if not ENABLE_UPGRADES or not ENABLE_TOOLKIT_UPGRADE:
             self.log(MSG_TOOLKIT_UPGRADES_DISABLED)
@@ -140,9 +138,9 @@ class BotFarmer(BaseFarmer):
 
         try:
             task = self.get(URL_MISSIONS, params={
-                                'offset': '0',
-                                'status': 'ACTIVE',
-                            }
+                'offset': '0',
+                'status': 'ACTIVE',
+            }
                             )
             for q in task['missions']:
                 id = q['id']
@@ -196,8 +194,8 @@ class BotFarmer(BaseFarmer):
             self.log(MSG_GAME_DISABLED)
             return
 
-        response = self.get(API_URL_GAME_CRAFT)
-        if response.status_code == 200:
+        q = self.get(API_URL_GAME_CRAFT, return_codes=(403,))
+        if q:
             sleep(2)
             self.game()
 
@@ -218,23 +216,13 @@ class BotFarmer(BaseFarmer):
             API_URL_GAME_FIN,
             json=json_data
         )
-        if response.status_code != 200:
-            test = response.json()
-            print(json.dumps(test, indent=4))
 
-        if response.status_code == 200:
-            game_data = response.json()
-            if game_data['level'] > 0:
-                self.log(f"Выиграли lvl: {game_data['level']}")
-                sleep(3)
-                self.game()
-            elif game_data['level'] == 0:
-                self.log('Ты проиграл')
-        elif response.status_code == 403:
-            self.log('Рано еще играть')
-
-        elif response.status_code != 200:
-            print(json.dumps(response, indent=4))
+        if response['level'] > 0:
+            self.log(f"Выиграли lvl: {response['level']}")
+            sleep(3)
+            self.game()
+        elif response['level'] == 0:
+            self.log('Ты проиграл')
 
     def farm(self):
         self.update_profile()
@@ -248,5 +236,3 @@ class BotFarmer(BaseFarmer):
         self.up()
         sleep(1)
         self.game_init()
-
-    
