@@ -77,4 +77,5 @@ PROMO_TOKENS = {
     'dc128d28-c45b-411c-98ff-ac7726fbaea4': '8d1cc2ad-e097-4b86-90ef-7a27e19fb833', # MERGE
     '61308365-9d16-4040-8bb0-2f4a4c69074c': '61308365-9d16-4040-8bb0-2f4a4c69074c', # TWERK
     '2aaf5aee-2cbc-47ec-8a3f-0962cc14bc71': '2aaf5aee-2cbc-47ec-8a3f-0962cc14bc71', # POLY
+    'bc0971b8-04df-4e72-8a3e-ec4dc663cd11': 'bc0971b8-04df-4e72-8a3e-ec4dc663cd11', # Cafe Dash
 }
