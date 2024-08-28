@@ -205,9 +205,9 @@ class BotFarmer(BaseFarmer):
         response = self.post(URL_USER_INFO, {'_token': self.token})
         data = response.json()['data']
         self.balance = data['balance']
-
         if log:
             self.log(MSG_CURRENT_BALANCE.format(balance=self.balance))
+        return self.balance
 
     def sync(self):
         return self.post(URL_REFRESH, {'_token': self.token})
