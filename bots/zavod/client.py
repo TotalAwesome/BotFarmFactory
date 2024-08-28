@@ -1,6 +1,5 @@
 import json
 import random
-import requests
 from bots.base.utils import to_localtz_timestamp, api_response
 from bots.base.base import BaseFarmer, time
 from time import sleep, time as current_time
@@ -197,7 +196,7 @@ class BotFarmer(BaseFarmer):
             self.log(MSG_GAME_DISABLED)
             return
 
-        response = requests.get(API_URL_GAME_CRAFT, headers=self.headers)
+        response = self.get(API_URL_GAME_CRAFT)
         if response.status_code == 200:
             sleep(2)
             self.game()
@@ -215,9 +214,8 @@ class BotFarmer(BaseFarmer):
             'action': 'SAVE',
         }
 
-        response = requests.post(
+        response = self.post(
             API_URL_GAME_FIN,
-            headers=self.headers,
             json=json_data
         )
         if response.status_code != 200:
