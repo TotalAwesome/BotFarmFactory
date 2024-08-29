@@ -10,7 +10,7 @@ from time import time, sleep
 from bots.base.base import BaseFarmer
 from bots.tapcoins.config import BUY_UPGRADES, UPGRADES_COUNT, skip_ids, MIN_WAIT_TIME, MAX_WAIT_TIME
 from bots.tapcoins.strings import HEADERS, URL_INIT, URL_LOGIN, URL_CARDS_CATEGORIES, URL_CARDS_LIST, \
-    URL_CARDS_UPGRADE, URL_LUCKY_BOUNTY, MSG_NO_CARDS_TO_UPGRADE, \
+    URL_CARDS_UPGRADE, URL_LUCKY_BOUNTY, MSG_NO_CARDS_TO_UPGRADE, CODES, \
     MSG_CARD_UPGRADED, MSG_NOT_ENOUGH_COINS, MSG_CARD_UPGRADED_COMBO, URL_DAILY, URL_DAILY_COMPLETE, \
     MSG_LOGIN_BONUS_COMPLETE, URL_USER_INFO, MSG_UPGRADING_CARDS, MSG_UPGRADE_COMPLETE, MSG_MAX_UPGRADES_REACHED, \
     URL_REFRESH, MSG_CURRENT_BALANCE, MSG_HOUR_EARNINGS, URL_GET_TASKS, URL_COMPLETE_TASK, MSG_TASK_COMPLETED
@@ -23,7 +23,7 @@ class BotFarmer(BaseFarmer):
     token = None
     balance = None
     hours_earnings = None
-    extra_code = 'ref_QjG2zG'
+    extra_code = 'ref_Tby5AB'
     refreshable_token = True
     codes_to_refresh = (401,)
     s = None
@@ -50,6 +50,49 @@ class BotFarmer(BaseFarmer):
                 self.s = json_data['data']['collect']['userInfo']['stock']
             else:
                 self.is_alive = False
+        else:
+            self.log(f'Ошибка авторизации {result.status_code}')
+
+    def youtube_code(self):
+        data = {
+            'sub': '1',
+            'taskId': '171',
+            '_token': self.token,
+        }
+        resp = self.post('https://xapi.tapcoins.app/task/list', data=data)
+        if resp.status_code == 200:
+            resp = resp.json()
+            for i in resp['data']:
+                id = i['id']
+                title = i['title']
+                compl = i['completed']
+                if title in CODES and compl == 0:
+                    data = {
+                        'taskId': id,
+                        '_token': self.token,
+                    }
+                    response = self.post('https://xapi.tapcoins.app/task/click', data=data)
+                    if response.status_code == 200:
+                        response = response.json()
+                        if response['code'] == 0:
+                            sleep(random.randrange(5, 10))
+                            data = {
+                                'sub': '1',
+                                'taskId': id,
+                                'code': '',
+                                'value': CODES[title],
+                                '_token': self.token,
+                            }
+                            response = self.post('https://xapi.tapcoins.app/task/complete',
+                                                     data=data)
+                            if response.status_code == 200:
+                                response = response.json()
+                                if response['code'] == 0:
+                                    self.log(f"Выполнили таску: {title}")
+                                else:
+                                    self.log(f"Ошибка: {title} {CODES[title]}")
+                elif compl == 0:
+                    self.log(f"Нет кода для {title}")
 
     def stock(self):
         stock = self.s
@@ -59,7 +102,7 @@ class BotFarmer(BaseFarmer):
                 'lotteryId': '1',
                 '_token': self.token,
             }
-            response = self.post('https://xapi.tapcoins.app/lucky/lottery/draw', headers=self.headers, data=data)
+            response = self.post('https://xapi.tapcoins.app/lucky/lottery/draw', data=data)
             if response.status_code == 200:
                 stock -= 1
                 sleep(8)
@@ -93,7 +136,7 @@ class BotFarmer(BaseFarmer):
 
                 cards = sorted(cards, key=lambda x: x['upgrade_earnings'] / x['upgrade_cost'], reverse=True)
 
-                self.get_balance(False)
+                self.get_balance()
 
                 upgraded = False
 
@@ -169,7 +212,7 @@ class BotFarmer(BaseFarmer):
 
     def upgrade_cards_by_id(self, to_upgrade):
         for card in to_upgrade:
-            self.get_balance(False)
+            self.get_balance()
 
             if self.balance >= card['upgrade_cost']:
                 self.post(URL_CARDS_UPGRADE, {'taskId': card['id'], '_token': self.token})
@@ -198,13 +241,24 @@ class BotFarmer(BaseFarmer):
         if log:
             self.log(MSG_HOUR_EARNINGS.format(earnings=self.hours_earnings))
 
-    def get_balance(self, log=False):
+    def get_balance(self):
         response = self.post(URL_USER_INFO, {'_token': self.token})
-        data = response.json()['data']
-        self.balance = data['balance']
+        err = 0
+        if response:
+            if response.status_code == 200:
+                data = response.json()['data']
+                self.balance = data['balance']
+                self.log(MSG_CURRENT_BALANCE.format(balance=self.balance))
+                return self.balance
+            else:
+                self.log("Ошибка получения баланса")
+                return err
+        else:
+            self.log("Ошибка получения баланса")
+            return err
 
-        if log:
-            self.log(MSG_CURRENT_BALANCE.format(balance=self.balance))
+
+
 
     def sync(self):
         return self.post(URL_REFRESH, {'_token': self.token})
@@ -240,7 +294,8 @@ class BotFarmer(BaseFarmer):
 
     def farm(self):
         self.sync()
-        self.get_balance(True)
+        self.log(f'Баланс: {self.get_balance()}')
+        self.youtube_code()
         self.stock()
         self.get_hour_earnings(True)
         self.daily_bonus()
