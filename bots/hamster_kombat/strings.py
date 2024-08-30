@@ -73,13 +73,13 @@ GET_PROMO_HEADERS = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/
 
 PROMO_TOKENS = {
     # promo_id : app_token
-    '43e35910-c168-4634-ad4f-52fd764a843f': 'd28721be-fd2d-4b45-869e-9f253b554e50', # BIKE
-    'fe693b26-b342-4159-8808-15e3ff7f8767': '74ee0b5b-775e-4bee-974f-63e7f4d5bacb', # CLONE
+    'b2436c89-e0aa-4aed-8046-9b0515e1c46b': 'b2436c89-e0aa-4aed-8046-9b0515e1c46b', # ZOO
+    'c7821fa7-6632-482c-9635-2bd5798585f9': 'b6de60a0-e030-48bb-a551-548372493523', # GANGS
+    'bc0971b8-04df-4e72-8a3e-ec4dc663cd11': 'bc0971b8-04df-4e72-8a3e-ec4dc663cd11', # CAFE
+    'ef319a80-949a-492e-8ee0-424fb5fc20a6': 'ef319a80-949a-492e-8ee0-424fb5fc20a6', # TRIM
     'b4170868-cef0-424f-8eb9-be0622e8e8e3': 'd1690a07-3780-4068-810f-9b5bbf2931b2', # CUBE
     'c4480ac7-e178-4973-8061-9ed5b2e17954': '82647f43-3f87-402d-88dd-09a90025313f', # TRAIN
     'dc128d28-c45b-411c-98ff-ac7726fbaea4': '8d1cc2ad-e097-4b86-90ef-7a27e19fb833', # MERGE
     '61308365-9d16-4040-8bb0-2f4a4c69074c': '61308365-9d16-4040-8bb0-2f4a4c69074c', # TWERK
     '2aaf5aee-2cbc-47ec-8a3f-0962cc14bc71': '2aaf5aee-2cbc-47ec-8a3f-0962cc14bc71', # POLY
-    'ef319a80-949a-492e-8ee0-424fb5fc20a6': 'ef319a80-949a-492e-8ee0-424fb5fc20a6', # TRIM
-    '8814a785-97fb-4177-9193-ca4180ff9da8': '8814a785-97fb-4177-9193-ca4180ff9da8', # RACE
 }
