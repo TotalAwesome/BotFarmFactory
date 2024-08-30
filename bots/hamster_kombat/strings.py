@@ -74,6 +74,7 @@ GET_PROMO_HEADERS = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/
 PROMO_TOKENS = {
     # promo_id : app_token
     'b2436c89-e0aa-4aed-8046-9b0515e1c46b': 'b2436c89-e0aa-4aed-8046-9b0515e1c46b', # ZOO
+    'c7821fa7-6632-482c-9635-2bd5798585f9': 'b6de60a0-e030-48bb-a551-548372493523', # GANGS
     'bc0971b8-04df-4e72-8a3e-ec4dc663cd11': 'bc0971b8-04df-4e72-8a3e-ec4dc663cd11', # CAFE
     'ef319a80-949a-492e-8ee0-424fb5fc20a6': 'ef319a80-949a-492e-8ee0-424fb5fc20a6', # TRIM
     'b4170868-cef0-424f-8eb9-be0622e8e8e3': 'd1690a07-3780-4068-810f-9b5bbf2931b2', # CUBE
