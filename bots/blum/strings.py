@@ -23,7 +23,7 @@ MSG_BALANCE_INFO = "Баланс: {balance} Количество игр: {play_p
 MSG_START_FARMING = "Начал фармить"
 MSG_CLAIM_FARM = "Собрал нафармленное: {amount}"
 MSG_FARMING_WAIT = "Ожидание завершения фарминга {} секунд"
-MSG_BEGIN_GAME = "Начинаем тапать звездочки. Количество игр: {})"
+MSG_BEGIN_GAME = "Начинаем тапать звездочки. Доступно игр: {}. Банк: {bank}. Игр/цикл: {play}"
 MSG_PLAYED_GAME = "Натапал: {result}"
 MSG_GAME_OFF = "Мини-игра в звездочки отключена"
 MSG_DAILY_REWARD = "Ежедневная награда. День: {days} игры: {passes} монеты: {points}"
@@ -31,6 +31,8 @@ MSG_FRIENDS_CLAIM = "Друзья нафармили: {points}"
 MSG_INPUT_USERNAME = "Введи имя для Blum: "
 MSG_TASK_STARTED = "Начал выполнять таску {title}"
 MSG_TASK_CLAIMED = "Выполнил таску {title} на {reward} монет"
+MSG_TASKS_OFF = "Выполнение тасков выключено"
+MSG_GAME_KEEP = "Коплю игры в банк. Осталось: {}"
 
 HEADERS = {
     "Accept": 'application/json',
