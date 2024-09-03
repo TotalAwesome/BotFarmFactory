@@ -53,5 +53,6 @@ CODES = {
     "Changing the Financial Game": "POOLS",
     "Against Volatility": "FARMING",
     "DeFi TVL for Smart Investing": "Storage"
+    "The Path to Returns in DeFi": "METAVERSE"
 
 }
