@@ -53,6 +53,11 @@ class BotFarmer(BaseFarmer):
         else:
             self.log(f'Ошибка авторизации {result.status_code}')
 
+    def refresh_token(self):
+        self.initiator.connect()
+        self.authenticate()
+        self.initiator.disconnect()
+
     def youtube_code(self):
         data = {
             'sub': '1',
@@ -293,6 +298,7 @@ class BotFarmer(BaseFarmer):
                     self.log(f'Выполнили таску: {i} {t}')
 
     def farm(self):
+        self.refresh_token()
         self.sync()
         self.log(f'Баланс: {self.get_balance()}')
         self.youtube_code()
