@@ -42,3 +42,16 @@ MSG_MAX_UPGRADES_REACHED = "Достигнут лимит прокачки {limi
 MSG_CURRENT_BALANCE = "Текущий баланс: {balance}"
 MSG_HOUR_EARNINGS = "Прибыль в час: {earnings}"
 MSG_TASK_COMPLETED = "Задание {name} выполнено"
+
+CODES = {
+    "How to Win Big in Web3 Gaming": "TAPCOINS",
+    "TON Chain Wallet Guide": "TONCOIN",
+    "TON Chain Applications": "MINIAPP",
+    "Exploring Cross-Chain Bridges": "ECONOMICS",
+    "The Viral Frenzy Behind Meme Coins": "GAMEFI",
+    "Making Money with DeFi": "Swaps",
+    "Changing the Financial Game": "POOLS",
+    "Against Volatility": "FARMING",
+    "DeFi TVL for Smart Investing": "Storage",
+    "The Path to Returns in DeFi": "METAVERSE"
+}
