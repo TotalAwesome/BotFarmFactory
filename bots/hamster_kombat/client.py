@@ -323,13 +323,13 @@ class BotFarmer(BaseFarmer):
         self.update_tasks()
         for task in self.tasks:
             task_id = task['id']
-            reward = task['rewardCoins']
+            reward = task.get('rewardCoins', 0)
             is_completed = task['isCompleted']
 
             if not task_id.startswith('hamster_youtube'):
                 continue
 
-            if reward > 0:
+            if not is_completed:
                 sleep(random() + choice(range(5, 10)))
                 data = {'taskId': task_id}
                 response = self.post(URL_CHECK_TASK, json=data)
