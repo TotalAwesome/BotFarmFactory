@@ -149,10 +149,14 @@ class BotFarmer(BaseFarmer):
         self.get_skins_state()
         max_skin_price = FEATURES.get('max_skin_price', 0)
         for skin in self.skins_info:
+            skin_condition = {}
+            if skin.get('condition', {}).get('_type') == 'UserLevel':
+                skin_condition['user_level'] = skin.get('condition', {}).get('level')
             skin_price = skin.get('price')
             skin_id = skin.get('id')
             if (
                 skin_price <= self.balance
+                and skin_condition.get('user_level', 0) <= self.level
                 and skin_price <= max_skin_price
                 and skin_id not in self.my_skins_ids
                 and (not skin.get('expiresAt') or datetime.utcnow() < datetime.fromisoformat(skin['expiresAt'][:-1]))
@@ -319,13 +323,13 @@ class BotFarmer(BaseFarmer):
         self.update_tasks()
         for task in self.tasks:
             task_id = task['id']
-            reward = task['rewardCoins']
+            reward = task.get('rewardCoins', 0)
             is_completed = task['isCompleted']
 
             if not task_id.startswith('hamster_youtube'):
                 continue
 
-            if reward > 0:
+            if not is_completed:
                 sleep(random() + choice(range(5, 10)))
                 data = {'taskId': task_id}
                 response = self.post(URL_CHECK_TASK, json=data)
