@@ -12,6 +12,7 @@ TELEGRAM_AUTH = dict(
 
 DEBUG = True
 RETRY_ATTEMPTS = 3
+SLEEP_BETWEEN_START = [10, 180]
 
 ENABLED_BOTS = [
     # Пустой список = все боты включены
