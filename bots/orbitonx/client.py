@@ -1,15 +1,20 @@
 import json
 from time import sleep
 from random import random
+import base64
+import binascii
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import unpad
 from telethon.types import InputBotAppShortName
 from bots.base.base import BaseFarmer, time
 from bots.base.utils import api_response, to_localtz_timestamp
-from urllib.parse import unquote
+from urllib.parse import unquote, parse_qsl
 
 from bots.orbitonx.strings import URL_AUTH, URL_INIT, HEADERS, MSG_AUTH_ERROR, URL_INFO, URL_BALANCE, URL_QUESTS, \
     URL_STAKING_CLAIM, URL_TAP, MSG_STAKING_CLAIMED, MSG_STAKING_STARTED, MSG_STAKING_TAP, URL_TASKS, \
     MSG_TASK_CLAIMED, URL_TASK_CLAIM, URL_WATCH_AD, MSG_WATCHED_AD, URL_STOCKS, MSG_BALANCE
 
+KEY = "kasdfrfsddf3234234123asdfghjkl12".encode('utf-8')
 
 class BotFarmer(BaseFarmer):
 
@@ -38,12 +43,19 @@ class BotFarmer(BaseFarmer):
         self.delete = api_response(super().delete)
         self.patch = api_response(super().patch)
 
-    def set_start_time(self):
-        timestamps = (self.portfolio['finishStaking'], self.info['adNextAvailableTime'])
-        self.start_time = min(map(to_localtz_timestamp, timestamps)) + 5
+    def decrypt_token(self, encrypted_token):
+        encrypted_data, iv_hex = encrypted_token.split(':')
+        encrypted_bytes = base64.b64decode(encrypted_data)
+        iv = binascii.unhexlify(iv_hex)
+        cipher = AES.new(KEY, AES.MODE_CBC, iv)
+        decrypted_data = unpad(cipher.decrypt(encrypted_bytes), AES.block_size)
+        return decrypted_data.decode('utf-8')
+
+    #def set_start_time(self):
+     #   timestamps = (self.portfolio['finishStaking'], self.info['adNextAvailableTime'])
+      #  self.start_time = min(map(to_localtz_timestamp, timestamps)) + 5
 
     def prepare_auth_data(self, url):
-        from urllib.parse import unquote, parse_qsl
         parsed = parse_qsl(unquote(unquote(url)))
         user = json.loads(parsed[0][-1].split('user=')[-1])
         parsed.pop(0)
@@ -60,14 +72,18 @@ class BotFarmer(BaseFarmer):
             "user": user
         }
         return data
-        
 
     def authenticate(self, *args, **kwargs):
         auth_data = self.initiator.get_auth_data(**self.initialization_data)
         auth_data = self.prepare_auth_data(auth_data['url'])
         if response := self.post(URL_AUTH, json=auth_data):
-            self.tokens = response['data']
-            self.headers['Authorization'] = f"Bearer {self.tokens['token']}"
+            # Decrypt the token if it comes in encrypted form
+            encrypted_token = response['data'].get('token')
+            if encrypted_token:
+                self.tokens['token'] = self.decrypt_token(encrypted_token)
+            else:
+                self.tokens = response['data']
+            self.headers['Authorization'] = f"Bearer {self.tokens.get('token')}"
         else:
             self.is_alive = False
             raise Exception(MSG_AUTH_ERROR)
