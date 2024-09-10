@@ -84,7 +84,7 @@ class BotFarmer(BaseFarmer):
         answer = choice(list(answers.values()))
         
         payload = {
-            "eid": "3QfP03LO::Zu3MEmn7",
+            "eid": "",
             "account": "",
             "platform": "common",
             "otag": "race",
