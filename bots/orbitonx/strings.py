@@ -21,7 +21,7 @@ MSG_STAKING_CLAIMED = "Собрал за стейкинг {rewardFromStacking}"
 MSG_STAKING_STARTED = "Начал стейкать"
 MSG_STAKING_TAP = "Натапал на стейкинг"
 MSG_TASK_CLAIMED = "Выполнил таску на {capacity} $RCT"
-MSG_WATCHED_AD = "Посмотрел рекалму ;) получил 10 $RCT"
+MSG_WATCHED_AD = "Посмотрел рекламу ;) получил 10 $RCT"
 MSG_BALANCE = "Текущий баланс: {balance}"
 
 HEADERS = {
