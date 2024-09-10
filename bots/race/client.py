@@ -1,10 +1,10 @@
 
-from random import randrange, random
+from random import randrange, random, choice
 from time import time, sleep
 from threading import Thread
 from bots.base.base import BaseFarmer
 from bots.base.utils import to_localtz_timestamp, api_response
-from .strings import HEADERS, URL_DRIVE, URL_INFO, URL_INIT, MSG_BALANCE, URL_RESTORE_FUEL
+from .strings import HEADERS, URL_DRIVE, URL_INFO, URL_INIT, MSG_BALANCE, URL_RESTORE_FUEL, URL_DAILY_STREAK, URL_DAILY_REWARD, answers
 
 
 class BotFarmer(BaseFarmer):
@@ -72,7 +72,40 @@ class BotFarmer(BaseFarmer):
         if response:
             self.info = response
 
+    def claim_daily_streak(self):
+        response = self.post(URL_DAILY_STREAK.format(init_data=self.init_data), return_codes=(201, 400))
+        if response:
+            self.log("Стрик получен!")
+        elif response is None or response.get("statusCode") == 400:
+            self.log("Ежедневный стрик уже получена.")
+
+    def claim_daily_reward(self):
+        # Случайный выбор ответа из словаря
+        answer = choice(list(answers.values()))
+        
+        payload = {
+            "eid": "3QfP03LO::Zu3MEmn7",
+            "account": "",
+            "platform": "common",
+            "otag": "race",
+            "ptag": "$race-tap-game",
+            "data": {
+                "answer": answer,
+                "update": False
+            }
+        }
+        
+        response = self.post(URL_DAILY_REWARD, json=payload, return_codes=(200, 400))
+        
+        if response:
+            self.log("Ежедневная награда получена!")
+        elif response is None or response.get("statusCode") == 400:
+            self.log("Ежедневная награда уже получена.")
+  
+
     def farm(self):
+        self.claim_daily_streak()
+        self.claim_daily_reward()
         self.start_riding_thread()
         self.sync()
         self.log(MSG_BALANCE.format(meters=self.info['user']['distance']['lastDistanceAmount']))
