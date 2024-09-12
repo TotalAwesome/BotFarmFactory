@@ -7,7 +7,7 @@ import time
 from time import sleep
 from datetime import datetime, timedelta, timezone
 
-from bots.base.base import BaseFarmer, time
+from bots.base.base import BaseFarmer
 from bots.cats.configs import MIN_WAIT_TIME, MAX_WAIT_TIME, skip_ids
 from bots.cats.strings import URL_GTASK, URL_CTASK, URL_USER
 from bots.iceberg.strings import HEADERS, URL_INIT
@@ -28,7 +28,12 @@ class BotFarmer(BaseFarmer):
         print()
 
     def set_start_time(self):
-        self.start_time = time() + random.uniform(MIN_WAIT_TIME, MAX_WAIT_TIME)
+        # Устанавливаем время начала на основе времени, оставшегося для загрузки аватара + 1-10 минут
+        if hasattr(self, 'remaining_time_for_avatar'):
+            additional_time = random.uniform(60, 600)  # От 1 до 10 минут
+            self.start_time = time.time() + self.remaining_time_for_avatar + additional_time
+        else:
+            self.start_time = time.time() + random.uniform(MIN_WAIT_TIME, MAX_WAIT_TIME)
 
     def user(self):
         response = self.get(URL_USER, return_codes=(404,))
@@ -117,9 +122,12 @@ class BotFarmer(BaseFarmer):
                     return reward
                 else:
                     remaining_time = timedelta(seconds=(24 * 3600 - time_difference))
+                    self.remaining_time_for_avatar = remaining_time.total_seconds()
+
                     hours, remainder = divmod(remaining_time.total_seconds(), 3600)
                     minutes, seconds = divmod(remainder, 60)
                     self.log(f"Загрузить аватар можно через: {int(hours)} ч, {int(minutes)} мин и {int(seconds)} сек")
+                    self.set_start_time()
                     return None
 
         except Exception as e:
