@@ -28,16 +28,7 @@ class BotFarmer(BaseFarmer):
         print()
 
     def set_start_time(self):
-        remaining_time = getattr(self, 'remaining_time_for_avatar', None)
-        wait_time = random.uniform(MIN_WAIT_TIME, MAX_WAIT_TIME)
-
-        if remaining_time is not None:
-            if remaining_time > wait_time:
-                self.start_time = time() + wait_time
-            else:
-                self.start_time = time() + remaining_time + 30
-        else:
-            self.start_time = time() + wait_time
+        self.start_time = time() + random.uniform(MIN_WAIT_TIME, MAX_WAIT_TIME)
 
     def user(self):
         response = self.get(URL_USER, return_codes=(404,))
