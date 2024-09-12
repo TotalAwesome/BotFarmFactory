@@ -37,7 +37,9 @@
 
 Ответы почти на все вопросы уже есть в канале или в чате и в закрепе: https://t.me/cryptoearnfactory
 
-Для донатов:
-0xd0d94B12738E627441878710FB9520f18A33B019 -Metamask (ETH/BNB/TRX/ARB/OP)
-GfpbfYZxsVrC3qx9S5KAtiZby5BxX3tF9wDQBAYVFfxR -(SOL)
-UQC4PFXSqlTlrQOnnjDj8EQg8gWHNSNEyn2mv3r_kGKPCwTz -(TON)
+Для донатов:  
+Metamask (ETH/BNB/TRX/ARB/OP): 0xd0d94B12738E627441878710FB9520f18A33B019  
+SOL: GfpbfYZxsVrC3qx9S5KAtiZby5BxX3tF9wDQBAYVFfxR  
+TON: UQC4PFXSqlTlrQOnnjDj8EQg8gWHNSNEyn2mv3r_kGKPCwTz  
+
+USDT TRC20: TTTMM1PXxNS7d3tAcruamT6GE8ye5BrZ4w (автор скрипта)
