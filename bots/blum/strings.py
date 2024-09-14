@@ -6,6 +6,7 @@ URL_REFRESH_TOKEN = "https://user-domain.blum.codes/api/v1/auth/refresh"
 URL_BALANCE = "https://game-domain.blum.codes/api/v1/user/balance"
 URL_TASKS = "https://earn-domain.blum.codes/api/v1/tasks" 
 URL_TASK_START = "https://earn-domain.blum.codes/api/v1/tasks/{id}/start"
+URL_TASK_VALIDATE = "https://earn-domain.blum.codes/api/v1/tasks/{id}/validate"
 URL_TASK_CLAIM = "https://earn-domain.blum.codes/api/v1/tasks/{id}/claim" 
 URL_FARMING_CLAIM = "https://game-domain.blum.codes/api/v1/farming/claim"  
 URL_FARMING_START = "https://game-domain.blum.codes/api/v1/farming/start"  
@@ -46,4 +47,8 @@ HEADERS = {
 
 TOKEN_FILE = "token.json"
 
-
+TASK_CODES = {
+    "Secure your Crypto!": "BEST PROJECT EVER",
+    "Backing from Binance Labs": "VALUE",
+    "Forks Explained": "GO GET",
+}
