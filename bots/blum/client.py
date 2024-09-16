@@ -147,6 +147,21 @@ class BotFarmer(BaseFarmer):
                             else:
                                 self.error(f"Не удалось подтвердить задание '{task['title']}'.")
                                 sleep(2)
+            if section['title'] == "Weekly":
+                for task in section.get('tasks', []):
+                    for sub_task in task.get('subTasks', []):
+                        if sub_task['status'] == "NOT_STARTED":
+                            response = self.post(URL_TASK_START.format(**sub_task))
+                            if response.status_code == 200:
+                                self.log(MSG_TASK_STARTED.format(**sub_task))
+                                sub_task.update(response.json())
+                                sleep(random() * 5)
+                        elif sub_task['status'] == "READY_FOR_CLAIM":
+                            response = self.post(URL_TASK_CLAIM.format(**sub_task))
+                            if response.status_code == 200:
+                                self.log(MSG_TASK_CLAIMED.format(**sub_task))
+                                sub_task.update(response.json())
+                                sleep(random() * 5)
 
     
     def start_farming(self):
