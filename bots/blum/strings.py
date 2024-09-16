@@ -51,4 +51,5 @@ TASK_CODES = {
     "Secure your Crypto!": "BEST PROJECT EVER",
     "Backing from Binance Labs": "VALUE",
     "Forks Explained": "GO GET",
+    "Navigating Crypto": "HEYBLUM",
 }
