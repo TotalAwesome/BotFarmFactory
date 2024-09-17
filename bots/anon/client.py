@@ -2,7 +2,7 @@ from telethon.types import InputBotAppShortName
 from bots.base.utils import to_localtz_timestamp, api_response
 from bots.base.base import BaseFarmer, time
 from bots.anon.strings import HEADERS, URL_VERIFY, URL_VERIFICATION, URL_CLAIMED, URL_CLAIM, \
-    URL_INIT, MSG_CLAIM, MSG_STATE
+    URL_INIT, MSG_CLAIM, MSG_STATE, URL_CLAIM_DAILY_REWARD
 
 
 class BotFarmer(BaseFarmer):
@@ -43,8 +43,16 @@ class BotFarmer(BaseFarmer):
                     self.error(f"{self.name} не зарегистрирован по рефке")
                     self.is_alive = False
 
-    def set_start_time(self):
-        self.start_time = time() + self.info.get('claimSecondsAvailable', 300)
+    def claim_reward(self):
+        response = self.get(URL_CLAIM_DAILY_REWARD)
+        
+        if response and 'data' in response:  # Проверка на корректность ответа
+            if response['data'].get('reward'):
+                self.log(f"Награда успешно забрана: {response['data']['reward']}")
+            else:
+                self.log("Награду возможно уже забрали")
+        else:
+            self.log("Ошибка при получении награды.")
 
     @property
     def claim_date(self):
@@ -59,6 +67,6 @@ class BotFarmer(BaseFarmer):
                     self.log(MSG_CLAIM)
 
     def farm(self):
+        self.claim_reward()
         self.claim()
         self.log(MSG_STATE.format(balance=self.info.get('personalXPBalance')))
-        
