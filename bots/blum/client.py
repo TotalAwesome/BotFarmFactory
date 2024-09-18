@@ -122,48 +122,46 @@ class BotFarmer(BaseFarmer):
     def check_tasks(self):
         self.update_tasks()
         for section in self.tasks:
-            for sub_section in section.get('subSections', []):
-                if sub_section['title'] == "New":
-                    for task in sub_section.get('tasks', []):
-                        if task['status'] == "NOT_STARTED":
-                            response = self.post(URL_TASK_START.format(**task))
-                            if response.status_code == 200:
-                                self.log(MSG_TASK_STARTED.format(**task))
-                                task.update(response.json())
-                                sleep(random() * 5)
-                        elif task['status'] == "READY_FOR_CLAIM":
-                            response = self.post(URL_TASK_CLAIM.format(**task))
-                            if response.status_code == 200:
-                                self.log(MSG_TASK_CLAIMED.format(**task))
-                                task.update(response.json())
-                                sleep(random() * 5)
-                        elif task['status'] == "READY_FOR_VERIFY":
-                            keyword = TASK_CODES.get(task['title'], "Введите код для задания: ")
-                            payload = {"keyword": keyword}
-                            validate_response = self.post(URL_TASK_VALIDATE.format(id=task['id']), json=payload)
-                            if validate_response.status_code == 200:
-                                self.log(f"Задание '{task['title']}' успешно выполнено.")
-                                task.update(validate_response.json())
-                            else:
-                                self.error(f"Не удалось подтвердить задание '{task['title']}'.")
-                                sleep(2)
-            if section['title'] == "Weekly":
-                for task in section.get('tasks', []):
-                    for sub_task in task.get('subTasks', []):
-                        if sub_task['status'] == "NOT_STARTED":
-                            response = self.post(URL_TASK_START.format(**sub_task))
-                            if response.status_code == 200:
-                                self.log(MSG_TASK_STARTED.format(**sub_task))
-                                sub_task.update(response.json())
-                                sleep(random() * 5)
-                        elif sub_task['status'] == "READY_FOR_CLAIM":
-                            response = self.post(URL_TASK_CLAIM.format(**sub_task))
-                            if response.status_code == 200:
-                                self.log(MSG_TASK_CLAIMED.format(**sub_task))
-                                sub_task.update(response.json())
-                                sleep(random() * 5)
+            if section.get('title') == "Weekly":
+                self.process_weekly_tasks(section)
+            self.process_new_tasks(section)
 
-    
+    def process_new_tasks(self, section):
+        for sub_section in section.get('subSections', []):
+            if isinstance(sub_section, dict) and sub_section.get('title') == "New":
+                for task in sub_section.get('tasks', []):
+                    self.handle_task(task)
+
+    def process_weekly_tasks(self, section):
+        for task in section.get('tasks', []):
+            for sub_task in task.get('subTasks', []):
+                self.handle_task(sub_task)
+
+    def handle_task(self, task):
+        task_id = task['id']
+        if task['status'] == "NOT_STARTED":
+            response = self.post(URL_TASK_START.format(id=task_id))
+            if response.status_code == 200:
+                self.log(MSG_TASK_STARTED.format(title=task['title']))
+                task.update(response.json())
+                sleep(random() * 5)
+        elif task['status'] == "READY_FOR_CLAIM":
+            response = self.post(URL_TASK_CLAIM.format(id=task_id))
+            if response.status_code == 200:
+                self.log(MSG_TASK_CLAIMED.format(title=task['title'], reward=task.get('reward', 'не указано')))
+                task.update(response.json())
+                sleep(random() * 5)
+        elif task['status'] == "READY_FOR_VERIFY":
+            keyword = TASK_CODES.get(task['title'], "Введите код для задания: ")
+            payload = {"keyword": keyword}
+            validate_response = self.post(URL_TASK_VALIDATE.format(id=task_id), json=payload)
+            if validate_response.status_code == 200:
+                self.log(f"Задание '{task['title']}' успешно выполнено.")
+                task.update(validate_response.json())
+            else:
+                self.error(f"Не удалось подтвердить задание '{task['title']}'.")
+                sleep(2)
+
     def start_farming(self):
         if 'farming' not in self.balance_data:
             self.log(MSG_START_FARMING)
@@ -218,6 +216,6 @@ class BotFarmer(BaseFarmer):
         self.daily_reward()
         self.friends_claim()
         self.update_balance(log_info=True)
-        self.play_game()
+        #self.play_game()
         self.start_farming()
         self.check_tasks()
