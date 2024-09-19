@@ -49,7 +49,8 @@ TOKEN_FILE = "token.json"
 
 TASK_CODES = {
     "Secure your Crypto!": "BEST PROJECT EVER",
-    "Backing from Binance Labs": "VALUE",
+    "How to analyze crypto?": "VALUE",
     "Forks Explained": "GO GET",
     "Navigating Crypto": "HEYBLUM",
+    "What are Telegram Mini Apps?": "CRYPTOBLUM",
 }
