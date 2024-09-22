@@ -1,8 +1,8 @@
-URL_REG = 'https://cats-backend-cxblew-prod.up.railway.app/user/create?referral_code='
+URL_REG = 'https://api.catshouse.club/user/create?referral_code='
 URL_INIT = "https://cats-frontend.tgapps.store/"
-URL_GTASK = "https://cats-backend-cxblew-prod.up.railway.app/tasks/user?group=cats"
-URL_CTASK = 'https://cats-backend-cxblew-prod.up.railway.app/tasks/'
-URL_USER = 'https://cats-backend-cxblew-prod.up.railway.app/user'
+URL_GTASK = "https://api.catshouse.club/tasks/user?group=cats"
+URL_CTASK = 'https://api.catshouse.club/tasks/'
+URL_USER = 'https://api.catshouse.club/user'
 
 MSG_PROFILE = "Обновил профиль"
 MSG_CLAIM = "Собрал нафармленное"
