@@ -28,9 +28,8 @@ class BotFarmer(BaseFarmer):
         print()
 
     def set_start_time(self):
-        # Устанавливаем время начала на основе времени, оставшегося для загрузки аватара + 1-10 минут
         if hasattr(self, 'remaining_time_for_avatar'):
-            additional_time = random.uniform(60, 300)  # От 1 до 5 минут
+            additional_time = random.uniform(60, 300)  # время входа после конца таймера, для загрузки аватарки
             self.start_time = time.time() + self.remaining_time_for_avatar + additional_time
         else:
             self.start_time = time.time() + random.uniform(MIN_WAIT_TIME, MAX_WAIT_TIME)
@@ -55,41 +54,17 @@ class BotFarmer(BaseFarmer):
                 task_id = task['id']
                 title = task['title']
                 completed = task['completed']
-                task_type = task['type']
-                params = task.get('params', {})
-                chat_url = params.get('channelUrl')
 
                 if not completed and task_id not in skip_ids:
-                    if task_type == "SUBSCRIBE_TO_CHANNEL" and chat_url:
-                        self.initiator.connect()
-                        try:
-                            self.initiator.subscribe_channel(chat_url)
-                            self.log(f"Успешно подписались на: {chat_url}")
-                        except Exception as e:
-                            self.log(f"Ошибка при подписке: {e}")
-                            sleep(10)
-
+                    task_type = task['type']
+                    if task_type not in skip_ids:
                         self.log(f"Выполняем задачу: {title}")
                         result = self.post(f'{URL_CTASK}{task_id}/complete', return_codes=(500,)).json()
                         if result.get('success', False):
                             self.log(f"Задача завершена: {task_id} {title}")
                         else:
-                            self.log(f"Ошибка при выполнении задачи: {task_id} {title}")
-
-                    elif task_type == "OPEN_LINK":
-                        link_url = params.get('linkUrl')
-                        if link_url:
-                            self.log(f"Открываем ссылку: {link_url}")
-                            # Здесь можно добавить код для открытия ссылки, например, с использованием веб-браузера.
-
-                        self.log(f"Выполняем задачу: {title}")
-                        result = self.post(f'{URL_CTASK}{task_id}/complete', return_codes=(500,)).json()
-                        if result.get('success', False):
-                            self.log(f"Задача завершена: {task_id} {title}")
-                        else:
-                            self.log(f"Ошибка при выполнении задачи: {task_id} {title}")
-
-                    sleep(4)  # Пауза перед выполнением следующего задания
+                            self.log(f"Ошибка при выполнении задачи: {task_id} {title}")  
+                    sleep(5)
                     
         except Exception as e:
             self.log(f"Ошибка при обработке задач: {e}")
