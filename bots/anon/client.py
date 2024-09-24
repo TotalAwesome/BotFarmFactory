@@ -1,3 +1,4 @@
+import random
 from telethon.types import InputBotAppShortName
 from bots.base.utils import to_localtz_timestamp, api_response
 from bots.base.base import BaseFarmer, time
@@ -42,6 +43,9 @@ class BotFarmer(BaseFarmer):
                 else:
                     self.error(f"{self.name} не зарегистрирован по рефке")
                     self.is_alive = False
+
+    def set_start_time(self):
+        self.start_time = time() + self.info.get('claimSecondsAvailable', random.randint(60, 300))
 
     def claim_reward(self):
         response = self.get(URL_CLAIM_DAILY_REWARD)
