@@ -1,16 +1,17 @@
 import json
+import requests
 from random import randrange, choice, random
 from time import sleep, time
 from telethon.types import InputBotAppShortName
 from bots.base.base import BaseFarmer
-from bots.blum.strings import HEADERS, URL_REFRESH_TOKEN, URL_BALANCE, URL_TASKS, \
+from .strings import HEADERS, URL_REFRESH_TOKEN, URL_BALANCE, URL_TASKS, \
     URL_WEBAPP_INIT, URL_AUTH, URL_FARMING_CLAIM, URL_FARMING_START, URL_PLAY_START, \
     URL_PLAY_CLAIM,  URL_DAILY_REWARD, URL_FRIENDS_BALANCE, URL_FRIENDS_CLAIM, MSG_AUTH, \
     MSG_REFRESH, MSG_BALANCE_UPDATE, MSG_START_FARMING, MSG_CLAIM_FARM, MSG_BEGIN_GAME, MSG_GAME_OFF, \
     MSG_PLAYED_GAME, MSG_DAILY_REWARD, MSG_FRIENDS_CLAIM, URL_CHECK_NAME, MSG_INPUT_USERNAME, \
     URL_TASK_CLAIM, URL_TASK_START, MSG_TASK_CLAIMED, MSG_TASK_STARTED, MSG_BALANCE_INFO, TASK_CODES, \
-    URL_TASK_VALIDATE
-from bots.blum.config import MANUAL_USERNAME, GAME_TOGGLE_ON
+    URL_TASK_VALIDATE, URL_TASKS_CODES
+from .config import MANUAL_USERNAME, GAME_TOGGLE_ON
 
 GAME_RESULT_RANGE = (190, 280)
 DEFAULT_EST_TIME = 60
@@ -137,6 +138,14 @@ class BotFarmer(BaseFarmer):
             for sub_task in task.get('subTasks', []):
                 self.handle_task(sub_task)
 
+    def load_task_codes(cls):
+        response = requests.get(URL_TASKS_CODES)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            print(f"Не удалось загрузить данные: {response.status_code}") 
+            return {} 
+
     def handle_task(self, task):
         task_id = task['id']
         if task['status'] == "NOT_STARTED":
@@ -152,6 +161,7 @@ class BotFarmer(BaseFarmer):
                 task.update(response.json())
                 sleep(random() * 5)
         elif task['status'] == "READY_FOR_VERIFY":
+            TASK_CODES = self.load_task_codes()
             keyword = TASK_CODES.get(task['title'], "Введите код для задания: ")
             payload = {"keyword": keyword}
             validate_response = self.post(URL_TASK_VALIDATE.format(id=task_id), json=payload)

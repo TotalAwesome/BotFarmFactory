@@ -16,6 +16,7 @@ URL_DAILY_REWARD = "https://game-domain.blum.codes/api/v1/daily-reward?offset=-1
 URL_FRIENDS_BALANCE = "https://user-domain.blum.codes/api/v1/friends/balance"
 URL_FRIENDS_CLAIM = "https://user-domain.blum.codes/api/v1/friends/claim"
 URL_CHECK_NAME = "https://user-domain.blum.codes/api/v1/user/username/check"
+URL_TASKS_CODES = "https://gist.githubusercontent.com/SoloWay9/241c1666ad8fea3c8e93dc074e99a401/raw/29fdf3d73e3bf6910fc1b71dcaf1b02fe6cfef92/blum_codes.json"
 
 MSG_AUTH = "Получение токена"
 MSG_REFRESH = "Обновление токена"
@@ -46,13 +47,3 @@ HEADERS = {
 }
 
 TOKEN_FILE = "token.json"
-
-TASK_CODES = {
-    "Secure your Crypto!": "BEST PROJECT EVER",
-    "Backing from Binance Labs": "VALUE",
-    "Forks Explained": "GO GET",
-    "Navigating Crypto": "HEYBLUM",
-    "What are Telegram Mini Apps?": "CRYPTOBLUM",
-    "Say No to Rug Pull!": "superblum",
-    "What Are AMMs?": "CRYPTOSMART",
-}
