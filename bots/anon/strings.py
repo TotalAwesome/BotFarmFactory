@@ -1,12 +1,12 @@
-URL_INIT = "https://space.anon.tg/"
-URL_VERIFY = "https://space-backend.anon.tg/api/auth/verify"  # POST {"hash": "initData"}
-URL_VERIFICATION = "https://space-backend.anon.tg/api/auth/verification"  # POST {"hash": "initData"}
-URL_CLAIMED = "https://space-backend.anon.tg/api/user-claim-history/claimed"
-URL_CLAIM = "https://space-backend.anon.tg/api/user-claim-history/create"
-URL_TASKS = "https://space-backend.anon.tg/api/tasks/all"  # GET
-URL_BEGIN_TASK = "https://space-backend.anon.tg/api/tasks-history/create"  # POST {"uuid": ""}
-URL_CLAIM_TASK = "https://space-backend.anon.tg/api/tasks-history/claimed"  # POST {"uuid": ""}
-URL_CLAIM_DAILY_REWARD = ""
+URL_INIT = "https://space.executor.tg/"
+URL_VERIFY = "https://space-backend.executor.tg/api/auth/verify"  # POST {"hash": "initData"}
+URL_VERIFICATION = "https://space-backend.executor.tg/api/auth/verification"  # POST {"hash": "initData"}
+URL_CLAIMED = "https://space-backend.executor.tg/api/user-claim-history/claimed"
+URL_CLAIM = "https://space-backend.executor.tg/api/user-claim-history/create"
+URL_TASKS = "https://space-backend.executor.tg/api/tasks/all"  # GET
+URL_BEGIN_TASK = "https://space-backend.executor.tg/api/tasks-history/create"  # POST {"uuid": ""}
+URL_CLAIM_TASK = "https://space-backend.executor.tg/api/tasks-history/claimed"  # POST {"uuid": ""}
+URL_CLAIM_DAILY_REWARD = "https://space-backend.executor.tg/api/user-login-history/claim"
 URL_START_GAME = ""
 
 MSG_CLAIM = "Собрал нафармленное и начал фармить"
@@ -28,4 +28,3 @@ HEADERS = {
     "Authorization": "Bearer",
     "Anon-Auth": None
 }
-

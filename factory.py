@@ -4,13 +4,13 @@
 """
 
 from time import sleep
-from random import random, shuffle
+from random import random, shuffle, randint
 
 from initiator import Initiator
 from accounts import TELEGRAM_ACCOUNTS
 from bots.base.base import logging
 from bots.base.utils import check_proxy
-from config import MULTITHREAD
+from config import MULTITHREAD, SLEEP_BETWEEN_START
 from utils import BOTS
 if MULTITHREAD:
     from threading import Thread
@@ -48,8 +48,11 @@ def main(farmers):
             sleep(1 + random())
         sleep(1)
 
-def farm_in_thread(phone):
+def farm_in_thread(phone, delay):
     import asyncio
+    if delay > 0:
+        logging.info(f"{phone['phone']} | Wait {delay} seconds before start")
+        sleep(delay)
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     main(make_account_farmers(phone))
@@ -57,7 +60,8 @@ def farm_in_thread(phone):
 
 if MULTITHREAD:
     for account in TELEGRAM_ACCOUNTS:
-        Thread(target=farm_in_thread, args=(account,)).start()
+        delay = randint(*SLEEP_BETWEEN_START) if len(TELEGRAM_ACCOUNTS) > 1 else 0
+        Thread(target=farm_in_thread, args=(account, delay,)).start()
     while True:
         input()
 else:
