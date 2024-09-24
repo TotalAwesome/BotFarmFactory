@@ -93,6 +93,10 @@ class BotFarmer(BaseFarmer):
         self.authenticate()
         self.initiator.disconnect()
 
+    def set_start_time(self):
+        timestamps = (self.portfolio['finishStaking'], self.info['adNextAvailableTime'])
+        self.start_time = min(map(to_localtz_timestamp, timestamps)) + 5
+
 
     def sync(self):
         if response := self.get(URL_INFO):
