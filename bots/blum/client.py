@@ -138,14 +138,6 @@ class BotFarmer(BaseFarmer):
             for sub_task in task.get('subTasks', []):
                 self.handle_task(sub_task)
 
-    def load_task_codes(cls):
-        response = requests.get(URL_TASKS_CODES)
-        if response.status_code == 200:
-            return response.json()
-        else:
-            print(f"Не удалось загрузить данные: {response.status_code}") 
-            return {} 
-
     def handle_task(self, task):
         task_id = task['id']
         if task['status'] == "NOT_STARTED":
@@ -161,7 +153,6 @@ class BotFarmer(BaseFarmer):
                 task.update(response.json())
                 sleep(random() * 5)
         elif task['status'] == "READY_FOR_VERIFY":
-            TASK_CODES = self.load_task_codes()
             keyword = TASK_CODES.get(task['title'], "Введите код для задания: ")
             payload = {"keyword": keyword}
             validate_response = self.post(URL_TASK_VALIDATE.format(id=task_id), json=payload)
