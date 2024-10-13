@@ -217,6 +217,6 @@ class BotFarmer(BaseFarmer):
         self.daily_reward()
         self.friends_claim()
         self.update_balance(log_info=True)
-        #self.play_game()
+        self.play_game()
         self.start_farming()
         self.check_tasks()
